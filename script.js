@@ -123,7 +123,7 @@ function initSmoothScroll() {
 }
 
 function initRegistrationCountdown() {
-    const deadline = new Date('2026-06-30T23:59:59+01:00');
+    const deadline = new Date('2026-06-30T23:59:59+06:00');
     const daysEl = document.getElementById('countdownDays');
     const hoursEl = document.getElementById('countdownHours');
     const minutesEl = document.getElementById('countdownMinutes');
