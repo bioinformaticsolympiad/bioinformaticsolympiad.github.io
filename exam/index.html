@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>BBO 3.0 — Online Examination</title>
+<link rel="icon" href="../assets/branding/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="exam.css">
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="exam-header">
+  <div class="brand">
+    <img src="../assets/branding/logo.png" alt="BBO" class="brand-logo">
+    <div>
+      <strong>Biology &amp; Bioinformatics Olympiad 3.0</strong>
+      <span>Online Examination</span>
+    </div>
+  </div>
+  <div id="headerRight" class="header-right hidden">
+    <div id="saveStatus" class="save-status" title="Your answers are saved automatically">
+      <span class="dot"></span><span id="saveText">Saved</span>
+    </div>
+    <div id="timer" class="timer">--:--</div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ================= 1. REGISTRATION ================= -->
+  <section id="screenRegister" class="screen">
+    <div class="card">
+      <h1>Candidate Registration</h1>
+      <p class="lead">Fill in your details before the exam begins. Registration does
+         <strong>not</strong> use any of your exam time — the 50-minute clock starts
+         only when the exam opens.</p>
+
+      <div class="exam-facts">
+        <div><span>Questions</span><strong>50 MCQ</strong></div>
+        <div><span>Total marks</span><strong>50</strong></div>
+        <div><span>Duration</span><strong>50 minutes</strong></div>
+        <div><span>Negative marking</span><strong>None</strong></div>
+      </div>
+
+      <form id="regForm" novalidate autocomplete="on">
+        <div class="field">
+          <label for="fName">Full name <em>*</em></label>
+          <input type="text" id="fName" name="name" required minlength="3" maxlength="80"
+                 placeholder="As it should appear on your certificate" autocomplete="name">
+          <small class="err" id="errName"></small>
+        </div>
+
+        <div class="field">
+          <label for="fUniversity">University / Institution <em>*</em></label>
+          <input type="text" id="fUniversity" name="university" required minlength="2" maxlength="120"
+                 placeholder="e.g. University of Chittagong" autocomplete="organization" list="uniList">
+          <datalist id="uniList">
+            <option value="University of Dhaka"></option>
+            <option value="University of Chittagong"></option>
+            <option value="University of Rajshahi"></option>
+            <option value="Jahangirnagar University"></option>
+            <option value="Bangladesh Agricultural University"></option>
+            <option value="Khulna University"></option>
+            <option value="Jagannath University"></option>
+            <option value="Shahjalal University of Science and Technology"></option>
+            <option value="Noakhali Science and Technology University"></option>
+            <option value="Bangabandhu Sheikh Mujibur Rahman Agricultural University"></option>
+          </datalist>
+          <small class="err" id="errUniversity"></small>
+        </div>
+
+        <div class="field">
+          <label for="fEmail">Email address <em>*</em></label>
+          <input type="email" id="fEmail" name="email" required maxlength="120"
+                 placeholder="you@example.com" autocomplete="email" inputmode="email">
+          <small class="hint">Your confirmation email and result notice go here. Type it carefully.</small>
+          <small class="err" id="errEmail"></small>
+        </div>
+
+        <div class="field">
+          <label for="fPhone">Phone number <em>*</em></label>
+          <input type="tel" id="fPhone" name="phone" required maxlength="20"
+                 placeholder="01XXXXXXXXX" autocomplete="tel" inputmode="tel">
+          <small class="hint">11-digit Bangladeshi mobile number, or include your country code.</small>
+          <small class="err" id="errPhone"></small>
+        </div>
+
+        <div class="rules-box">
+          <h3>Examination rules</h3>
+          <ul>
+            <li>The exam starts at <strong id="ruleStart">9:00 PM</strong> sharp and closes exactly 50 minutes later.</li>
+            <li>All 50 questions carry 1 mark each. There is <strong>no negative marking</strong>, so attempt every question.</li>
+            <li>Your answers save automatically. If your device or internet fails, reopen this page on the same device and continue where you left off.</li>
+            <li>When time expires your paper is submitted automatically — pressing <em>Submit</em> is not required.</li>
+            <li>Copying questions, taking screenshots, or using AI tools, notes, or help from another person is prohibited and will disqualify you.</li>
+            <li>Leaving the exam tab is recorded. Repeated switching is flagged for review.</li>
+            <li>Results are <strong>not</strong> shown after submission. They will be announced later.</li>
+          </ul>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" id="fAgree" required>
+          <span>I have read the rules and I confirm that I will attempt this exam honestly, without any external help or AI assistance.</span>
+        </label>
+        <small class="err" id="errAgree"></small>
+
+        <button type="submit" class="btn btn-primary btn-block" id="regSubmit">Register &amp; continue</button>
+        <p class="form-note" id="regNote"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ================= 2. WAITING ROOM ================= -->
+  <section id="screenWait" class="screen hidden">
+    <div class="card center">
+      <div class="pill" id="waitPill">Registered</div>
+      <h1>You're all set, <span id="waitName">candidate</span>.</h1>
+      <p class="lead">Keep this page open. The exam unlocks by itself — you do not need to refresh.</p>
+
+      <div class="countdown">
+        <div><strong id="cdH">00</strong><span>hours</span></div>
+        <div><strong id="cdM">00</strong><span>minutes</span></div>
+        <div><strong id="cdS">00</strong><span>seconds</span></div>
+      </div>
+
+      <p class="wait-start">Exam begins <strong id="waitStartText">—</strong></p>
+
+      <div class="checklist">
+        <h3>Before the clock starts</h3>
+        <ul>
+          <li>Sit somewhere with a stable internet connection.</li>
+          <li>Charge your device or keep it plugged in — 50 minutes on battery.</li>
+          <li>Close every other tab, and silence notifications.</li>
+          <li>Do not open a second copy of this exam in another tab or device.</li>
+        </ul>
+      </div>
+
+      <details class="detail-box">
+        <summary>Your registered details</summary>
+        <dl id="waitDetails"></dl>
+        <button type="button" class="btn btn-ghost btn-sm" id="editReg">Correct my details</button>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================= 3. EXAM ================= -->
+  <section id="screenExam" class="screen hidden">
+    <div class="exam-layout">
+      <div class="exam-main">
+        <div class="progress-wrap">
+          <div class="progress-bar"><span id="progressFill"></span></div>
+          <div class="progress-text">
+            <span id="progressCount">0 of 50 answered</span>
+            <span id="progressSection"></span>
+          </div>
+        </div>
+
+        <div id="questionList" class="question-list"></div>
+
+        <div class="submit-zone">
+          <p id="submitSummary"></p>
+          <button type="button" class="btn btn-primary btn-lg" id="btnSubmit">Submit my answers</button>
+          <p class="submit-note">You may submit early. Otherwise your paper is submitted automatically when the timer reaches zero.</p>
+        </div>
+      </div>
+
+      <aside class="exam-side">
+        <h3>Question navigator</h3>
+        <div id="navGrid" class="nav-grid"></div>
+        <div class="legend">
+          <span><i class="sw answered"></i> Answered</span>
+          <span><i class="sw review"></i> Marked for review</span>
+          <span><i class="sw blank"></i> Not answered</span>
+        </div>
+        <div class="side-stat">
+          <div><strong id="statAnswered">0</strong><span>answered</span></div>
+          <div><strong id="statBlank">50</strong><span>left</span></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= 4. SUBMITTED ================= -->
+  <section id="screenDone" class="screen hidden">
+    <div class="card center">
+      <div class="tick" aria-hidden="true">
+        <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" fill="none"/><path fill="none" d="M14 27l8 8 16-16"/></svg>
+      </div>
+      <h1>Your answers have been submitted</h1>
+      <p class="lead" id="doneLead">Thank you for taking part in the Biology &amp; Bioinformatics Olympiad 3.0.</p>
+
+      <div class="receipt">
+        <div><span>Submission ID</span><strong id="doneId">—</strong></div>
+        <div><span>Name</span><strong id="doneName">—</strong></div>
+        <div><span>Questions attempted</span><strong id="doneAttempted">—</strong></div>
+        <div><span>Submitted at</span><strong id="doneTime">—</strong></div>
+      </div>
+
+      <p class="note-strong" id="doneEmailNote">A confirmation email is on its way to your inbox. It confirms receipt only —
+         <strong>it does not contain your score</strong>.</p>
+      <p class="lead">Results will be announced later on our official page and by email. Please do not reply asking for your marks.</p>
+
+      <a href="../index.html" class="btn btn-ghost">Back to the Olympiad website</a>
+    </div>
+  </section>
+
+  <!-- ================= 5. BLOCKED / MESSAGE ================= -->
+  <section id="screenBlocked" class="screen hidden">
+    <div class="card center">
+      <h1 id="blockTitle">Exam closed</h1>
+      <p class="lead" id="blockMsg"></p>
+      <a href="../index.html" class="btn btn-ghost">Back to the Olympiad website</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= MODAL ================= -->
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <h2 id="modalTitle">Confirm</h2>
+    <p id="modalBody"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="modalCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="modalOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<div id="warnBanner" class="warn-banner hidden"></div>
+
+<script src="config.js"></script>
+<script src="questions.js"></script>
+<script src="exam.js"></script>
+</body>
+</html>
