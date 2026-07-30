@@ -238,7 +238,28 @@ input.invalid{border-color:var(--danger);background:var(--danger-bg)}
 .notice-hero h1{margin-bottom:.75rem}
 .notice-hero .lead{max-width:640px;margin-left:auto;margin-right:auto}
 .notice-hero .countdown{margin-bottom:.5rem}
-.notice-hero .wait-start{margin-bottom:1.75rem;font-size:.82rem;text-transform:uppercase;letter-spacing:.1em}
+
+/* "The examination itself begins Friday at 9:00 pm" — the line that matters most */
+.exam-begins{
+  font-size:1.5rem;line-height:1.4;color:var(--navy);font-weight:700;
+  margin:1.25rem auto 1rem;max-width:640px
+}
+.exam-begins mark{
+  background:linear-gradient(180deg,transparent 55%,var(--accent) 55%);
+  color:var(--navy);font-weight:700;padding:0 .25rem;border-radius:3px;
+  white-space:nowrap
+}
+.join-note{margin-bottom:1.5rem}
+
+.notice-hero .countdown-label{
+  margin-bottom:1.75rem;font-size:.85rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.1em;color:var(--navy)
+}
+
+@media (max-width:640px){
+  .exam-begins{font-size:1.2rem}
+  .exam-begins mark{white-space:normal}
+}
 
 /* ---------- Anti-copy ---------- */
 body.no-select .q-text,body.no-select .opt-text,body.no-select .q-tag{

@@ -69,6 +69,15 @@ function fmt(ms, opt) {
   try { return new Intl.DateTimeFormat('en-GB', opt || BD_FULL).format(new Date(ms)); }
   catch (e) { return new Date(ms).toString(); }
 }
+/* "Friday at 9:00 pm" — the weekday is derived from the date, so it stays
+   correct by itself if the exam is ever moved to another day. */
+function fmtDay(ms) {
+  try {
+    var day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', weekday: 'long' })
+      .format(new Date(ms));
+    return day + ' at ' + fmt(ms, BD);
+  } catch (e) { return fmt(ms, BD); }
+}
 
 /* Monotonic server-anchored clock.
    serverAnchor = server time at handshake; perfAnchor = performance.now() then.
@@ -326,7 +335,7 @@ function fbLabel() {
     : esc(name);
 }
 function goPreOpen() {
-  var openTxt = fmt(OPEN_MS, BD), startTxt = fmt(START_MS, BD);
+  var openTxt = fmtDay(OPEN_MS), startTxt = fmtDay(START_MS);
   $('preOpenTime').textContent = openTxt;
   $('preExamTime').textContent = startTxt;
   $('preRuleOpen').textContent = openTxt;
