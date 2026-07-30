@@ -32,7 +32,7 @@ var CONFIG = {
   NEGATIVE_MARK: 0,         // 0 = no negative marking
   SEND_EMAILS: true,
   EMAIL_SUBJECT: 'Your BBO 3.0 answers have been received',
-  REPLY_TO: 'bioinformaticsolympiad@gmail.com',
+  REPLY_TO: 'bioinformatics.olympiad@gmail.com',
   ORG_NAME: 'BioPC — Biology & Bioinformatics Olympiad',
   SITE_URL: 'https://olympiad.biopc.org'
 };
@@ -188,14 +188,28 @@ function handleSubmit(d) {
   }
 
   var answers = normaliseAnswers(d.answers);
-  var reg = findRegistration(token);
 
-  // Idempotent: a retry must not create a second submission.
-  var existing = findSubmission(token);
-  if (existing) {
+  /* Identity comes from the client so we do NOT have to scan the Registrations
+     sheet on every submission. With 2000 candidates that scan grows without
+     bound and is the main thing that would slow the end-of-exam spike.
+     Older clients did not send it, so fall back to the sheet lookup. */
+  var reg = {
+    name: clean(d.name, 80), university: clean(d.university, 120),
+    email: clean(d.email, 120).toLowerCase(), phone: clean(d.phone, 20)
+  };
+  if (!reg.email) reg = findRegistration(token);
+
+  /* Idempotency via the script cache — a constant-time lookup instead of
+     scanning the Submissions sheet. If the cache has been evicted we may write
+     a duplicate row; gradeAll() keeps the first paper per token, so a duplicate
+     never affects the result. */
+  var cache = CacheService.getScriptCache();
+  var cacheKey = 'sub_' + token;
+  var cached = cache.get(cacheKey);
+  if (cached) {
     return json({
-      ok: true, submissionId: existing.submissionId, duplicate: true,
-      attempted: existing.attempted, serverNow: Date.now()
+      ok: true, submissionId: cached, duplicate: true,
+      attempted: Object.keys(answers).length, serverNow: Date.now()
     });
   }
 
@@ -215,6 +229,8 @@ function handleSubmit(d) {
     new Date(), token, JSON.stringify(answers), Object.keys(answers).length,
     Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0, 'FINAL'
   ]);
+
+  cache.put(cacheKey, submissionId, 21600);   // 6 h, the maximum
 
   return json({
     ok: true, submissionId: submissionId, attempted: Object.keys(answers).length,
@@ -429,16 +445,6 @@ function findRegistration(token) {
     }
   }
   return { name: '', university: '', email: '', phone: '' };
-}
-
-function findSubmission(token) {
-  var rows = readRows(SHEETS.SUB);
-  for (var i = 0; i < rows.length; i++) {
-    if (rows[i].Token === token) {
-      return { submissionId: rows[i].SubmissionID, attempted: rows[i].Attempted };
-    }
-  }
-  return null;
 }
 
 function normaliseAnswers(raw) {

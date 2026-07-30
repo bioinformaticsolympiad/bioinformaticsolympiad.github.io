@@ -33,12 +33,24 @@ window.BBO_CONFIG = {
   SHUFFLE_QUESTIONS: true,   // different question order per participant
   SHUFFLE_OPTIONS: true,     // scramble option order per participant too
   /* How often answers are pushed to the server. Answers are ALWAYS saved on
-     the device instantly; this is the extra off-device backup. Raising this
-     number reduces server load — at 2000 candidates keep it at 90 or above.  */
-  AUTOSAVE_SECONDS: 90,
+     the device instantly; this is only the extra off-device backup, so a long
+     interval costs almost nothing.
+     Apps Script serves roughly 11 requests/second (30 concurrent executions at
+     ~2.7 s each), so the interval must be long enough that
+     participants / interval stays well under that:
+        2000 candidates / 240 s  ~= 6 req/s   ✓ comfortable
+        2000 candidates /  90 s  ~= 17 req/s  ✗ over capacity
+     Lower it only if you have far fewer participants.                        */
+  AUTOSAVE_SECONDS: 240,
+
+  /* Papers are submitted at a random moment inside this many seconds after the
+     timer hits zero, so 2000 submissions do not arrive in the same instant.
+     2000 / 240 s ~= 8 req/s, which the backend can absorb. Candidates see a
+     "submitting" message and must keep the page open until it confirms.      */
+  SUBMIT_SPREAD_SECONDS: 240,
   ANTI_CHEAT: true,          // copy-blocking, tab-switch logging, etc.
   MAX_TAB_SWITCHES: 5,       // logged as a proctoring flag; does not auto-fail
 
   /* ---- 5. Contact shown on the page ----------------------------------- */
-  SUPPORT_EMAIL: "bioinformaticsolympiad@gmail.com"
+  SUPPORT_EMAIL: "bioinformatics.olympiad@gmail.com"
 };

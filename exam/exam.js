@@ -519,7 +519,11 @@ function submitExam(reason) {
   var payload = {
     action: 'submit', token: S.token, answers: S.answers, review: S.review,
     reason: reason, tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts,
-    startedAt: S.startedAt, clientSubmittedAt: now()
+    startedAt: S.startedAt, clientSubmittedAt: now(),
+    /* Sending the identity here lets the server skip scanning the
+       Registrations sheet, which is what makes submission slow once there are
+       thousands of rows. The server falls back to a lookup if these are absent. */
+    name: S.name, university: S.university, email: S.email, phone: S.phone
   };
   var attempted = Object.keys(S.answers).length;
 
@@ -539,9 +543,15 @@ function submitExam(reason) {
 
   if (!API_READY) { setTimeout(function () { finalize(null); }, 500); return; }
 
-  /* Auto-submits at the deadline get jitter so 2000 papers do not land in the
-     same second; a manual submit goes immediately. */
-  var delay = reason === 'auto-timeout' ? Math.random() * 15000 : 0;
+  /* Auto-submits at the deadline are spread over SUBMIT_SPREAD_SECONDS so 2000
+     papers do not land in the same second; a manual submit goes immediately. */
+  var delay = reason === 'auto-timeout'
+    ? Math.random() * (CFG.SUBMIT_SPREAD_SECONDS || 240) * 1000 : 0;
+  if (delay > 4000) {
+    $('submitSummary').textContent = 'Time is up. Your paper is being submitted — ' +
+      'please keep this page open until you see the confirmation. This can take a ' +
+      'few minutes while everyone submits at once.';
+  }
   setTimeout(function () {
     apiRetry(payload, 6).then(finalize).catch(function (err) {
       submitting = false;
