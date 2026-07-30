@@ -14,14 +14,14 @@ window.BBO_CONFIG = {
      START must be an ISO 8601 timestamp WITH the Bangladesh offset +06:00.
      Example below = 31 July 2026, 9:00:00 PM Bangladesh time.
      The exam ends automatically DURATION_MIN minutes after START.         */
-  START_ISO: "2026-07-31T21:00:00+06:00",
+  START_ISO: "2026-07-30T21:00:00+06:00",
   DURATION_MIN: 50,
 
   /* Registration opens this many minutes before START, so participants can
      fill in their details ahead of time and wait on the countdown screen.
      1440 = 24 hours. Raise it if you want registration open for longer
      (2880 = 2 days, 10080 = 1 week).                                       */
-  REGISTRATION_OPENS_MIN_BEFORE: 1440,
+  REGISTRATION_OPENS_MIN_BEFORE: 2880,
 
   /* ---- 3. Marking ----------------------------------------------------- */
   TOTAL_MARKS: 50,
