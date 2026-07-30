@@ -8,7 +8,7 @@ window.BBO_CONFIG = {
      Paste the Google Apps Script Web App URL here after you deploy it.
      It looks like: https://script.google.com/macros/s/AKfy..../exec
      Until this is set, the page runs in OFFLINE PRACTICE mode.            */
-  API_URL: "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE",
+  API_URL: "https://script.google.com/macros/s/AKfycbxu9VWVo25LjQ3mS4BHr2MKJ_7fcoNRK4sr6F-NuJxvp-mJGIs6ZKjdOuFgsuvMy7pGHg/exec",
 
   /* ---- 2. Exam window -------------------------------------------------
      START must be an ISO 8601 timestamp WITH the Bangladesh offset +06:00.
