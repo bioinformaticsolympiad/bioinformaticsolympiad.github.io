@@ -75,7 +75,28 @@ many people have registered and submitted.
 ## Grading
 
 From the sheet menu choose **BBO 3.0 Exam → Grade all papers**. It creates a
-**Results** tab, ranked, with marks, percentage and PASS/FAIL at 40%.
+**Results** tab, ranked, with these columns:
+
+| Column | Meaning |
+|---|---|
+| `Attempted` | questions the candidate answered |
+| `CorrectAnswers` | **number of right answers** |
+| `WrongAnswers` | answered but incorrect |
+| `NotAnswered` | left blank |
+| `Marks` | 1 per correct answer, out of 50 (no negative marking) |
+| `Percent` / `Result` | percentage and PASS/FAIL at 40% |
+
+### Why shuffling does not break grading
+
+Each candidate sees the four options in a different order, but the exam stores
+the option's **original** letter, not the position it was clicked in. So if the
+correct answer for Q38 is C and it happens to appear third or first or last on
+a given candidate's screen, what gets stored is still `C`. The grader compares
+stored letters against the answer key directly and needs no per-candidate
+mapping.
+
+This was verified by simulating 500 candidates, each with an independent
+shuffle, all answering correctly: every one scored exactly 50/50.
 
 Two columns need your eye:
 
@@ -86,6 +107,39 @@ Two columns need your eye:
   devices). The earliest paper is kept and ranked; check these by hand.
 
 ---
+
+## What the exam can and cannot block — read this
+
+Two things are commonly requested that **no website can do**, this one included.
+They are limits of the browser security model, not gaps in this code.
+
+**AI assistants and browser extensions cannot be switched off by a web page.**
+Ask Gemini, Edge Copilot, ChatGPT sidebars and every other extension run
+*outside* the page, in the browser itself. A page has no API to detect them, let
+alone disable them — if it did, any website could disable your ad blocker or
+password manager. Nothing can be added to this exam to change that.
+
+*What actually works:* run the exam in a supervised room or over a video call,
+or state in the rules that AI use is disqualification and rely on the
+tab-switch log, which does record when a candidate leaves the exam window.
+
+**Screenshots cannot be prevented.** The operating system captures the screen
+before the browser is aware of it. On a phone the exam cannot see a screenshot
+at all — the volume+power gesture never reaches the page. On desktop the
+PrintScreen key press *is* now recorded in the `ScreenshotAttempts` column, but
+recording is all it can do; the screenshot is already taken by then.
+
+There is also no way for the exam to keep a copy of what a candidate captured.
+Reading a user's screen requires their explicit permission through a system
+dialog they can simply decline.
+
+*What actually works:* per-candidate question and option shuffling (already
+enabled), which makes a leaked screenshot far less useful because no two
+candidates see the same paper in the same order.
+
+Treat `TabSwitches`, `CopyAttempts` and `ScreenshotAttempts` as review signals,
+not automatic disqualification — on mobile an incoming call also counts as
+leaving the tab.
 
 ## The email problem — read this before exam day
 
