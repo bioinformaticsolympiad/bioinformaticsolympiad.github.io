@@ -87,9 +87,10 @@ function setServerTime(ms) {
 var S = {
   token: null, candidateId: null,
   name: '', university: '', email: '', phone: '',
-  answers: {},          // { questionNumber: 'A'|'B'|'C'|'D' }
+  answers: {},          // { questionNumber: ORIGINAL option letter 'A'|'B'|'C'|'D' }
   review: {},           // { questionNumber: true }
   order: null,          // shuffled question numbers
+  optOrder: null,       // { questionNumber: [originalIndex, ...] } display order
   submitted: false, submissionId: null, submittedAt: null,
   tabSwitches: 0, copyAttempts: 0, startedAt: null, dirty: false, lastSync: 0
 };
@@ -255,6 +256,7 @@ function initRegistration() {
       S.name = data.name; S.university = data.university;
       S.email = data.email; S.phone = data.phone;
       if (!S.order) S.order = buildOrder();
+      if (!S.optOrder) S.optOrder = buildOptOrder();
       saveLocal();
       goWaitingRoom();
     };
@@ -288,15 +290,29 @@ function initRegistration() {
   });
 }
 
+function shuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+
 function buildOrder() {
   var order = QUESTIONS.map(function (q) { return q.n; });
-  if (CFG.SHUFFLE_QUESTIONS) {
-    for (var i = order.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = order[i]; order[i] = order[j]; order[j] = t;
-    }
-  }
-  return order;
+  return CFG.SHUFFLE_QUESTIONS ? shuffle(order) : order;
+}
+
+/* Per-question display order of the four options, as ORIGINAL indices.
+   The stored answer is always the option's ORIGINAL letter, so the server's
+   answer key keeps working unchanged no matter how options are displayed. */
+function buildOptOrder() {
+  var map = {};
+  QUESTIONS.forEach(function (q) {
+    var idx = q.o.map(function (_, i) { return i; });
+    map[q.n] = CFG.SHUFFLE_OPTIONS ? shuffle(idx) : idx;
+  });
+  return map;
 }
 
 /* ---------------- waiting room ---------------- */
@@ -336,6 +352,7 @@ function startExam() {
   clearInterval(waitTimer);
   if (!S.startedAt) { S.startedAt = now(); saveLocal(); }
   if (!S.order || S.order.length !== QUESTIONS.length) S.order = buildOrder();
+  if (!S.optOrder || Object.keys(S.optOrder).length !== QUESTIONS.length) S.optOrder = buildOptOrder();
 
   renderQuestions();
   $('headerRight').classList.remove('hidden');
@@ -392,13 +409,18 @@ function renderQuestions() {
     var q = byNum[num];
     if (!q) return;
     var pos = idx + 1;
-    var opts = q.o.map(function (text, i) {
-      var L = LETTERS[i];
-      var sel = S.answers[num] === L;
-      return '<label class="opt' + (sel ? ' sel' : '') + '" data-q="' + num + '" data-opt="' + L + '">' +
-             '<input type="radio" name="q' + num + '" value="' + L + '"' + (sel ? ' checked' : '') + '>' +
-             '<span class="letter">' + L + '</span>' +
-             '<span class="opt-text">' + esc(text) + '</span></label>';
+    /* displayOrder[p] = original index of the option shown in position p.
+       data-opt carries the ORIGINAL letter (what gets graded); the visible
+       badge shows the positional letter the candidate sees. */
+    var displayOrder = (S.optOrder && S.optOrder[num]) || [0, 1, 2, 3];
+    var opts = displayOrder.map(function (origIdx, pos) {
+      var origLetter = LETTERS[origIdx];
+      var shownLetter = LETTERS[pos];
+      var sel = S.answers[num] === origLetter;
+      return '<label class="opt' + (sel ? ' sel' : '') + '" data-q="' + num + '" data-opt="' + origLetter + '">' +
+             '<input type="radio" name="q' + num + '" value="' + origLetter + '"' + (sel ? ' checked' : '') + '>' +
+             '<span class="letter">' + shownLetter + '</span>' +
+             '<span class="opt-text">' + esc(q.o[origIdx]) + '</span></label>';
     }).join('');
 
     listHtml +=

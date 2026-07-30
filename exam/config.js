@@ -12,9 +12,9 @@ window.BBO_CONFIG = {
 
   /* ---- 2. Exam window -------------------------------------------------
      START must be an ISO 8601 timestamp WITH the Bangladesh offset +06:00.
-     Example below = 29 August 2026, 9:00:00 PM Bangladesh time.
+     Example below = 31 July 2026, 9:00:00 PM Bangladesh time.
      The exam ends automatically DURATION_MIN minutes after START.         */
-  START_ISO: "2026-08-29T21:00:00+06:00",
+  START_ISO: "2026-07-31T21:00:00+06:00",
   DURATION_MIN: 50,
 
   /* Registration opens this many minutes before START, so participants can
@@ -31,7 +31,7 @@ window.BBO_CONFIG = {
 
   /* ---- 4. Behaviour --------------------------------------------------- */
   SHUFFLE_QUESTIONS: true,   // different question order per participant
-  SHUFFLE_OPTIONS: false,    // keep A/B/C/D order (answer key stays readable)
+  SHUFFLE_OPTIONS: true,     // scramble option order per participant too
   /* How often answers are pushed to the server. Answers are ALWAYS saved on
      the device instantly; this is the extra off-device backup. Raising this
      number reduces server load — at 2000 candidates keep it at 90 or above.  */

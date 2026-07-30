@@ -24,7 +24,7 @@
 var CONFIG = {
   EXAM_NAME: 'Biology & Bioinformatics Olympiad 3.0',
   // Must match exam/config.js START_ISO / DURATION_MIN
-  START_ISO: '2026-08-29T21:00:00+06:00',
+  START_ISO: '2026-07-31T21:00:00+06:00',
   DURATION_MIN: 50,
   GRACE_MIN: 10,            // submissions accepted this long after the deadline
   TOTAL_MARKS: 50,
