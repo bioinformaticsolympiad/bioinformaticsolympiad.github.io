@@ -12,6 +12,37 @@
 (function () {
 'use strict';
 
+/* ---------------------------------------------------------------------------
+   Browser capability gate.
+   Runs before anything else and uses only syntax that parses everywhere, so a
+   browser too old to sit the exam gets a plain explanation instead of a blank
+   or half-broken page at 9 PM. Guarded features (AbortController, sendBeacon,
+   Intl, performance.now) are NOT listed here — the code already falls back for
+   those. These four are genuinely required.
+   --------------------------------------------------------------------------- */
+(function () {
+  var missing = [];
+  if (typeof window.Promise === 'undefined') missing.push('Promise');
+  if (typeof window.fetch === 'undefined') missing.push('fetch');
+  if (typeof window.JSON === 'undefined') missing.push('JSON');
+  if (!document.documentElement.closest) missing.push('Element.closest');
+  if (!missing.length) return;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.innerHTML =
+      '<div style="font-family:Arial,sans-serif;max-width:520px;margin:12vh auto;padding:0 1.5rem;' +
+      'text-align:center;color:#2c3e35;line-height:1.7">' +
+      '<div style="font-size:2.5rem">⚠️</div>' +
+      '<h1 style="color:#0c1f4a;font-size:1.4rem;margin:.75rem 0">Your browser is too old for this exam</h1>' +
+      '<p>This examination needs a modern browser. Please open this same link in ' +
+      '<strong>Google Chrome</strong> (or Microsoft Edge, Firefox, or Safari) and register again.</p>' +
+      '<p style="font-size:.85rem;color:#5a7066">If you are using Opera Mini, turn off data-saving mode ' +
+      'or switch browser &mdash; it cannot run this exam.</p>' +
+      '<p style="font-size:.8rem;color:#5a7066">Missing: ' + missing.join(', ') + '</p>' +
+      '</div>';
+  });
+})();
+
 var CFG = window.BBO_CONFIG || {};
 var QUESTIONS = window.BBO_QUESTIONS || [];
 var LETTERS = ['A', 'B', 'C', 'D'];
