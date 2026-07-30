@@ -201,11 +201,73 @@
         <div><span>Submitted at</span><strong id="doneTime">—</strong></div>
       </div>
 
-      <p class="note-strong" id="doneEmailNote">A confirmation email is on its way to your inbox. It confirms receipt only —
-         <strong>it does not contain your score</strong>.</p>
-      <p class="lead">Results will be announced later on our official page and by email. Please do not reply asking for your marks.</p>
+      <p class="note-strong" id="doneEmailNote">
+        Your paper is safely recorded. <strong>No confirmation email will be sent</strong> —
+        the Submission ID above is your proof of submission, so please screenshot or note it down.
+      </p>
+      <p class="lead">
+        Your result is <strong>not</strong> shown here and will <strong>not</strong> be emailed.
+        Results will be announced later on <span id="doneFb">our official Facebook page</span> —
+        please keep an eye on the page for the announcement.
+      </p>
 
       <a href="../index.html" class="btn btn-ghost">Back to the Olympiad website</a>
+    </div>
+  </section>
+
+  <!-- ================= 6. BEFORE THE LINK OPENS ================= -->
+  <section id="screenPreOpen" class="screen hidden">
+    <div class="card">
+      <div class="notice-hero">
+        <div class="notice-icon" aria-hidden="true">🔒</div>
+        <h1>The exam link opens at <span id="preOpenTime">8:00 PM</span></h1>
+        <p class="lead">
+          The examination itself begins at <strong id="preExamTime">9:00 PM</strong>.
+          Please open this page and register <strong>before</strong> the exam starts —
+          registration does not use any of your exam time.
+        </p>
+        <div class="countdown">
+          <div><strong id="poH">00</strong><span>hours</span></div>
+          <div><strong id="poM">00</strong><span>minutes</span></div>
+          <div><strong id="poS">00</strong><span>seconds</span></div>
+        </div>
+        <p class="wait-start">until registration opens</p>
+      </div>
+
+      <div class="exam-facts">
+        <div><span>Questions</span><strong>50 MCQ</strong></div>
+        <div><span>Total marks</span><strong>50</strong></div>
+        <div><span>Duration</span><strong id="preDuration">40 minutes</strong></div>
+        <div><span>Negative marking</span><strong>None</strong></div>
+      </div>
+
+      <div class="rules-box">
+        <h3>Examination rules — please read now</h3>
+        <ul>
+          <li><strong>Link opens:</strong> <span id="preRuleOpen">8:00 PM</span>. Register your name, university, email and phone as soon as it opens.</li>
+          <li><strong>Exam starts:</strong> <span id="preRuleStart">9:00 PM</span> sharp and closes exactly <span id="preRuleDur">40</span> minutes later. The paper unlocks by itself — do not refresh.</li>
+          <li>Joining late does <strong>not</strong> extend your time. The exam closes for everyone at the same moment.</li>
+          <li>All 50 questions carry 1 mark each. There is <strong>no negative marking</strong>, so attempt every question.</li>
+          <li>Questions and options appear in a <strong>different order for every candidate</strong>.</li>
+          <li>Your answers save automatically. If your device or internet fails, reopen this page on the same device and browser to continue where you left off.</li>
+          <li>When time expires your paper is submitted automatically — pressing <em>Submit</em> is not required.</li>
+          <li>Copying questions, taking screenshots, or using AI tools, notes, or help from another person is prohibited and will disqualify you.</li>
+          <li>Leaving the exam tab is recorded. Repeated switching is flagged for review.</li>
+          <li>Results are <strong>not</strong> shown after submission and are <strong>not</strong> emailed. They will be announced later on <span id="preRuleFb">our official Facebook page</span>.</li>
+        </ul>
+      </div>
+
+      <div class="checklist">
+        <h3>Get ready before <span id="preReadyTime">9:00 PM</span></h3>
+        <ul>
+          <li>Use a device you can keep online for the full exam.</li>
+          <li>Charge your device or keep it plugged in.</li>
+          <li>Sit somewhere with a stable internet connection.</li>
+          <li>Close every other tab and silence notifications.</li>
+        </ul>
+      </div>
+
+      <p class="form-note">Questions? Email <span id="preSupport"></span></p>
     </div>
   </section>
 

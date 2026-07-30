@@ -226,7 +226,7 @@ window.BBO_QUESTIONS = [
   "t": "The Pentose Phosphate Pathway primarily produces: (Pentose Phosphate Pathway প্রধানত কী উৎপন্ন করে?)",
   "o": [
    "Galactose (গ্যালাক্টোজ)",
-   "NADPH",
+   "NADPH (এনএডিপিএইচ)",
    "Fructose-1,6-bisphosphate (ফ্রুক্টোজ-১,৬-বিসফসফেট)",
    "Lactate (ল্যাকটেট)"
   ]
@@ -237,7 +237,7 @@ window.BBO_QUESTIONS = [
   "t": "Restriction enzymes usually recognize: (Restriction enzyme সাধারণত কোন ধরনের সিকোয়েন্স শনাক্ত করে?)",
   "o": [
    "Palindromic sequences (প্যালিনড্রোমিক সিকোয়েন্স)",
-   "TATA boxes",
+   "TATA boxes (টাটা বক্স)",
    "Tandem repeats only (শুধু ট্যান্ডেম রিপিট)",
    "Introns only (শুধু ইনট্রন)"
   ]
@@ -414,7 +414,7 @@ window.BBO_QUESTIONS = [
   "o": [
    "Activation, Distribution, Metabolism, Excretion",
    "Absorption, Digestion, Metabolism, Elimination",
-   "Absorption, Distribution, Metabolism, Excretion (শোষণ, বণ্টন, বিপাক, নির্গমন)",
+   "Absorption, Distribution, Metabolism, Excretion",
    "Absorption, Distribution, Modification, Elimination"
   ]
  },

@@ -21,7 +21,7 @@ var API_READY = CFG.API_URL && CFG.API_URL.indexOf('http') === 0;
 /* ---------------- tiny helpers ---------------- */
 function $(id) { return document.getElementById(id); }
 function show(id) {
-  ['screenRegister', 'screenWait', 'screenExam', 'screenDone', 'screenBlocked']
+  ['screenRegister', 'screenWait', 'screenExam', 'screenDone', 'screenBlocked', 'screenPreOpen']
     .forEach(function (s) { $(s).classList.toggle('hidden', s !== id); });
   window.scrollTo(0, 0);
 }
@@ -92,7 +92,8 @@ var S = {
   order: null,          // shuffled question numbers
   optOrder: null,       // { questionNumber: [originalIndex, ...] } display order
   submitted: false, submissionId: null, submittedAt: null,
-  tabSwitches: 0, copyAttempts: 0, startedAt: null, dirty: false, lastSync: 0
+  tabSwitches: 0, copyAttempts: 0, screenshotAttempts: 0,
+  startedAt: null, dirty: false, lastSync: 0
 };
 
 function saveLocal() {
@@ -164,7 +165,8 @@ function syncNow(force) {
   var snapshot = JSON.stringify(S.answers);
   return apiRetry({
     action: 'sync', token: S.token, answers: S.answers, review: S.review,
-    tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts
+    tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts,
+    screenshotAttempts: S.screenshotAttempts
   }, 3).then(function () {
     if (JSON.stringify(S.answers) === snapshot) S.dirty = false;
     S.lastSync = now();
@@ -313,6 +315,44 @@ function buildOptOrder() {
     map[q.n] = CFG.SHUFFLE_OPTIONS ? shuffle(idx) : idx;
   });
   return map;
+}
+
+/* ---------------- before the link opens ---------------- */
+var preTimer = null;
+function fbLabel() {
+  var name = CFG.FB_PAGE_NAME || 'our official Facebook page';
+  return CFG.FB_PAGE_URL
+    ? '<a href="' + esc(CFG.FB_PAGE_URL) + '" target="_blank" rel="noopener">' + esc(name) + '</a>'
+    : esc(name);
+}
+function goPreOpen() {
+  var openTxt = fmt(OPEN_MS, BD), startTxt = fmt(START_MS, BD);
+  $('preOpenTime').textContent = openTxt;
+  $('preExamTime').textContent = startTxt;
+  $('preRuleOpen').textContent = openTxt;
+  $('preRuleStart').textContent = startTxt;
+  $('preReadyTime').textContent = startTxt;
+  $('preRuleDur').textContent = CFG.DURATION_MIN;
+  $('preDuration').textContent = CFG.DURATION_MIN + ' minutes';
+  $('preRuleFb').innerHTML = fbLabel();
+  $('preSupport').innerHTML = '<a href="mailto:' + esc(CFG.SUPPORT_EMAIL) + '">' + esc(CFG.SUPPORT_EMAIL) + '</a>';
+  show('screenPreOpen');
+  clearInterval(preTimer);
+  preTimer = setInterval(tickPreOpen, 250);
+  tickPreOpen();
+}
+function tickPreOpen() {
+  var left = OPEN_MS - now();
+  if (left <= 0) {
+    clearInterval(preTimer);
+    /* Registration just opened — move them straight on, no refresh needed. */
+    if (S.token && !S.submitted) goWaitingRoom(); else show('screenRegister');
+    return;
+  }
+  var s = Math.floor(left / 1000);
+  $('poH').textContent = pad(Math.floor(s / 3600));
+  $('poM').textContent = pad(Math.floor(s / 60) % 60);
+  $('poS').textContent = pad(s % 60);
 }
 
 /* ---------------- waiting room ---------------- */
@@ -519,6 +559,7 @@ function submitExam(reason) {
   var payload = {
     action: 'submit', token: S.token, answers: S.answers, review: S.review,
     reason: reason, tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts,
+    screenshotAttempts: S.screenshotAttempts,
     startedAt: S.startedAt, clientSubmittedAt: now(),
     /* Sending the identity here lets the server skip scanning the
        Registrations sheet, which is what makes submission slow once there are
@@ -573,8 +614,9 @@ function goDone() {
   $('doneName').textContent = S.name || '—';
   $('doneAttempted').textContent = (S.attempted != null ? S.attempted : Object.keys(S.answers).length) + ' of ' + QUESTIONS.length;
   $('doneTime').textContent = fmt(S.submittedAt || now(), BD);
+  $('doneFb').innerHTML = fbLabel();
   if (!API_READY) {
-    $('doneEmailNote').innerHTML = '<strong>Practice mode.</strong> Nothing was sent to a server and no email will arrive.';
+    $('doneEmailNote').innerHTML = '<strong>Practice mode.</strong> Nothing was sent to a server.';
   }
   disableAntiCheat();
   show('screenDone');
@@ -620,6 +662,20 @@ function enableAntiCheat() {
       e.preventDefault();
       toast('Developer tools are not allowed during the exam.', true);
     }
+    /* Screenshot attempts. The operating system takes the screenshot before the
+       browser sees the key, so this RECORDS the attempt — it cannot block it,
+       and it cannot see screenshots taken on a phone at all. */
+    if (k === 'printscreen' || (ctrl && e.shiftKey && k === 's') ||
+        (e.metaKey && e.shiftKey && ['3', '4', '5'].indexOf(k) > -1)) {
+      S.screenshotAttempts++;
+      S.dirty = true;
+      saveLocal();
+      syncNow(true);
+      var b = $('warnBanner');
+      b.textContent = 'Screenshots are not permitted. This attempt has been recorded.';
+      b.classList.remove('hidden');
+      setTimeout(function () { b.classList.add('hidden'); }, 6000);
+    }
   });
 
   on(document, 'visibilitychange', function () {
@@ -658,7 +714,8 @@ function flushBeacon() {
   try {
     var body = JSON.stringify({
       action: 'sync', token: S.token, answers: S.answers, review: S.review,
-      tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts, viaBeacon: true
+      tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts,
+      screenshotAttempts: S.screenshotAttempts, viaBeacon: true
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon(CFG.API_URL, new Blob([body], { type: 'text/plain;charset=utf-8' }));
@@ -718,11 +775,7 @@ function boot() {
       }
       return;
     }
-    if (t < OPEN_MS) {
-      blocked('Registration is not open yet',
-        'Registration for this exam opens at ' + fmt(OPEN_MS) + '. The exam itself begins at ' + fmt(START_MS) + '.');
-      return;
-    }
+    if (t < OPEN_MS) { goPreOpen(); return; }
     if (had && S.token) { goWaitingRoom(); } else { show('screenRegister'); }
   });
 }

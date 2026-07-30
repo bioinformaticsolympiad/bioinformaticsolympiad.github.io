@@ -14,14 +14,13 @@ window.BBO_CONFIG = {
      START must be an ISO 8601 timestamp WITH the Bangladesh offset +06:00.
      Example below = 31 July 2026, 9:00:00 PM Bangladesh time.
      The exam ends automatically DURATION_MIN minutes after START.         */
-  START_ISO: "2026-07-30T22:00:00+06:00",
-  DURATION_MIN: 50,
+  START_ISO: "2026-07-31T21:00:00+06:00",
+  DURATION_MIN: 40,
 
-  /* Registration opens this many minutes before START, so participants can
-     fill in their details ahead of time and wait on the countdown screen.
-     1440 = 24 hours. Raise it if you want registration open for longer
-     (2880 = 2 days, 10080 = 1 week).                                       */
-  REGISTRATION_OPENS_MIN_BEFORE: 2880,
+  /* Registration opens this many minutes before START.
+     60 = the link goes live at 8:00 PM for a 9:00 PM exam. Before that time
+     the page shows the "opens at 8 PM" notice together with the full rules. */
+  REGISTRATION_OPENS_MIN_BEFORE: 60,
 
   /* ---- 3. Marking ----------------------------------------------------- */
   TOTAL_MARKS: 50,
@@ -52,5 +51,11 @@ window.BBO_CONFIG = {
   MAX_TAB_SWITCHES: 5,       // logged as a proctoring flag; does not auto-fail
 
   /* ---- 5. Contact shown on the page ----------------------------------- */
-  SUPPORT_EMAIL: "bioinformatics.olympiad@gmail.com"
+  SUPPORT_EMAIL: "bioinformatics.olympiad@gmail.com",
+
+  /* Results are announced here. Put your Facebook page URL in FB_PAGE_URL and
+     it becomes a clickable link on the confirmation screen; leave it empty and
+     the page just names the Facebook page in text.                          */
+  FB_PAGE_NAME: "our official Facebook page",
+  FB_PAGE_URL: ""
 };

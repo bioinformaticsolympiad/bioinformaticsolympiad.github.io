@@ -232,6 +232,14 @@ input.invalid{border-color:var(--danger);background:var(--danger-bg)}
   padding:.7rem 1.25rem;text-align:center;font-size:.88rem;font-weight:600
 }
 
+/* ---------- Pre-open notice ---------- */
+.notice-hero{text-align:center;padding-bottom:.5rem}
+.notice-icon{font-size:2.6rem;line-height:1;margin-bottom:.5rem}
+.notice-hero h1{margin-bottom:.75rem}
+.notice-hero .lead{max-width:640px;margin-left:auto;margin-right:auto}
+.notice-hero .countdown{margin-bottom:.5rem}
+.notice-hero .wait-start{margin-bottom:1.75rem;font-size:.82rem;text-transform:uppercase;letter-spacing:.1em}
+
 /* ---------- Anti-copy ---------- */
 body.no-select .q-text,body.no-select .opt-text,body.no-select .q-tag{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;

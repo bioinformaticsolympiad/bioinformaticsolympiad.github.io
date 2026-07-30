@@ -25,12 +25,12 @@ var CONFIG = {
   EXAM_NAME: 'Biology & Bioinformatics Olympiad 3.0',
   // Must match exam/config.js START_ISO / DURATION_MIN
   START_ISO: '2026-07-31T21:00:00+06:00',
-  DURATION_MIN: 50,
+  DURATION_MIN: 40,
   GRACE_MIN: 10,            // submissions accepted this long after the deadline
   TOTAL_MARKS: 50,
   PASS_PERCENT: 40,
   NEGATIVE_MARK: 0,         // 0 = no negative marking
-  SEND_EMAILS: true,
+  SEND_EMAILS: false,       // no confirmation emails; results go on Facebook
   EMAIL_SUBJECT: 'Your BBO 3.0 answers have been received',
   REPLY_TO: 'bioinformatics.olympiad@gmail.com',
   ORG_NAME: 'BioPC — Biology & Bioinformatics Olympiad',
@@ -64,11 +64,13 @@ function setup() {
     'Timestamp', 'Token', 'CandidateID', 'Name', 'University', 'Email', 'Phone', 'UserAgent'
   ]);
   ensureSheet(ss, SHEETS.AUTOSAVE, [
-    'Timestamp', 'Token', 'AnswersJSON', 'Answered', 'TabSwitches', 'CopyAttempts', 'ViaBeacon'
+    'Timestamp', 'Token', 'AnswersJSON', 'Answered', 'TabSwitches', 'CopyAttempts',
+    'ScreenshotAttempts', 'ViaBeacon'
   ]);
   ensureSheet(ss, SHEETS.SUB, [
     'Timestamp', 'SubmissionID', 'Token', 'Name', 'University', 'Email', 'Phone',
-    'AnswersJSON', 'Attempted', 'Reason', 'TabSwitches', 'CopyAttempts', 'EmailStatus'
+    'AnswersJSON', 'Attempted', 'Reason', 'TabSwitches', 'CopyAttempts',
+    'ScreenshotAttempts', 'EmailStatus'
   ]);
   ensureSheet(ss, SHEETS.LOG, ['Timestamp', 'Where', 'Message', 'Payload']);
 
@@ -94,9 +96,17 @@ function ensureSheet(ss, name, headers) {
   if (!sh) sh = ss.insertSheet(name);
   if (sh.getLastRow() === 0) {
     sh.appendRow(headers);
-    sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#0c1f4a').setFontColor('#ffffff');
-    sh.setFrozenRows(1);
+  } else {
+    /* Sheet already exists from an earlier setup — rewrite the header row so a
+       newly added column (e.g. ScreenshotAttempts) appears without losing data.
+       Existing rows keep their values; the new column is simply blank for them. */
+    var width = Math.max(headers.length, sh.getLastColumn());
+    var current = sh.getRange(1, 1, 1, width).getValues()[0];
+    var changed = headers.some(function (h, i) { return current[i] !== h; });
+    if (changed) sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   }
+  sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#0c1f4a').setFontColor('#ffffff');
+  sh.setFrozenRows(1);
   return sh;
 }
 
@@ -170,7 +180,8 @@ function handleSync(d) {
   var answers = normaliseAnswers(d.answers);
   sheet(SHEETS.AUTOSAVE).appendRow([
     new Date(), token, JSON.stringify(answers), Object.keys(answers).length,
-    Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0, d.viaBeacon ? 'yes' : ''
+    Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0,
+    Number(d.screenshotAttempts) || 0, d.viaBeacon ? 'yes' : ''
   ]);
 
   return json({ ok: true, serverNow: Date.now() });
@@ -221,13 +232,15 @@ function handleSubmit(d) {
     reg.name, reg.university, reg.email, reg.phone,
     JSON.stringify(answers), Object.keys(answers).length,
     clean(d.reason, 40), Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0,
+    Number(d.screenshotAttempts) || 0,
     CONFIG.SEND_EMAILS && reg.email ? 'PENDING' : 'SKIPPED'
   ]);
 
   // Also keep the final answers in the autosave log as a belt-and-braces copy.
   sheet(SHEETS.AUTOSAVE).appendRow([
     new Date(), token, JSON.stringify(answers), Object.keys(answers).length,
-    Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0, 'FINAL'
+    Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0,
+    Number(d.screenshotAttempts) || 0, 'FINAL'
   ]);
 
   cache.put(cacheKey, submissionId, 21600);   // 6 h, the maximum
@@ -251,7 +264,7 @@ function processEmailQueue() {
   var last = sh.getLastRow();
   if (last < 2) return;
 
-  var COL_STATUS = 13, COL_ID = 2, COL_NAME = 4, COL_EMAIL = 6, COL_ATTEMPTED = 9;
+  var COL_STATUS = 14, COL_ID = 2, COL_NAME = 4, COL_EMAIL = 6, COL_ATTEMPTED = 9;
   var values = sh.getRange(2, 1, last - 1, COL_STATUS).getValues();
 
   var quota = MailApp.getRemainingDailyQuota();
@@ -339,7 +352,8 @@ function gradeAll() {
       token: s.Token, submissionId: s.SubmissionID, when: s.Timestamp,
       name: s.Name, university: s.University, email: s.Email, phone: s.Phone,
       answers: safeParse(s.AnswersJSON), source: 'SUBMITTED',
-      reason: s.Reason, tabSwitches: s.TabSwitches, copyAttempts: s.CopyAttempts
+      reason: s.Reason, tabSwitches: s.TabSwitches, copyAttempts: s.CopyAttempts,
+      screenshotAttempts: s.ScreenshotAttempts
     };
   });
 
@@ -360,7 +374,8 @@ function gradeAll() {
       token: tok, submissionId: 'RECOVERED-' + String(Math.abs(hashCode(tok))).slice(0, 5),
       when: a.Timestamp, name: reg.name, university: reg.university,
       email: reg.email, phone: reg.phone, answers: ans, source: 'RECOVERED',
-      reason: 'no submit received', tabSwitches: a.TabSwitches, copyAttempts: a.CopyAttempts
+      reason: 'no submit received', tabSwitches: a.TabSwitches, copyAttempts: a.CopyAttempts,
+      screenshotAttempts: a.ScreenshotAttempts
     };
   });
 
@@ -377,31 +392,34 @@ function gradeAll() {
       var g = score(r.answers);
       rows.push([
         r.when, r.submissionId, r.name, r.university, r.email, r.phone,
-        g.attempted, g.correct, g.wrong, g.marks,
+        g.attempted, g.correct, g.wrong, g.blank, g.marks,
         Math.round(g.marks / CONFIG.TOTAL_MARKS * 10000) / 100,
         g.marks >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100 ? 'PASS' : 'FAIL',
         r.source, dup ? 'DUPLICATE EMAIL' : '', r.reason || '',
-        r.tabSwitches || 0, r.copyAttempts || 0
+        r.tabSwitches || 0, r.copyAttempts || 0, r.screenshotAttempts || 0
       ]);
     });
 
   // Rank by marks (descending), then by earlier submission time.
-  rows.sort(function (a, b) { return b[9] - a[9] || new Date(a[0]) - new Date(b[0]); });
+  rows.sort(function (a, b) { return b[10] - a[10] || new Date(a[0]) - new Date(b[0]); });
   rows.forEach(function (r, i) { r.unshift(i + 1); });
 
   var old = ss.getSheetByName(SHEETS.RESULTS);
   if (old) ss.deleteSheet(old);
   var sh = ss.insertSheet(SHEETS.RESULTS);
   var headers = ['Rank', 'SubmittedAt', 'SubmissionID', 'Name', 'University', 'Email', 'Phone',
-    'Attempted', 'Correct', 'Wrong', 'Marks', 'Percent', 'Result', 'Source', 'Flag',
-    'Reason', 'TabSwitches', 'CopyAttempts'];
+    'Attempted', 'CorrectAnswers', 'WrongAnswers', 'NotAnswered', 'Marks', 'Percent',
+    'Result', 'Source', 'Flag', 'Reason', 'TabSwitches', 'CopyAttempts', 'ScreenshotAttempts'];
   sh.appendRow(headers);
   sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#0c1f4a').setFontColor('#ffffff');
   sh.setFrozenRows(1);
   if (rows.length) sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
   sh.autoResizeColumns(1, headers.length);
 
-  var passed = rows.filter(function (r) { return r[12] === 'PASS'; }).length;
+  /* Look the column up by name — a hard-coded index silently breaks the count
+     whenever a column is added. */
+  var resultCol = headers.indexOf('Result');
+  var passed = rows.filter(function (r) { return r[resultCol] === 'PASS'; }).length;
   SpreadsheetApp.getUi().alert(
     'Grading complete.\n\n' +
     'Papers graded: ' + rows.length + '\n' +
@@ -411,16 +429,29 @@ function gradeAll() {
   );
 }
 
+/**
+ * Grades one paper.
+ *
+ * Shuffling does not affect this. The browser scrambles only the ORDER options
+ * are displayed in; the answer it stores is always that option's ORIGINAL
+ * letter. So a candidate who picks the correct text stores the same letter no
+ * matter which position it appeared in, and this straight comparison against
+ * ANSWER_KEY is exactly right.
+ */
 function score(answers) {
   var correct = 0, wrong = 0, attempted = 0;
+  var total = Object.keys(ANSWER_KEY).length;
   Object.keys(ANSWER_KEY).forEach(function (n) {
     var given = answers[n] || answers[String(n)];
     if (!given) return;
     attempted++;
     if (String(given).toUpperCase() === ANSWER_KEY[n]) correct++; else wrong++;
   });
-  var marks = correct - (wrong * CONFIG.NEGATIVE_MARK);
-  return { correct: correct, wrong: wrong, attempted: attempted, marks: Math.max(0, marks) };
+  var marks = (correct * 1) - (wrong * CONFIG.NEGATIVE_MARK);
+  return {
+    correct: correct, wrong: wrong, attempted: attempted,
+    blank: total - attempted, marks: Math.max(0, marks)
+  };
 }
 
 /* =========================== HELPERS =========================== */
