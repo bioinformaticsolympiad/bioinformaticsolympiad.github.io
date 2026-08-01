@@ -89,13 +89,10 @@ function setup() {
   ScriptApp.newTrigger('processEmailQueue').timeBased().everyMinutes(5).create();
 
   var key = Object.keys(ANSWER_KEY).length;
-  SpreadsheetApp.getUi().alert(
-    'Setup complete.\n\n' +
-    'Tabs created: Registrations, Autosave, Submissions, ErrorLog\n' +
-    'Answer key loaded: ' + key + ' questions\n' +
-    'Email queue trigger: every 5 minutes\n\n' +
-    'Next: Deploy ▸ New deployment ▸ Web app (Execute as: Me, Access: Anyone), ' +
-    'then paste the /exec URL into exam/config.js.'
+  return notify(
+    'Setup complete. Tabs ready: Registrations, Autosave, Submissions, ErrorLog. ' +
+    'Answer key loaded: ' + key + ' questions. ' +
+    'Next: Deploy > Manage deployments > edit > Version: New version > Deploy.'
   );
 }
 
@@ -120,6 +117,24 @@ function ensureSheet(ss, name, headers) {
 
 function sheet(name) {
   return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+}
+
+/**
+ * Report a result without ever blocking.
+ *
+ * getUi().alert() opens a modal in the SPREADSHEET tab and waits for someone to
+ * click OK. Run a function from the Apps Script editor and that dialog appears
+ * in a tab you are not looking at, so the script sits there until it is killed
+ * at the six-minute limit — which looks exactly like the code hanging.
+ * toast() shows in the sheet and returns immediately; Logger.log() puts the
+ * same text in the editor's execution log.
+ */
+function notify(message) {
+  Logger.log(message);
+  try {
+    SpreadsheetApp.getActiveSpreadsheet().toast(message.slice(0, 240), 'BBO 3.0 Exam', 12);
+  } catch (e) { /* no spreadsheet context — the log is enough */ }
+  return message;
 }
 
 /* ========================= WEB ENDPOINTS ======================== */
@@ -575,12 +590,11 @@ function gradeAll() {
      whenever a column is added. */
   var resultCol = headers.indexOf('Result');
   var passed = rows.filter(function (r) { return r[resultCol] === 'PASS'; }).length;
-  SpreadsheetApp.getUi().alert(
-    'Grading complete.\n\n' +
-    'Papers graded: ' + rows.length + '\n' +
-    'Passed (' + CONFIG.PASS_PERCENT + '%+): ' + passed + '\n' +
-    'Failed: ' + (rows.length - passed) + '\n\n' +
-    'See the Results tab. Rows flagged DUPLICATE EMAIL or RECOVERED need a manual look.'
+  return notify(
+    'Grading complete. Papers graded: ' + rows.length +
+    '. Passed (' + CONFIG.PASS_PERCENT + '%+): ' + passed +
+    '. Failed: ' + (rows.length - passed) +
+    '. See the Results tab; rows flagged DUPLICATE EMAIL or RECOVERED need a manual look.'
   );
 }
 
@@ -684,13 +698,11 @@ function showStats() {
   var regs = sheet(SHEETS.REG).getLastRow() - 1;
   var subs = sheet(SHEETS.SUB).getLastRow() - 1;
   var autos = sheet(SHEETS.AUTOSAVE).getLastRow() - 1;
-  var pending = readRows(SHEETS.SUB).filter(function (r) { return r.EmailStatus === 'PENDING'; }).length;
-  SpreadsheetApp.getUi().alert(
-    'Live exam statistics\n\n' +
-    'Registered:            ' + Math.max(0, regs) + '\n' +
-    'Submitted:             ' + Math.max(0, subs) + '\n' +
-    'Autosave snapshots:    ' + Math.max(0, autos) + '\n' +
-    'Emails still pending:  ' + pending + '\n' +
-    'Email quota left today: ' + MailApp.getRemainingDailyQuota()
+  var results = sheet(SHEETS.RESULTS) ? sheet(SHEETS.RESULTS).getLastRow() - 1 : 0;
+  return notify(
+    'Registered: ' + Math.max(0, regs) +
+    ' | Submitted: ' + Math.max(0, subs) +
+    ' | Autosave snapshots: ' + Math.max(0, autos) +
+    ' | Graded results: ' + Math.max(0, results)
   );
 }
