@@ -23,6 +23,12 @@
 
 var CONFIG = {
   EXAM_NAME: 'Biology & Bioinformatics Olympiad 3.0',
+
+  /* Bump this whenever you paste in a new Code.gs. Opening the /exec URL in a
+     browser shows it, so you can tell at a glance whether the deployment is
+     actually serving the code you just pasted — a redeploy that silently kept
+     an older version is otherwise very hard to spot.                          */
+  CODE_VERSION: 'v3-result-lookup',
   // Must match exam/config.js START_ISO / DURATION_MIN
   START_ISO: '2026-07-31T21:00:00+06:00',
   DURATION_MIN: 40,
@@ -140,7 +146,12 @@ function notify(message) {
 /* ========================= WEB ENDPOINTS ======================== */
 
 function doGet(e) {
-  return json({ ok: true, service: CONFIG.EXAM_NAME, now: Date.now(), serverNow: Date.now() });
+  return json({
+    ok: true, service: CONFIG.EXAM_NAME, version: CONFIG.CODE_VERSION,
+    resultsPublished: !!CONFIG.RESULTS_PUBLISHED,
+    actions: ['time', 'register', 'sync', 'submit', 'result', 'resultById'],
+    now: Date.now(), serverNow: Date.now()
+  });
 }
 
 function doPost(e) {
@@ -159,7 +170,7 @@ function doPost(e) {
       case 'submit':   return handleSubmit(data);
       case 'result':   return handleResultLookup(data);
       case 'resultById': return handleResultById(data);
-      default:         return json({ ok: false, error: 'Unknown action' });
+      default:         return json({ ok: false, error: 'Unknown action', version: CONFIG.CODE_VERSION });
     }
   } catch (err) {
     logError(data.action, err, data);
