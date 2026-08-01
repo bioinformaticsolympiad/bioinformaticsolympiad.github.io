@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Round 1 Results — Biology &amp; Bioinformatics Olympiad 3.0</title>
+<meta name="description" content="Check your Round 1 result for the Biology &amp; Bioinformatics Olympiad 3.0 by entering your registered email address.">
+<link rel="icon" href="../assets/branding/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="result.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="../index.html">
+    <img src="../assets/branding/logo.png" alt="BBO" class="brand-logo">
+    <div>
+      <strong>Biology &amp; Bioinformatics Olympiad 3.0</strong>
+      <span>Result Portal</span>
+    </div>
+  </a>
+  <a href="../index.html" class="back-link">← Main site</a>
+</header>
+
+<main>
+
+  <!-- ============ SEARCH ============ -->
+  <section class="hero">
+    <span class="pill">Round 1 · 31 July 2026</span>
+    <h1>Check your result</h1>
+    <p class="lead">Enter the email address you registered with. Your result is shown only to you —
+       it is not listed publicly.</p>
+
+    <form id="lookupForm" class="lookup" novalidate>
+      <div class="lookup-row">
+        <input type="email" id="emailInput" placeholder="you@example.com"
+               autocomplete="email" inputmode="email" maxlength="120" aria-label="Your registered email address">
+        <button type="submit" class="btn btn-primary" id="lookupBtn">Check result</button>
+      </div>
+      <small class="err" id="lookupErr"></small>
+      <small class="hint" id="lookupHint">Spelling slightly off? We will suggest the closest matches.</small>
+    </form>
+  </section>
+
+  <!-- ============ SUGGESTIONS ============ -->
+  <section id="suggestBox" class="card hidden">
+    <h2>Did you mean one of these?</h2>
+    <p class="muted">We could not find that exact address, but these look close. Pick yours to see your result.</p>
+    <ul id="suggestList" class="suggest-list"></ul>
+    <button type="button" class="btn btn-ghost btn-sm" id="tryAgain">Search a different address</button>
+  </section>
+
+  <!-- ============ NOT FOUND ============ -->
+  <section id="notFound" class="card hidden">
+    <div class="nf-icon" aria-hidden="true">🔍</div>
+    <h2>No result found for that address</h2>
+    <p class="muted">We could not find a paper registered to that email, and nothing similar either.</p>
+    <ul class="reasons">
+      <li>Check for typos, and try the address you actually registered with.</li>
+      <li>Some participants registered with a different address from the one they use daily.</li>
+      <li>If you registered but never submitted a paper, there is no result to show.</li>
+    </ul>
+    <p class="muted">Still stuck? Email <a id="nfSupport" href="#"></a> from the address you registered with.</p>
+    <button type="button" class="btn btn-ghost btn-sm" id="tryAgain2">Try another address</button>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section id="resultBox" class="hidden">
+
+    <div class="verdict" id="verdict">
+      <div class="verdict-icon" id="verdictIcon" aria-hidden="true">🎉</div>
+      <h2 id="verdictTitle">Congratulations!</h2>
+      <p id="verdictMsg"></p>
+    </div>
+
+    <div class="card result-card">
+      <div class="who">
+        <div>
+          <h3 id="rName">—</h3>
+          <p id="rUniversity" class="muted">—</p>
+          <p id="rEmail" class="muted small">—</p>
+        </div>
+        <div class="rank-badge" id="rankBadge">
+          <span>Rank</span><strong id="rRank">—</strong><em id="rRankOf"></em>
+        </div>
+      </div>
+
+      <div class="score-strip">
+        <div class="score-main">
+          <strong id="rMarks">—</strong>
+          <span>marks out of <span id="rTotal">50</span></span>
+        </div>
+        <div class="score-pct">
+          <strong id="rPercent">—</strong>
+          <span>percent</span>
+        </div>
+      </div>
+
+      <div class="bar-wrap" aria-hidden="true">
+        <div class="bar"><span id="scoreBar"></span><i id="passLine"></i></div>
+        <div class="bar-legend"><span>0</span><span id="passLabel">pass 40%</span><span id="barMax">50</span></div>
+      </div>
+
+      <h4 class="block-title">Answer breakdown</h4>
+      <div class="stats">
+        <div><span>Attempted</span><strong id="rAttempted">—</strong></div>
+        <div class="good"><span>Correct answers</span><strong id="rCorrect">—</strong></div>
+        <div class="bad"><span>Wrong answers</span><strong id="rWrong">—</strong></div>
+        <div><span>Not answered</span><strong id="rBlank">—</strong></div>
+      </div>
+
+      <h4 class="block-title">Examination conduct</h4>
+      <div class="stats small-stats">
+        <div><span>Tab switches</span><strong id="rTab">—</strong></div>
+        <div><span>Copy attempts</span><strong id="rCopy">—</strong></div>
+        <div><span>Screenshot attempts</span><strong id="rShot">—</strong></div>
+      </div>
+      <p class="muted small" id="conductNote"></p>
+    </div>
+
+    <!-- Next round -->
+    <div class="card next-round" id="nextRound">
+      <span class="pill pill-dark">Next round</span>
+      <h3>Round 2 — offline at <span id="nrVenue">University of Chittagong</span></h3>
+      <p id="nrLead"></p>
+      <p class="muted" id="nrDetail"></p>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-ghost" id="checkAnother">Check another result</button>
+      <a href="../index.html" class="btn btn-ghost">Back to main site</a>
+    </div>
+  </section>
+
+  <p class="footer-note">
+    Results are final. If you believe there is an error in your result, email
+    <a id="footSupport" href="#"></a> within 7 days, quoting the email address you registered with.
+  </p>
+
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="config.js"></script>
+<script src="result.js"></script>
+</body>
+</html>

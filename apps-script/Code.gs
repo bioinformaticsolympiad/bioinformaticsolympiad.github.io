@@ -31,6 +31,14 @@ var CONFIG = {
   PASS_PERCENT: 40,
   NEGATIVE_MARK: 0,         // 0 = no negative marking
   SEND_EMAILS: false,       // no confirmation emails; results go on Facebook
+
+  /* ---- Result lookup (olympiad.biopc.org/result/) ----
+     Set RESULTS_PUBLISHED to false to take the result checker offline without
+     touching the website. LOOKUP_SALT keeps the suggestion ids opaque; change
+     it to invalidate every previously issued id.                             */
+  RESULTS_PUBLISHED: true,
+  LOOKUP_SALT: 'bbo3-round1-2026',
+  MAX_SUGGESTIONS: 5,
   EMAIL_SUBJECT: 'Your BBO 3.0 answers have been received',
   REPLY_TO: 'bioinformatics.olympiad@gmail.com',
   ORG_NAME: 'BioPC — Biology & Bioinformatics Olympiad',
@@ -134,6 +142,8 @@ function doPost(e) {
       case 'register': return handleRegister(data);
       case 'sync':     return handleSync(data);
       case 'submit':   return handleSubmit(data);
+      case 'result':   return handleResultLookup(data);
+      case 'resultById': return handleResultById(data);
       default:         return json({ ok: false, error: 'Unknown action' });
     }
   } catch (err) {
@@ -249,6 +259,151 @@ function handleSubmit(d) {
     ok: true, submissionId: submissionId, attempted: Object.keys(answers).length,
     emailQueued: CONFIG.SEND_EMAILS && !!reg.email, serverNow: Date.now()
   });
+}
+
+/* ======================= RESULT LOOKUP =========================
+   Powers olympiad.biopc.org/result/.
+
+   The participant list never leaves this script. The page sends a typed email
+   and gets back exactly one person's result, or — when the address is close but
+   not exact — a short list of MASKED suggestions plus an opaque id. Selecting a
+   suggestion returns the result via that id, so no email address is ever
+   disclosed to someone who did not already know it.
+   ================================================================ */
+
+function resultRows() {
+  var rows = readRows(SHEETS.RESULTS);
+  return rows.filter(function (r) { return r.Email; });
+}
+
+/* Stable, non-reversible handle for one row. */
+function lookupId(email) {
+  var raw = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256, CONFIG.LOOKUP_SALT + '|' + email, Utilities.Charset.UTF_8);
+  var hex = raw.map(function (b) { return ('0' + (b & 0xFF).toString(16)).slice(-2); }).join('');
+  return hex.slice(0, 20);
+}
+
+/* ma••••ha@gmail.com — enough to recognise your own address, not enough to harvest. */
+function maskEmail(email) {
+  var at = String(email).indexOf('@');
+  if (at < 1) return '•••';
+  var local = email.slice(0, at), domain = email.slice(at);
+  if (local.length <= 3) return local.charAt(0) + '••' + domain;
+  var keep = local.length <= 6 ? 1 : 2;
+  return local.slice(0, keep) + new Array(Math.max(3, local.length - keep * 2) + 1).join('•') +
+         local.slice(-keep) + domain;
+}
+
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  if (Math.abs(a.length - b.length) > 4) return 99;   // cheap early exit
+  var prev = [], cur = [], i, j;
+  for (j = 0; j <= b.length; j++) prev[j] = j;
+  for (i = 1; i <= a.length; i++) {
+    cur[0] = i;
+    for (j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+    }
+    for (j = 0; j <= b.length; j++) prev[j] = cur[j];
+  }
+  return prev[b.length];
+}
+
+function packResult(r) {
+  var n = function (v) { var x = parseFloat(v); return isNaN(x) ? 0 : x; };
+  return {
+    rank: n(r.Rank),
+    name: String(r.Name || ''),
+    university: String(r.University || ''),
+    email: String(r.Email || ''),
+    attempted: n(r.Attempted),
+    correct: n(r.CorrectAnswers !== undefined ? r.CorrectAnswers : r.Correct),
+    wrong: n(r.WrongAnswers !== undefined ? r.WrongAnswers : r.Wrong),
+    notAnswered: n(r.NotAnswered),
+    marks: n(r.Marks),
+    percent: n(r.Percent),
+    result: String(r.Result || ''),
+    tabSwitches: n(r.TabSwitches),
+    copyAttempts: n(r.CopyAttempts),
+    screenshotAttempts: n(r.ScreenshotAttempts),
+    totalMarks: CONFIG.TOTAL_MARKS,
+    passPercent: CONFIG.PASS_PERCENT
+  };
+}
+
+function handleResultLookup(d) {
+  if (!CONFIG.RESULTS_PUBLISHED) {
+    return json({ ok: false, error: 'Results are not published yet.', notPublished: true });
+  }
+  var typed = clean(d.email, 120).toLowerCase().replace(/\s+/g, '');
+  if (!typed || typed.indexOf('@') < 1) {
+    return json({ ok: false, error: 'Please enter the email address you registered with.' });
+  }
+
+  var rows = resultRows();
+  var i, email;
+
+  // 1. exact match
+  for (i = 0; i < rows.length; i++) {
+    if (String(rows[i].Email).trim().toLowerCase() === typed) {
+      return json({ ok: true, found: true, result: packResult(rows[i]), total: rows.length });
+    }
+  }
+
+  // 2. near matches
+  var typedLocal = typed.split('@')[0], typedDomain = typed.split('@')[1] || '';
+  var scored = [];
+  for (i = 0; i < rows.length; i++) {
+    email = String(rows[i].Email).trim().toLowerCase();
+    var local = email.split('@')[0], domain = email.split('@')[1] || '';
+    var dFull = levenshtein(typed, email);
+    var dLocal = levenshtein(typedLocal, local);
+    var score = null;
+    if (dFull <= 3) score = dFull;                                   // whole-address typo
+    else if (local === typedLocal) score = 1;                        // right name, wrong domain
+    else if (dLocal <= 2 && domain === typedDomain) score = dLocal + 1;
+    else if (dLocal <= 1) score = dLocal + 2;
+    if (score !== null) scored.push({ s: score, email: email, row: rows[i] });
+  }
+  scored.sort(function (a, b) { return a.s - b.s || a.email.length - b.email.length; });
+
+  var out = [];
+  for (i = 0; i < scored.length && out.length < CONFIG.MAX_SUGGESTIONS; i++) {
+    out.push({
+      id: lookupId(scored[i].email),
+      masked: maskEmail(scored[i].email),
+      name: maskName(String(scored[i].row.Name || ''))
+    });
+  }
+
+  return json({ ok: true, found: false, suggestions: out, total: rows.length });
+}
+
+/* First name plus an initial — helps someone spot their own row without
+   publishing full names against addresses. */
+function maskName(name) {
+  var parts = String(name).trim().split(/\s+/);
+  if (!parts[0]) return '';
+  if (parts.length === 1) return parts[0];
+  return parts[0] + ' ' + parts[parts.length - 1].charAt(0).toUpperCase() + '.';
+}
+
+function handleResultById(d) {
+  if (!CONFIG.RESULTS_PUBLISHED) {
+    return json({ ok: false, error: 'Results are not published yet.', notPublished: true });
+  }
+  var id = clean(d.id, 40);
+  if (!id) return json({ ok: false, error: 'Missing selection' });
+  var rows = resultRows();
+  for (var i = 0; i < rows.length; i++) {
+    if (lookupId(String(rows[i].Email).trim().toLowerCase()) === id) {
+      return json({ ok: true, found: true, result: packResult(rows[i]), total: rows.length });
+    }
+  }
+  return json({ ok: false, error: 'That selection is no longer valid. Please search again.' });
 }
 
 /* ========================== EMAIL QUEUE ========================= */
