@@ -1,4 +1,4 @@
-/**
+﻿/**
  * =====================================================================
  * BBO 3.0 — Online Examination backend (Google Apps Script)
  * ---------------------------------------------------------------------
@@ -28,7 +28,7 @@ var CONFIG = {
      browser shows it, so you can tell at a glance whether the deployment is
      actually serving the code you just pasted — a redeploy that silently kept
      an older version is otherwise very hard to spot.                          */
-  CODE_VERSION: 'v3-result-lookup',
+  CODE_VERSION: 'v4-round2',
   // Must match exam/config.js START_ISO / DURATION_MIN
   START_ISO: '2026-07-31T21:00:00+06:00',
   DURATION_MIN: 40,
@@ -45,6 +45,19 @@ var CONFIG = {
   RESULTS_PUBLISHED: true,
   LOOKUP_SALT: 'bbo3-round1-2026',
   MAX_SUGGESTIONS: 5,
+
+  /* ---- Round 2 registration ----
+     Only candidates whose Round 1 result is PASS can register, and only while
+     seats remain and the deadline has not passed. Set ROUND2_OPEN to false to
+     close registration by hand at any time.                                   */
+  ROUND2_OPEN: true,
+  ROUND2_CAPACITY: 350,
+  ROUND2_DEADLINE_ISO: '2026-08-31T23:59:59+06:00',
+  ROUND2_FEE_EXAM: 500,
+  ROUND2_FEE_FULL: 600,
+  ROUND2_DRIVE_FOLDER: 'BBO 3.0 Round 2 payment screenshots',
+  ROUND2_WHATSAPP: 'https://chat.whatsapp.com/EUBciHKJdiJ7kIys3TvcMp',
+  ROUND2_MAX_UPLOAD_KB: 3000,
   EMAIL_SUBJECT: 'Your BBO 3.0 answers have been received',
   REPLY_TO: 'bioinformatics.olympiad@gmail.com',
   ORG_NAME: 'BioPC — Biology & Bioinformatics Olympiad',
@@ -66,6 +79,7 @@ var SHEETS = {
   AUTOSAVE: 'Autosave',
   SUB: 'Submissions',
   RESULTS: 'Results',
+  ROUND2: 'Round2',
   LOG: 'ErrorLog'
 };
 
@@ -85,6 +99,12 @@ function setup() {
     'Timestamp', 'SubmissionID', 'Token', 'Name', 'University', 'Email', 'Phone',
     'AnswersJSON', 'Attempted', 'Reason', 'TabSwitches', 'CopyAttempts',
     'ScreenshotAttempts', 'EmailStatus'
+  ]);
+  ensureSheet(ss, SHEETS.ROUND2, [
+    'Timestamp', 'RegID', 'Seat', 'Name', 'University', 'Department', 'Email', 'Phone',
+    'Round1Percent', 'Round1Rank', 'AttendingCU', 'Package', 'Fee',
+    'PosterPresentation', 'PosterType', 'PhotographyContest', 'InstantSpeech',
+    'TransactionID', 'PaymentScreenshot', 'LookupID'
   ]);
   ensureSheet(ss, SHEETS.LOG, ['Timestamp', 'Where', 'Message', 'Payload']);
 
@@ -170,6 +190,9 @@ function doPost(e) {
       case 'submit':   return handleSubmit(data);
       case 'result':   return handleResultLookup(data);
       case 'resultById': return handleResultById(data);
+      case 'round2Info':     return handleRound2Info();
+      case 'round2Prefill':  return handleRound2Prefill(data);
+      case 'round2Register': return handleRound2Register(data);
       default:         return json({ ok: false, error: 'Unknown action', version: CONFIG.CODE_VERSION });
     }
   } catch (err) {
@@ -352,6 +375,10 @@ function packResult(r) {
     marks: n(r.Marks),
     percent: n(r.Percent),
     result: String(r.Result || ''),
+    /* Handed to the result page so a qualified candidate can be sent straight
+       into Round 2 registration without retyping anything, and so the backend
+       can verify on arrival that they really did pass. */
+    lookupId: lookupId(String(r.Email || '').trim().toLowerCase()),
     tabSwitches: n(r.TabSwitches),
     copyAttempts: n(r.CopyAttempts),
     screenshotAttempts: n(r.ScreenshotAttempts),
@@ -430,6 +457,192 @@ function handleResultById(d) {
     }
   }
   return json({ ok: false, error: 'That selection is no longer valid. Please search again.' });
+}
+
+/* ==================== ROUND 2 REGISTRATION =====================
+   Seats are limited and first-come-first-served, so the source of truth for
+   "is there room" is the Round2 sheet itself, counted at the moment of writing.
+   ================================================================ */
+
+function round2Deadline() { return new Date(CONFIG.ROUND2_DEADLINE_ISO).getTime(); }
+
+function round2Taken() {
+  var sh = sheet(SHEETS.ROUND2);
+  if (!sh) return 0;
+  return Math.max(0, sh.getLastRow() - 1);
+}
+
+function round2State() {
+  var taken = round2Taken();
+  var remaining = Math.max(0, CONFIG.ROUND2_CAPACITY - taken);
+  var expired = Date.now() > round2Deadline();
+  return {
+    open: !!CONFIG.ROUND2_OPEN && !expired && remaining > 0,
+    manuallyClosed: !CONFIG.ROUND2_OPEN,
+    expired: expired,
+    full: remaining <= 0,
+    taken: taken,
+    remaining: remaining,
+    capacity: CONFIG.ROUND2_CAPACITY,
+    deadline: CONFIG.ROUND2_DEADLINE_ISO,
+    feeExam: CONFIG.ROUND2_FEE_EXAM,
+    feeFull: CONFIG.ROUND2_FEE_FULL
+  };
+}
+
+function handleRound2Info() {
+  var s = round2State();
+  s.ok = true;
+  s.serverNow = Date.now();
+  return json(s);
+}
+
+/* Find the Round 1 row behind a lookup id, so the form can only be opened by
+   someone who actually passed. */
+function resultByLookupId(id) {
+  var rows = resultRows();
+  for (var i = 0; i < rows.length; i++) {
+    if (lookupId(String(rows[i].Email).trim().toLowerCase()) === id) return rows[i];
+  }
+  return null;
+}
+
+function existingRound2(id) {
+  var rows = readRows(SHEETS.ROUND2);
+  for (var i = 0; i < rows.length; i++) {
+    if (String(rows[i].LookupID) === id) return rows[i];
+  }
+  return null;
+}
+
+function handleRound2Prefill(d) {
+  var id = clean(d.id, 40);
+  if (!id) return json({ ok: false, error: 'Missing identifier' });
+
+  var row = resultByLookupId(id);
+  if (!row) {
+    return json({ ok: false, error: 'We could not verify your Round 1 result. Please check your result again and use the button on that page.' });
+  }
+  if (String(row.Result).toUpperCase() !== 'PASS') {
+    return json({ ok: false, error: 'Round 2 registration is open to qualified candidates only.', notQualified: true });
+  }
+
+  var already = existingRound2(id);
+  var state = round2State();
+  return json({
+    ok: true,
+    state: state,
+    alreadyRegistered: already ? { regId: already.RegID, seat: already.Seat, whatsapp: CONFIG.ROUND2_WHATSAPP } : null,
+    candidate: {
+      name: String(row.Name || ''),
+      university: String(row.University || ''),
+      email: String(row.Email || ''),
+      phone: String(row.Phone || ''),
+      percent: parseFloat(row.Percent) || 0,
+      rank: parseFloat(row.Rank) || 0,
+      marks: parseFloat(row.Marks) || 0
+    },
+    serverNow: Date.now()
+  });
+}
+
+function round2Folder() {
+  var it = DriveApp.getFoldersByName(CONFIG.ROUND2_DRIVE_FOLDER);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(CONFIG.ROUND2_DRIVE_FOLDER);
+}
+
+function handleRound2Register(d) {
+  var id = clean(d.id, 40);
+  if (!id) return json({ ok: false, error: 'Missing identifier' });
+
+  var row = resultByLookupId(id);
+  if (!row) return json({ ok: false, error: 'We could not verify your Round 1 result.' });
+  if (String(row.Result).toUpperCase() !== 'PASS') {
+    return json({ ok: false, error: 'Round 2 registration is open to qualified candidates only.', notQualified: true });
+  }
+
+  /* Already in? Return the same seat rather than taking a second one. */
+  var already = existingRound2(id);
+  if (already) {
+    return json({
+      ok: true, duplicate: true, regId: already.RegID, seat: already.Seat,
+      whatsapp: CONFIG.ROUND2_WHATSAPP, serverNow: Date.now()
+    });
+  }
+
+  var state = round2State();
+  if (!state.open) {
+    return json({
+      ok: false, closed: true, state: state,
+      error: state.expired ? 'Registration closed on ' + Utilities.formatDate(new Date(round2Deadline()), 'Asia/Dhaka', 'd MMMM yyyy') + '.'
+           : state.full ? 'All ' + CONFIG.ROUND2_CAPACITY + ' seats have been taken.'
+           : 'Registration is currently closed.'
+    });
+  }
+
+  /* ---- validate ---- */
+  var name = clean(d.name, 90), uni = clean(d.university, 140), dept = clean(d.department, 120);
+  var phone = clean(d.phone, 20), txn = clean(d.transactionId, 40);
+  var attending = clean(d.attendingCU, 10);
+  var pkg = clean(d.package, 10) === 'full' ? 'full' : 'exam';
+
+  if (!name || !uni || !dept || !phone) return json({ ok: false, error: 'Please fill in every required field.' });
+  if (attending !== 'yes') return json({ ok: false, error: 'Round 2 is held in person at the University of Chittagong. Seats are limited, so please register only if you can attend.' });
+  if (!txn) return json({ ok: false, error: 'Please enter the bKash transaction ID.' });
+
+  var poster = !!d.poster && pkg === 'full';
+  var photo  = !!d.photography && pkg === 'full';
+  var speech = !!d.speech && pkg === 'full';
+  var posterType = poster ? clean(d.posterType, 30) : '';
+  if (poster && !posterType) return json({ ok: false, error: 'Please choose whether your poster is research-based or idea-based.' });
+  if (pkg === 'full' && !poster && !photo && !speech) {
+    return json({ ok: false, error: 'Please select at least one additional segment, or choose the exam-only package.' });
+  }
+  var fee = pkg === 'full' ? CONFIG.ROUND2_FEE_FULL : CONFIG.ROUND2_FEE_EXAM;
+
+  /* ---- payment screenshot -> Drive ---- */
+  var fileUrl = '';
+  if (d.screenshotData) {
+    try {
+      var approxKb = Math.round(String(d.screenshotData).length * 0.75 / 1024);
+      if (approxKb > CONFIG.ROUND2_MAX_UPLOAD_KB) {
+        return json({ ok: false, error: 'That image is too large (' + approxKb + ' KB). Please upload a smaller screenshot.' });
+      }
+      var mime = clean(d.screenshotType, 40) || 'image/jpeg';
+      var ext = mime.indexOf('png') > -1 ? 'png' : 'jpg';
+      var safe = name.replace(/[^A-Za-z0-9 ]/g, '').replace(/\s+/g, '_').slice(0, 40);
+      var blob = Utilities.newBlob(Utilities.base64Decode(d.screenshotData), mime,
+        (round2Taken() + 1) + '_' + safe + '_' + txn + '.' + ext);
+      var file = round2Folder().createFile(blob);
+      fileUrl = file.getUrl();
+    } catch (err) {
+      logError('round2-upload', err, { name: name, txn: txn });
+      return json({ ok: false, error: 'We could not save your payment screenshot. Please try again, or use a smaller image.' });
+    }
+  } else {
+    return json({ ok: false, error: 'Please attach a screenshot of your bKash payment.' });
+  }
+
+  /* ---- take the seat ---- */
+  var seat = round2Taken() + 1;
+  var regId = 'BBO3R2-' + ('000' + seat).slice(-3) + '-' + String(Math.abs(hashCode(id))).slice(0, 4);
+
+  sheet(SHEETS.ROUND2).appendRow([
+    new Date(), regId, seat, name, uni, dept,
+    String(row.Email || ''), phone,
+    parseFloat(row.Percent) || 0, parseFloat(row.Rank) || 0,
+    'Yes', pkg === 'full' ? 'Exam + segments' : 'Exam only', fee,
+    poster ? 'Yes' : '', posterType, photo ? 'Yes' : '', speech ? 'Yes' : '',
+    txn, fileUrl, id
+  ]);
+
+  var after = round2State();
+  return json({
+    ok: true, regId: regId, seat: seat, fee: fee,
+    whatsapp: CONFIG.ROUND2_WHATSAPP,
+    remaining: after.remaining, capacity: after.capacity,
+    serverNow: Date.now()
+  });
 }
 
 /* ========================== EMAIL QUEUE ========================= */

@@ -155,6 +155,10 @@ h3{font-size:1.15rem;color:var(--navy);margin-bottom:.3rem}
 .next-round h3{font-size:1.25rem;margin-bottom:.6rem}
 .next-round p{margin-bottom:.5rem}
 
+.r2-cta{margin-top:1.25rem;padding-top:1.25rem;border-top:1px dashed var(--accent);text-align:center}
+.r2-cta .btn{margin-bottom:.6rem}
+.btn-lg{padding:1rem 2.2rem;font-size:1.02rem}
+
 .actions{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem}
 .footer-note{text-align:center;font-size:.82rem;color:var(--text-muted);margin-top:2.5rem;max-width:560px;margin-left:auto;margin-right:auto}
 

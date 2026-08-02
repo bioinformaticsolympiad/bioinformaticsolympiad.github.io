@@ -203,6 +203,17 @@ function renderResult(r) {
       ' for qualifying participants.';
   $('nrDetail').textContent = CFG.NEXT_ROUND_DETAIL || '';
 
+  /* The Round 2 button appears only for a pass, and carries the verified
+     lookup id so the registration form knows who is arriving — the backend
+     re-checks that id against the Results sheet before letting anyone in. */
+  var cta = $('r2Cta');
+  if (passed && r.lookupId) {
+    $('r2Btn').setAttribute('href', '../round2/?t=' + encodeURIComponent(r.lookupId));
+    cta.classList.remove('hidden');
+  } else {
+    cta.classList.add('hidden');
+  }
+
   showOnly('resultBox');
 }
 
