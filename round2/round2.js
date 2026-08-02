@@ -206,6 +206,24 @@ function renderSeats(s) {
   }
 }
 
+/* Live seat count for the public info view. Purely additive: if the backend is
+   unreachable the meter simply stays hidden and the page reads normally. */
+function loadPublicSeats() {
+  api({ action: 'round2Info' }).then(function (s) {
+    if (!s || !s.ok || !s.capacity) return;
+    var pct = Math.min(100, Math.round((s.taken || 0) / s.capacity * 100));
+    $('infoSeatMeter').classList.remove('hidden');
+    setTimeout(function () { $('infoSeatFill').style.width = pct + '%'; }, 80);
+    if (s.remaining > 0) {
+      $('infoSeatText').textContent = s.remaining + ' of ' + s.capacity + ' seats still available';
+      $('infoSeatSub').textContent = '· ' + (s.taken || 0) + ' already registered';
+    } else {
+      $('infoSeatText').textContent = 'All ' + s.capacity + ' seats are taken';
+      $('infoSeatSub').textContent = '';
+    }
+  }).catch(function () { /* leave the meter hidden */ });
+}
+
 function closedScreen(state, message) {
   $('closedMsg').textContent = message ||
     (state && state.expired ? 'Registration closed on ' + (CFG.DEADLINE_TEXT || 'the deadline') + '.'
@@ -285,6 +303,12 @@ function renderDone(res, pkg) {
 }
 
 /* ---------------- boot ---------------- */
+function setAll(selector, text) {
+  Array.prototype.forEach.call(document.querySelectorAll(selector), function (el) {
+    el.textContent = text;
+  });
+}
+
 function fillStaticCopy() {
   var venue = CFG.VENUE || 'University of Chittagong';
   ['heroVenue', 'heroVenue2', 'fVenue'].forEach(function (id) { if ($(id)) $(id).textContent = venue; });
@@ -292,6 +316,13 @@ function fillStaticCopy() {
   if ($('fDeadline')) $('fDeadline').textContent = CFG.DEADLINE_TEXT || '';
   if ($('fCapacity')) $('fCapacity').textContent = (CFG.CAPACITY || 350) + ' seats';
   ['capInline', 'capInline2'].forEach(function (id) { if ($(id)) $(id).textContent = CFG.CAPACITY || 350; });
+
+  /* the public info view uses classes, since those fields appear twice on the page */
+  setAll('.iVenue', venue);
+  setAll('.iDate', CFG.EXAM_WINDOW || '');
+  setAll('.iDeadline', CFG.DEADLINE_TEXT || '');
+  setAll('.iCapacity', (CFG.CAPACITY || 350) + ' seats');
+  setAll('.iCapNum', CFG.CAPACITY || 350);
   Array.prototype.forEach.call(document.querySelectorAll('.fee-amt'), function (el, i) {
     el.textContent = i === 0 ? (CFG.FEE_EXAM || 500) : (CFG.FEE_FULL || 600);
   });
@@ -369,7 +400,7 @@ function boot() {
     show('gateBox');
     return;
   }
-  if (!LOOKUP_ID) { show('gateBox'); return; }
+  if (!LOOKUP_ID) { show('gateBox'); loadPublicSeats(); return; }
 
   api({ action: 'round2Prefill', id: LOOKUP_ID }).then(function (res) {
     if (!res.ok) {

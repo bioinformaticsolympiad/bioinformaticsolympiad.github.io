@@ -26,15 +26,111 @@
 
 <main>
 
-  <!-- ============ GATE: not verified ============ -->
-  <section id="gateBox" class="card center hidden">
-    <div class="gate-icon" aria-hidden="true">🔒</div>
-    <h2 id="gateTitle">Check your result first</h2>
-    <p class="muted" id="gateMsg">
-      Round 2 registration opens from your result page. Please check your Round 1 result,
-      and if you qualified you will find the registration button there.
-    </p>
-    <a href="../result/" class="btn btn-primary">Go to the result checker</a>
+  <!-- ============ PUBLIC INFO VIEW ============
+       What a visitor arriving from the site menu sees: everything about Round 2
+       EXCEPT the fee packages and the form, which belong to the verified
+       registration flow further down this page. The gate card sits at the end.
+       ============================================================= -->
+  <section id="gateBox" class="hidden">
+
+    <div class="hero">
+      <span class="pill">Round 02 · Offline · <span class="iVenue">University of Chittagong</span></span>
+      <h1>Round 02 Registration</h1>
+      <p class="lead">
+        The final round of the Biology &amp; Bioinformatics Olympiad 3.0 is held in person at the
+        <strong class="iVenue">University of Chittagong</strong> — a full day of examination,
+        presentation and workshop for the candidates who came through Round 1.
+      </p>
+      <div class="seat-meter hidden" id="infoSeatMeter">
+        <div class="seat-bar"><span id="infoSeatFill"></span></div>
+        <p><strong id="infoSeatText">—</strong> <span class="muted" id="infoSeatSub"></span></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Why the final round is held in person</h2>
+      <p class="muted">
+        An online MCQ can measure recall. It cannot watch you defend a poster, think on your feet,
+        or meet the person who becomes your research collaborator. Round 2 exists for the things a
+        browser cannot host.
+      </p>
+
+      <div class="benefit-grid">
+        <div class="benefit"><span class="bi">🏆</span><h4>Prizes for every segment</h4>
+          <p>Awards for the top performers in the examination, the poster presentation, the photography contest and the instant speech.</p></div>
+        <div class="benefit"><span class="bi">🥇</span><h4>Crest &amp; certificates</h4>
+          <p>A crest for the winners and an individually issued certificate for every participant — valid for your CV and scholarship applications.</p></div>
+        <div class="benefit"><span class="bi">🔬</span><h4>Hands-on workshop</h4>
+          <p>A practical bioinformatics workshop run on the day, using the tools working researchers actually use.</p></div>
+        <div class="benefit"><span class="bi">💼</span><h4>Internship opportunities</h4>
+          <p>Standout participants are considered for offline internship placements with BioPC — the route several of our current team took.</p></div>
+        <div class="benefit"><span class="bi">📘</span><h4>Book &amp; study materials</h4>
+          <p>Curated reading to take home, so the day continues to pay off long after you leave the hall.</p></div>
+        <div class="benefit"><span class="bi">🍽️</span><h4>Lunch &amp; snacks included</h4>
+          <p>Lunch and refreshments are provided for the full day. No queueing, no wandering off campus to find food.</p></div>
+        <div class="benefit"><span class="bi">🤝</span><h4>Collaboration &amp; network</h4>
+          <p>Meet students from over 250 institutions, plus faculty and researchers. Research partnerships start in rooms like this one.</p></div>
+        <div class="benefit"><span class="bi">🎤</span><h4>Communication skills</h4>
+          <p>Presenting your work and speaking without a script are skills no exam teaches. Both are on the programme.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>The segments on the day</h2>
+      <p class="muted">Alongside the written examination, the programme includes three competitive segments you may take part in.</p>
+      <div class="benefit-grid">
+        <div class="benefit"><span class="bi">📊</span><h4>Poster Presentation</h4>
+          <p>Present your work as a poster and defend it — either <strong>research-based</strong> (your own data or study) or <strong>idea-based</strong> (a proposal or concept).</p></div>
+        <div class="benefit"><span class="bi">📷</span><h4>Photography Contest</h4>
+          <p>A contest for the scientific eye — capturing biology, laboratory life and the natural world.</p></div>
+        <div class="benefit"><span class="bi">🎙️</span><h4>Instant Speech</h4>
+          <p>Speak on a topic given on the spot. No script, no preparation — just how well you think and communicate under pressure.</p></div>
+      </div>
+    </div>
+
+    <div class="card facts-card">
+      <h2>Key information</h2>
+      <div class="facts">
+        <div><span>Venue</span><strong class="iVenue">University of Chittagong</strong></div>
+        <div><span>Probable date</span><strong class="iDate">3rd week of September 2026</strong></div>
+        <div><span>Registration deadline</span><strong class="iDeadline">31 August 2026</strong></div>
+        <div><span>Auditorium capacity</span><strong class="iCapacity">350 seats</strong></div>
+      </div>
+      <p class="warn-note">
+        <strong>Seats are first come, first served.</strong> The auditorium holds
+        <span class="iCapNum">350</span> people and registration closes the moment it is full —
+        which may well be before the deadline. If you intend to come, register now rather than later.
+      </p>
+      <p class="muted small">
+        The exact date within the 3rd week of September will be fixed for the convenience of the
+        majority and announced on our Facebook page and in the WhatsApp group.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Who can register</h2>
+      <p class="muted">
+        Round 2 is open to candidates who <strong>qualified in Round 1</strong>. Your registration
+        button appears automatically on your result page once your result is verified — so there is
+        nothing to apply for separately, and no form to fill in twice.
+      </p>
+      <ol class="pay-steps" style="margin-top:1rem">
+        <li>Open the result checker and enter the email you registered with.</li>
+        <li>If you qualified, the <strong>Register for Round 2 Examination</strong> button appears on your result.</li>
+        <li>Your name, university and Round 1 score carry over automatically — you only add a few remaining details to complete your registration.</li>
+      </ol>
+    </div>
+
+    <!-- gate card -->
+    <div class="card center gate-card">
+      <div class="gate-icon" aria-hidden="true">🔒</div>
+      <h2 id="gateTitle">To Register for The Round 02, Check Your Result First</h2>
+      <p class="muted" id="gateMsg">
+        Round 2 registration opens from your result page. Please check your Round 1 result,
+        and if you qualified you will find the registration button there.
+      </p>
+      <a href="../result/" class="btn btn-primary">Go to the result checker</a>
+    </div>
   </section>
 
   <!-- ============ LOADING ============ -->
