@@ -101,7 +101,7 @@
 
       <div class="fee-grid">
         <label class="fee-card" for="pkgExam">
-          <input type="radio" name="package" id="pkgExam" value="exam" checked>
+          <input type="radio" name="package" id="pkgExam" value="exam">
           <span class="fee-head"><strong>৳<span class="fee-amt">500</span></strong><em>Examination only</em></span>
           <ul>
             <li>Round 2 written examination</li>
@@ -114,7 +114,7 @@
         </label>
 
         <label class="fee-card featured" for="pkgFull">
-          <input type="radio" name="package" id="pkgFull" value="full">
+          <input type="radio" name="package" id="pkgFull" value="full" checked>
           <span class="ribbon">Most complete</span>
           <span class="fee-head"><strong>৳<span class="fee-amt">600</span></strong><em>Examination + all segments</em></span>
           <ul>
@@ -221,8 +221,8 @@
       <div class="field">
         <label for="fPackage">Which package are you paying for? <em>*</em></label>
         <select id="fPackage">
+          <option value="full" selected>৳600 — Examination + poster, photography &amp; speech</option>
           <option value="exam">৳500 — Examination only</option>
-          <option value="full">৳600 — Examination + poster, photography &amp; speech</option>
         </select>
       </div>
 
@@ -247,12 +247,12 @@
 
       <h3 class="sub">Payment</h3>
       <div class="pay-box">
-        <p class="pay-amount">Amount to send: <strong>৳<span id="payAmount">500</span></strong></p>
+        <p class="pay-amount">Amount to send: <strong>৳<span id="payAmount">600</span></strong></p>
         <p class="muted small">Send Money via <strong>bKash</strong> to either number below, then enter the transaction ID and attach a screenshot.</p>
         <div class="bkash-numbers" id="bkashNumbers"></div>
         <ol class="pay-steps">
           <li>Open bKash → <strong>Send Money</strong> (not Payment).</li>
-          <li>Send exactly <strong>৳<span class="payAmt2">500</span></strong> to one of the numbers above.</li>
+          <li>Send exactly <strong>৳<span class="payAmt2">600</span></strong> to one of the numbers above.</li>
           <li>Copy the <strong>Transaction ID</strong> from the confirmation message.</li>
           <li>Take a screenshot of the confirmation and attach it below.</li>
         </ol>

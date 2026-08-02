@@ -16,7 +16,7 @@ window.BBO_RESULT_CONFIG = {
      Shown to everyone, highlighted for those who passed. Put the date and
      venue in NEXT_ROUND_DETAIL once they are fixed.                        */
   NEXT_ROUND_VENUE: "University of Chittagong",
-  NEXT_ROUND_DETAIL: "The date, time and exact venue will be announced on our Facebook page. Please keep an eye on the page and do not travel before the schedule is confirmed.",
+  NEXT_ROUND_DETAIL: "",
 
   SUPPORT_EMAIL: "bioinformatics.olympiad@gmail.com",
   FB_PAGE_NAME: "Biopc - A Bioinformatics Research and Training Center",

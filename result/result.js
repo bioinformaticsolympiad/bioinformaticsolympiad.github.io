@@ -201,7 +201,11 @@ function renderResult(r) {
       (CFG.NEXT_ROUND_VENUE || 'University of Chittagong') + '. Please plan to attend on campus — this round is not held online.'
     : 'Round 2 will be held offline at the ' + (CFG.NEXT_ROUND_VENUE || 'University of Chittagong') +
       ' for qualifying participants.';
-  $('nrDetail').textContent = CFG.NEXT_ROUND_DETAIL || '';
+  /* Hide the paragraph entirely when there is no detail text, rather than
+     leaving an empty element that shows as a gap. */
+  var detail = CFG.NEXT_ROUND_DETAIL || '';
+  $('nrDetail').textContent = detail;
+  $('nrDetail').classList.toggle('hidden', !detail);
 
   /* The Round 2 button appears only for a pass, and carries the verified
      lookup id so the registration form knows who is arriving — the backend
