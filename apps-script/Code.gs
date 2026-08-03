@@ -56,7 +56,7 @@ var CONFIG = {
   ROUND2_FEE_EXAM: 500,
   ROUND2_FEE_FULL: 600,
   ROUND2_DRIVE_FOLDER: 'BBO 3.0 Round 2 payment screenshots',
-  ROUND2_WHATSAPP: 'https://chat.whatsapp.com/EUBciHKJdiJ7kIys3TvcMp',
+  ROUND2_WHATSAPP: 'https://chat.whatsapp.com/DfYeBUPUYvL5ff5UTmMNuX?s=cl&p=a&ilr=0',
   ROUND2_MAX_UPLOAD_KB: 3000,
   EMAIL_SUBJECT: 'Your BBO 3.0 answers have been received',
   REPLY_TO: 'bioinformatics.olympiad@gmail.com',
