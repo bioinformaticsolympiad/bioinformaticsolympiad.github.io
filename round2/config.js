@@ -34,5 +34,5 @@ window.BBO_R2_CONFIG = {
      how long the participant is asked to wait. 180000 would give the literal
      "2-3 minutes"; 8 seconds is long enough to read the message without
      making 861 people sit and stare at a page.                             */
-  CERT_MIN_WAIT_MS: 8000
+  CERT_MIN_WAIT_MS: 40000
 };

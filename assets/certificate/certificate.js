@@ -19,6 +19,19 @@ function certificateId(r) {
   return 'BBO3-' + (rank < 1000 ? ('00' + rank).slice(-3) : String(rank));
 }
 
+/* 1st, 2nd, 3rd, 4th … and the 11th/12th/13th exceptions, so rank 111
+   reads 111th rather than 111st. */
+function ordinalSuffix(n) {
+  var v = Math.abs(parseInt(n, 10)) % 100;
+  if (v >= 11 && v <= 13) return 'th';
+  switch (v % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+}
+
 /* Many names were registered in ALL CAPS or all lowercase; a certificate
    should not shout. Deliberate mixed case is left exactly as entered. */
 function tidyName(name) {
@@ -117,14 +130,40 @@ function generate(record, templateSrc) {
     }
     drawTracked(ctx, name, N.centerX * s, N.baseline * s, tracking);
 
-    /* ---------- rank and unique id ---------- */
+    /* ---------- rank, unique id, issue date ---------- */
     var M = l.META;
     var id = certificateId(record);
+    var metaPx = M.sizePt * PT_TO_PX * s;
+    var metaFont = function (px) { return px + 'px "' + M.font + '", Georgia, serif'; };
+
     ctx.fillStyle = M.color;
     ctx.textAlign = 'left';
-    ctx.font = (M.sizePt * PT_TO_PX * s) + 'px "' + M.font + '", Georgia, serif';
-    ctx.fillText(String(record.rank || '—'), M.rank.x * s, M.rank.baseline * s);
+    ctx.font = metaFont(metaPx);
+
+    /* rank, with its ordinal ending set as a superscript */
+    var rankNum = parseInt(record.rank, 10);
+    if (isFinite(rankNum) && rankNum > 0) {
+      var digits = String(rankNum);
+      ctx.fillText(digits, M.rank.x * s, M.rank.baseline * s);
+      var o = M.ordinal || { scale: 0.62, rise: 0.36, gap: 0.04 };
+      var afterX = M.rank.x * s + ctx.measureText(digits).width + metaPx * o.gap;
+      ctx.font = metaFont(metaPx * o.scale);
+      ctx.fillText(ordinalSuffix(rankNum), afterX, M.rank.baseline * s - metaPx * o.rise);
+      ctx.font = metaFont(metaPx);
+    } else {
+      ctx.fillText(String(record.rank || '—'), M.rank.x * s, M.rank.baseline * s);
+    }
+
     ctx.fillText(id, M.uniqueId.x * s, M.uniqueId.baseline * s);
+
+    /* issue date — the template's own "Date:" line is replaced */
+    var D = l.DATE;
+    if (D) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(D.clear.x * s, D.clear.y * s, D.clear.w * s, D.clear.h * s);
+      ctx.fillStyle = M.color;
+      ctx.fillText(D.label + (record.issueDate || D.value), D.x * s, D.baseline * s);
+    }
 
     var safe = name.replace(/[^A-Za-z0-9 ]/g, '').replace(/\s+/g, '_').slice(0, 40) || 'Participant';
     var filename = 'BBO3-Certificate-' + safe + '-' + id + '.png';
@@ -159,7 +198,8 @@ window.BBOCertificate = {
   generate: generate,
   download: download,
   certificateId: certificateId,
-  tidyName: tidyName
+  tidyName: tidyName,
+  ordinalSuffix: ordinalSuffix
 };
 
 })();

@@ -41,6 +41,22 @@ window.BBO_CERT_LAYOUT = {
     sizePt: 14.92,
     color: '#061D55',
     rank:     { x: 231, baseline: 645 },
-    uniqueId: { x: 275, baseline: 669 }
+    uniqueId: { x: 275, baseline: 669 },
+
+    /* Ordinal ending after the rank: 1st, 2nd, 3rd, 549th, raised and
+       reduced like a typeset superscript. */
+    ordinal: { scale: 0.62, rise: 0.36, gap: 0.04 }
+  },
+
+  /* The template prints "Date: 08/08/26". The wording had to become
+     "Issue Date", which lives inside the image, so that one line is painted
+     out and redrawn. The clear box was measured: nothing else sits in it,
+     and the partner logos below start at y=709.                            */
+  DATE: {
+    clear: { x: 172, y: 674, w: 428, h: 31 },
+    x: 176,
+    baseline: 693,
+    label: 'Issue Date: ',
+    value: '08/08/26'
   }
 };
