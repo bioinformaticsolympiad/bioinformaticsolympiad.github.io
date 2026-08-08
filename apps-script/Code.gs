@@ -532,7 +532,12 @@ function handleRound2Prefill(d) {
   return json({
     ok: true,
     state: state,
-    alreadyRegistered: already ? { regId: already.RegID, seat: already.Seat, whatsapp: CONFIG.ROUND2_WHATSAPP } : null,
+    /* Package and fee must come back too, or a returning participant is shown
+       whatever the page happens to default to rather than what they paid. */
+    alreadyRegistered: already ? {
+      regId: already.RegID, seat: already.Seat, whatsapp: CONFIG.ROUND2_WHATSAPP,
+      packageLabel: String(already.Package || ''), fee: parseFloat(already.Fee) || 0
+    } : null,
     candidate: {
       name: String(row.Name || ''),
       university: String(row.University || ''),
@@ -566,6 +571,7 @@ function handleRound2Register(d) {
   if (already) {
     return json({
       ok: true, duplicate: true, regId: already.RegID, seat: already.Seat,
+      packageLabel: String(already.Package || ''), fee: parseFloat(already.Fee) || 0,
       whatsapp: CONFIG.ROUND2_WHATSAPP, serverNow: Date.now()
     });
   }

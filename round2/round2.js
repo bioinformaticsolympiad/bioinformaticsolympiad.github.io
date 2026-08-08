@@ -288,7 +288,10 @@ function submitForm() {
 function renderDone(res, pkg) {
   $('dRegId').textContent = res.regId || '—';
   $('dSeat').textContent = res.seat ? ('#' + res.seat) : '—';
-  $('dPackage').textContent = pkg === 'full' ? 'Exam + segments' : 'Exam only';
+  /* What the server recorded always wins. `pkg` is only the fallback for the
+     moment right after submitting, before a stored row exists to read back. */
+  $('dPackage').textContent = res.packageLabel ||
+    (pkg === 'full' ? 'Exam + segments' : 'Exam only');
   $('dFee').textContent = '৳' + (res.fee || (pkg === 'full' ? CFG.FEE_FULL : CFG.FEE_EXAM));
   if (res.duplicate) {
     $('doneLead').textContent = 'You were already registered for Round 2 — here are your existing details. ' +
@@ -414,10 +417,11 @@ function boot() {
     STATE = res.state;
 
     if (res.alreadyRegistered) {
+      var prev = res.alreadyRegistered;
       renderDone({
-        regId: res.alreadyRegistered.regId, seat: res.alreadyRegistered.seat,
-        whatsapp: res.alreadyRegistered.whatsapp, duplicate: true
-      }, 'exam');
+        regId: prev.regId, seat: prev.seat, whatsapp: prev.whatsapp,
+        packageLabel: prev.packageLabel, fee: prev.fee, duplicate: true
+      }, prev.fee >= (CFG.FEE_FULL || 600) ? 'full' : 'exam');
       return;
     }
     if (STATE && !STATE.open) { closedScreen(STATE); return; }
