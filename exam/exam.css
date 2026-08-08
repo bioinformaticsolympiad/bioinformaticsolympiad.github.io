@@ -1,5 +1,5 @@
 /* =====================================================
-   BBO 3.0 — Online Examination stylesheet
+   BBO 3.0 - Online Examination stylesheet
    ===================================================== */
 :root{
   --primary:#0d6e3a; --primary-light:#1a9451; --primary-dark:#084d28;
@@ -239,7 +239,7 @@ input.invalid{border-color:var(--danger);background:var(--danger-bg)}
 .notice-hero .lead{max-width:640px;margin-left:auto;margin-right:auto}
 .notice-hero .countdown{margin-bottom:.5rem}
 
-/* "The examination itself begins Friday at 9:00 pm" — the line that matters most */
+/* "The examination itself begins Friday at 9:00 pm", the line that matters most */
 .exam-begins{
   font-size:1.5rem;line-height:1.4;color:var(--navy);font-weight:700;
   margin:1.25rem auto 1rem;max-width:640px

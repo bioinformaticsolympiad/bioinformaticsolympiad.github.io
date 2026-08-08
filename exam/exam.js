@@ -1,5 +1,5 @@
 /* =====================================================
-   BBO 3.0 — Online Examination engine
+   BBO 3.0 - Online Examination engine
    ---------------------------------------------------
    Design notes
    • Answers are saved to localStorage on every click (instant, offline-proof)
@@ -17,7 +17,7 @@
    Runs before anything else and uses only syntax that parses everywhere, so a
    browser too old to sit the exam gets a plain explanation instead of a blank
    or half-broken page at 9 PM. Guarded features (AbortController, sendBeacon,
-   Intl, performance.now) are NOT listed here — the code already falls back for
+   Intl, performance.now) are NOT listed here, the code already falls back for
    those. These four are genuinely required.
    --------------------------------------------------------------------------- */
 (function () {
@@ -100,7 +100,7 @@ function fmt(ms, opt) {
   try { return new Intl.DateTimeFormat('en-GB', opt || BD_FULL).format(new Date(ms)); }
   catch (e) { return new Date(ms).toString(); }
 }
-/* "Friday at 9:00 pm" — the weekday is derived from the date, so it stays
+/* "Friday at 9:00 pm", the weekday is derived from the date, so it stays
    correct by itself if the exam is ever moved to another day. */
 function fmtDay(ms) {
   try {
@@ -151,7 +151,7 @@ function loadLocal() {
 }
 
 /* ---------------- backend ---------------- */
-/* text/plain keeps this a "simple" CORS request — no preflight, which Apps
+/* text/plain keeps this a "simple" CORS request, no preflight, which Apps
    Script cannot answer. */
 function api(payload, timeoutMs) {
   if (!API_READY) return Promise.reject(new Error('offline-mode'));
@@ -173,7 +173,7 @@ function api(payload, timeoutMs) {
     return j;
   }).catch(function (e) { clearTimeout(t); throw e; });
 }
-/* Exponential backoff — important when 2000 clients retry at once. */
+/* Exponential backoff, important when 2000 clients retry at once. */
 function apiRetry(payload, tries) {
   tries = tries || 4;
   var attempt = 0;
@@ -304,7 +304,7 @@ function initRegistration() {
     };
 
     if (!API_READY) {
-      $('regNote').textContent = 'Practice mode — the backend is not configured yet.';
+      $('regNote').textContent = 'Practice mode. The backend is not configured yet.';
       setTimeout(function () { finish(null); }, 400);
       return;
     }
@@ -385,7 +385,7 @@ function tickPreOpen() {
   var left = OPEN_MS - now();
   if (left <= 0) {
     clearInterval(preTimer);
-    /* Registration just opened — move them straight on, no refresh needed. */
+    /* Registration just opened, move them straight on, no refresh needed. */
     if (S.token && !S.submitted) goWaitingRoom(); else show('screenRegister');
     return;
   }
@@ -476,7 +476,7 @@ function tickExam() {
   }
   if (left <= 60000 && !tickExam._warned1) {
     tickExam._warned1 = true;
-    toast('1 minute remaining — your paper will submit automatically.', true);
+    toast('1 minute remaining. Your paper will submit automatically.', true);
   }
 }
 
@@ -585,7 +585,7 @@ function updateProgress() {
   $('progressSection').textContent = marked ? marked + ' marked for review' : '';
   $('submitSummary').textContent = done === total
     ? 'All ' + total + ' questions answered.'
-    : 'You have answered ' + done + ' of ' + total + '. Unanswered questions score zero — there is no penalty for guessing.';
+    : 'You have answered ' + done + ' of ' + total + '. Unanswered questions score zero, there is no penalty for guessing.';
 }
 
 /* ---------------- submission ---------------- */
@@ -629,7 +629,7 @@ function submitExam(reason) {
   var delay = reason === 'auto-timeout'
     ? Math.random() * (CFG.SUBMIT_SPREAD_SECONDS || 240) * 1000 : 0;
   if (delay > 4000) {
-    $('submitSummary').textContent = 'Time is up. Your paper is being submitted — ' +
+    $('submitSummary').textContent = 'Time is up. Your paper is being submitted - ' +
       'please keep this page open until you see the confirmation. This can take a ' +
       'few minutes while everyone submits at once.';
   }
@@ -639,7 +639,7 @@ function submitExam(reason) {
       $('btnSubmit').disabled = false;
       $('btnSubmit').textContent = 'Retry submission';
       setSaveStatus('offline', 'Not submitted');
-      toast('Submission failed: ' + err.message + '. Your answers are safe on this device — press Retry.', true);
+      toast('Submission failed: ' + err.message + '. Your answers are safe on this device, press Retry.', true);
       /* keep trying quietly in the background */
       setTimeout(function () { if (!S.submitted) submitExam(reason + '-retry'); }, 20000);
     });
@@ -650,8 +650,8 @@ function goDone() {
   clearInterval(examTimer);
   clearTimeout(syncTimer);
   $('headerRight').classList.add('hidden');
-  $('doneId').textContent = S.submissionId || '—';
-  $('doneName').textContent = S.name || '—';
+  $('doneId').textContent = S.submissionId || '-';
+  $('doneName').textContent = S.name || '-';
   $('doneAttempted').textContent = (S.attempted != null ? S.attempted : Object.keys(S.answers).length) + ' of ' + QUESTIONS.length;
   $('doneTime').textContent = fmt(S.submittedAt || now(), BD);
   $('doneFb').innerHTML = fbLabel();
@@ -703,7 +703,7 @@ function enableAntiCheat() {
       toast('Developer tools are not allowed during the exam.', true);
     }
     /* Screenshot attempts. The operating system takes the screenshot before the
-       browser sees the key, so this RECORDS the attempt — it cannot block it,
+       browser sees the key, so this RECORDS the attempt, it cannot block it,
        and it cannot see screenshots taken on a phone at all. */
     if (k === 'printscreen' || (ctrl && e.shiftKey && k === 's') ||
         (e.metaKey && e.shiftKey && ['3', '4', '5'].indexOf(k) > -1)) {
@@ -794,7 +794,7 @@ function boot() {
     if (had && S.submitted) { goDone(); return; }
     if (t >= END_MS) {
       if (had && S.token && Object.keys(S.answers).length) {
-        /* Exam ended while they were offline — push the paper up now. */
+        /* Exam ended while they were offline, push the paper up now. */
         submitExam('late-recovery');
       } else {
         blocked('The exam has closed',
@@ -809,7 +809,7 @@ function boot() {
         /* Late arrival: they may still register, but the clock does not restart. */
         var mins = Math.ceil((END_MS - t) / 60000);
         $('regNote').className = 'form-note error';
-        $('regNote').textContent = 'The exam has already started — about ' + mins +
+        $('regNote').textContent = 'The exam has already started, about ' + mins +
           ' minute' + (mins > 1 ? 's' : '') + ' remain. Register quickly to begin.';
         show('screenRegister');
       }

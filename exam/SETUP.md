@@ -1,11 +1,11 @@
-# BBO 3.0 Online Exam — setup guide
+# BBO 3.0 Online Exam, setup guide
 
 Everything is built. You need to do three things: create the Google Sheet backend,
 paste one URL into `config.js`, and set the exam date. Budget about 20 minutes.
 
 ---
 
-## Step 1 — Create the Google Sheet and backend (10 min)
+## Step 1 - Create the Google Sheet and backend (10 min)
 
 1. Go to <https://sheets.new> and name the sheet **BBO 3.0 Exam Data**.
 2. **Extensions → Apps Script**. Delete the sample `function myFunction() {}`.
@@ -28,7 +28,7 @@ paste one URL into `config.js`, and set the exam date. Budget about 20 minutes.
 > **Deploy → Manage deployments → (pencil icon) → Version: New version → Deploy**,
 > otherwise the live site keeps running the old code.
 
-## Step 2 — Connect the website (2 min)
+## Step 2 - Connect the website (2 min)
 
 Open `exam/config.js` and set:
 
@@ -37,12 +37,12 @@ API_URL: "https://script.google.com/macros/s/AKfy....../exec",   // from step 1
 START_ISO: "2026-08-29T21:00:00+06:00",                          // your exam date, 9:00 PM
 ```
 
-`START_ISO` must keep the `+06:00` on the end — that is what pins it to
+`START_ISO` must keep the `+06:00` on the end, that is what pins it to
 Bangladesh time regardless of where the participant's device thinks it is.
 
 Then set the **same** date in `apps-script/Code.gs` (`CONFIG.START_ISO`) and redeploy.
 
-## Step 3 — Push it live (1 min)
+## Step 3 - Push it live (1 min)
 
 In GitHub Desktop: commit the changed files and click **Push origin**.
 About a minute later the exam is live at <https://olympiad.biopc.org/exam/>.
@@ -100,15 +100,15 @@ shuffle, all answering correctly: every one scored exactly 50/50.
 
 Two columns need your eye:
 
-- **Source = RECOVERED** — the candidate's paper never reached the server, so the
+- **Source = RECOVERED**, the candidate's paper never reached the server, so the
   script rebuilt it from their last autosave. These are valid papers; they just
   came from the backup path.
-- **Flag = DUPLICATE EMAIL** — the same email sat the exam twice (usually two
+- **Flag = DUPLICATE EMAIL**, the same email sat the exam twice (usually two
   devices). The earliest paper is kept and ranked; check these by hand.
 
 ---
 
-## What the exam can and cannot block — read this
+## What the exam can and cannot block, read this
 
 Two things are commonly requested that **no website can do**, this one included.
 They are limits of the browser security model, not gaps in this code.
@@ -116,7 +116,7 @@ They are limits of the browser security model, not gaps in this code.
 **AI assistants and browser extensions cannot be switched off by a web page.**
 Ask Gemini, Edge Copilot, ChatGPT sidebars and every other extension run
 *outside* the page, in the browser itself. A page has no API to detect them, let
-alone disable them — if it did, any website could disable your ad blocker or
+alone disable them, if it did, any website could disable your ad blocker or
 password manager. Nothing can be added to this exam to change that.
 
 *What actually works:* run the exam in a supervised room or over a video call,
@@ -125,7 +125,7 @@ tab-switch log, which does record when a candidate leaves the exam window.
 
 **Screenshots cannot be prevented.** The operating system captures the screen
 before the browser is aware of it. On a phone the exam cannot see a screenshot
-at all — the volume+power gesture never reaches the page. On desktop the
+at all, the volume+power gesture never reaches the page. On desktop the
 PrintScreen key press *is* now recorded in the `ScreenshotAttempts` column, but
 recording is all it can do; the screenshot is already taken by then.
 
@@ -138,10 +138,10 @@ enabled), which makes a leaked screenshot far less useful because no two
 candidates see the same paper in the same order.
 
 Treat `TabSwitches`, `CopyAttempts` and `ScreenshotAttempts` as review signals,
-not automatic disqualification — on mobile an incoming call also counts as
+not automatic disqualification, on mobile an incoming call also counts as
 leaving the tab.
 
-## The email problem — read this before exam day
+## The email problem, read this before exam day
 
 Requirement: 2,000 confirmation emails. Google's sending limits are:
 
@@ -151,7 +151,7 @@ Requirement: 2,000 confirmation emails. Google's sending limits are:
 | Google Workspace (paid) | **1,500** |
 
 So a free Gmail account cannot email 2,000 people, and Workspace cannot do it in
-a single day either. The script handles this gracefully — it queues every email
+a single day either. The script handles this gracefully, it queues every email
 and sends as many as the quota allows, every 5 minutes, picking up where it left
 off the next day. Nothing is lost, but delivery would be spread over several days.
 
@@ -160,10 +160,10 @@ Your realistic options:
 1. **Skip the email** (simplest). Set `SEND_EMAILS: false` in `Code.gs`. Every
    candidate still sees an on-screen confirmation with a submission ID, which is
    proof of submission. Announce results as planned.
-2. **Google Workspace** (~$6/month, one month). Gets you 1,500/day — send in two
+2. **Google Workspace** (~$6/month, one month). Gets you 1,500/day, send in two
    batches across two days.
-3. **A proper email service** — Brevo or Resend both have free tiers around
-   300/day, and paid plans in the $10–25 range send all 2,000 at once. This needs
+3. **A proper email service** - Brevo or Resend both have free tiers around
+   300/day, and paid plans in the $10-25 range send all 2,000 at once. This needs
    a small change to the sending function; tell me if you want it and I will wire
    it up.
 
@@ -180,7 +180,7 @@ candidate leaves the exam tab (visible to you in the `TabSwitches` column).
 
 **It cannot stop** a determined cheat. Anyone can photograph the screen with a
 second phone and type the question into an AI tool, and no browser-based exam can
-prevent that — not this one, not Google Forms, not any commercial equivalent.
+prevent that, not this one, not Google Forms, not any commercial equivalent.
 Real defences are a live proctored video call, or a short window with randomised
 question order (already enabled via `SHUFFLE_QUESTIONS`).
 
@@ -196,12 +196,12 @@ leaving the tab.
 set to "Anyone". Their answers are safe on their device regardless.
 
 **A candidate's device died mid-exam.** Tell them to reopen the same link *on the
-same device and browser* — answers are stored locally and they resume with the
+same device and browser*, answers are stored locally and they resume with the
 correct time remaining. On a different device they start blank, but the clock
 still ends at 9:50 PM.
 
 **Submissions look lower than registrations.** Do not panic and do not tell
-anyone they failed to submit. Run **Grade all papers** — it recovers papers from
+anyone they failed to submit. Run **Grade all papers**, it recovers papers from
 autosave automatically and marks them RECOVERED.
 
 **The server was overloaded and rejected saves.** The page keeps retrying with a

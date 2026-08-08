@@ -1,5 +1,5 @@
 /* =====================================================
-   BBO 3.0 — Round 2 registration
+   BBO 3.0 - Round 2 registration
    Entry is gated on a verified Round 1 PASS: the page arrives with ?t=<lookupId>
    from the result page, and the server re-checks that id before showing the form
    and again before taking a seat.
@@ -66,9 +66,9 @@ function fieldError(name, msg) {
 }
 
 /* ---------------- image handling ----------------
-   A bKash screenshot straight off a phone can be 3–6 MB, which is slow to
+   A bKash screenshot straight off a phone can be 3-6 MB, which is slow to
    upload on mobile data and wasteful in Drive. Redraw it through a canvas at a
-   sensible width first — the transaction ID stays perfectly legible. */
+   sensible width first, the transaction ID stays perfectly legible. */
 function compressImage(file) {
   return new Promise(function (resolve, reject) {
     if (!/^image\//.test(file.type)) {
@@ -247,7 +247,7 @@ function submitForm() {
   btn.disabled = true;
   btn.textContent = 'Submitting…';
   $('formNote').className = 'form-note';
-  $('formNote').textContent = 'Uploading your payment screenshot — please do not close this page.';
+  $('formNote').textContent = 'Uploading your payment screenshot, please do not close this page.';
 
   var pkg = currentPackage();
   api({
@@ -282,20 +282,20 @@ function submitForm() {
     btn.textContent = 'Complete Round 2 registration';
     $('formNote').className = 'form-note error';
     $('formNote').textContent = 'Could not reach the server (' + err.message +
-      '). Check your connection and press the button again — your details are still here.';
+      '). Check your connection and press the button again. Your details are still here.';
   });
 }
 
 function renderDone(res, pkg) {
-  $('dRegId').textContent = res.regId || '—';
-  $('dSeat').textContent = res.seat ? ('#' + res.seat) : '—';
+  $('dRegId').textContent = res.regId || '-';
+  $('dSeat').textContent = res.seat ? ('#' + res.seat) : '-';
   /* What the server recorded always wins. `pkg` is only the fallback for the
      moment right after submitting, before a stored row exists to read back. */
   $('dPackage').textContent = res.packageLabel ||
     (pkg === 'full' ? 'Exam + segments' : 'Exam only');
   $('dFee').textContent = '৳' + (res.fee || (pkg === 'full' ? CFG.FEE_FULL : CFG.FEE_EXAM));
   if (res.duplicate) {
-    $('doneLead').textContent = 'You were already registered for Round 2 — here are your existing details. ' +
+    $('doneLead').textContent = 'You were already registered for Round 2, here are your existing details. ' +
       'You have not been charged or counted twice.';
   }
   var wa = res.whatsapp || CFG.WHATSAPP_URL;
@@ -325,7 +325,7 @@ function runCertificate(candidate) {
 
   var waitMs = CFG.CERT_MIN_WAIT_MS != null ? CFG.CERT_MIN_WAIT_MS : 8000;
   certUI(null, 'Your certificate is generating',
-    'It will take 2–3 minutes. Please don\'t leave this page.');
+    'It will take 1 minute. Please don\'t leave this page.');
 
   $('certClose').onclick = function () { $('certPopup').classList.add('hidden'); };
 
@@ -394,7 +394,7 @@ function fillStaticCopy() {
     var text = b.getAttribute('data-copy');
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(function () { toast('Copied ' + text); },
-        function () { toast('Could not copy — please type it manually.', true); });
+        function () { toast('Could not copy, please type it manually.', true); });
     } else { toast('Please note the number: ' + text); }
   });
 }
@@ -470,7 +470,7 @@ function boot() {
     STATE = res.state;
 
     /* Certificate runs regardless of which screen the registration flow
-       lands on — already registered, closed, or the form itself. */
+       lands on, already registered, closed, or the form itself. */
     if (CERT_MODE) runCertificate(CANDIDATE);
 
     if (res.alreadyRegistered) {
@@ -490,7 +490,7 @@ function boot() {
     $('fScore').value = (Math.round(CANDIDATE.percent * 10) / 10) + '%';
     $('vName').textContent = nice;
     $('vScore').textContent = Math.round(CANDIDATE.percent * 10) / 10;
-    $('vRank').textContent = CANDIDATE.rank || '—';
+    $('vRank').textContent = CANDIDATE.rank || '-';
 
     renderSeats(STATE);
     show('mainBox');

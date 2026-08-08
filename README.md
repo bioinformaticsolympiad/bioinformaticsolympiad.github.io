@@ -1,6 +1,6 @@
 # Biology & Bioinformatics Olympiad 3.0 (2026) | BBO3.0
 
-Official website for the **3rd Biology & Bioinformatics Olympiad** organized by **BioPC** — A Bioinformatics Lab of Research & Training.
+Official website for the **3rd Biology & Bioinformatics Olympiad** organized by **BioPC** - A Bioinformatics Lab of Research & Training.
 
 ## 🧬 About BBO 3.0
 
@@ -97,7 +97,7 @@ Open to:
 1. **Eligibility & Accuracy**: Submit accurate personal and institutional details
 2. **Official Platforms Only**: Use only announced Google Meet, TestMoz, or LiveMCQ links
 3. **Strict Deadlines**: Registration closes 29 July 2026; no late submissions
-4. **Individual Competition**: **No teamwork allowed** — strictly individual
+4. **Individual Competition**: **No teamwork allowed**, strictly individual
 5. **Fair Play**: Adherence to academic integrity standards
 
 See the full rules in the [Rules Section](#rules-section) of the website.

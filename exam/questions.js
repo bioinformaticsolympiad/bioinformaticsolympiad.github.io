@@ -478,10 +478,10 @@ window.BBO_QUESTIONS = [
   "s": "Public Health (জনস্বাস্থ্য)",
   "t": "Which disease is correctly matched with its causative organism? (কোন রোগটি তার রোগজীবাণুর সাথে সঠিকভাবে মিলানো হয়েছে?)",
   "o": [
-   "Cholera — Salmonella typhi",
-   "Typhoid — Vibrio cholerae",
-   "Tuberculosis — Mycobacterium tuberculosis",
-   "Malaria — Dengue virus"
+   "Cholera - Salmonella typhi",
+   "Typhoid - Vibrio cholerae",
+   "Tuberculosis - Mycobacterium tuberculosis",
+   "Malaria - Dengue virus"
   ]
  },
  {

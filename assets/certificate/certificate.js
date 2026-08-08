@@ -1,5 +1,5 @@
 /* =====================================================================
-   BBO 3.0 — certificate generator
+   BBO 3.0, certificate generator
    Draws the template image, then the three personalised fields, and hands
    back a PNG blob. Nothing else on the certificate is altered.
    ===================================================================== */
@@ -151,12 +151,12 @@ function generate(record, templateSrc) {
       ctx.fillText(ordinalSuffix(rankNum), afterX, M.rank.baseline * s - metaPx * o.rise);
       ctx.font = metaFont(metaPx);
     } else {
-      ctx.fillText(String(record.rank || '—'), M.rank.x * s, M.rank.baseline * s);
+      ctx.fillText(String(record.rank || '-'), M.rank.x * s, M.rank.baseline * s);
     }
 
     ctx.fillText(id, M.uniqueId.x * s, M.uniqueId.baseline * s);
 
-    /* issue date — the template's own "Date:" line is replaced */
+    /* issue date, the template's own "Date:" line is replaced */
     var D = l.DATE;
     if (D) {
       ctx.fillStyle = '#ffffff';

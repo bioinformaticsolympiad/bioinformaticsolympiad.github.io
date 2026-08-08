@@ -1,5 +1,5 @@
 /* =====================================================
-   BBO 3.0 Online Exam — configuration
+   BBO 3.0 Online Exam, configuration
    Edit ONLY this file to change exam settings.
    ===================================================== */
 window.BBO_CONFIG = {

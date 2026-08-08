@@ -1,5 +1,5 @@
 /* =====================================================
-   BBO 3.0 — Round 2 registration configuration
+   BBO 3.0 - Round 2 registration configuration
    ===================================================== */
 window.BBO_R2_CONFIG = {
 
@@ -20,7 +20,7 @@ window.BBO_R2_CONFIG = {
   WHATSAPP_URL: "https://chat.whatsapp.com/DfYeBUPUYvL5ff5UTmMNuX?s=cl&p=a&ilr=0",
 
   SUPPORT_EMAIL: "bioinformatics.olympiad@gmail.com",
-  FB_PAGE_NAME: "BioPC — A Bioinformatics Research and Training Center",
+  FB_PAGE_NAME: "BioPC - A Bioinformatics Research and Training Center",
   FB_PAGE_URL: "https://www.facebook.com/BioPcLab/",
 
   /* Screenshots are resized in the browser before upload so a 5 MB phone photo

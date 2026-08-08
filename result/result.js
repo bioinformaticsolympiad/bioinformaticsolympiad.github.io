@@ -1,5 +1,5 @@
 /* =====================================================
-   BBO 3.0 — Result checker
+   BBO 3.0 - Result checker
    The participant list stays on the server. This page sends a typed email and
    receives either one person's result or a few MASKED suggestions.
    ===================================================== */
@@ -8,6 +8,10 @@
 
 var CFG = window.BBO_RESULT_CONFIG || {};
 
+/* Set when the visitor followed the link from the Certificates page, so the
+   result view can take them straight down to the certificate button. */
+var CAME_FOR_CERTIFICATE = /[?&]for=certificate\b/.test(location.search);
+
 function $(id) { return document.getElementById(id); }
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -15,7 +19,7 @@ function esc(s) {
   });
 }
 /* Many names were typed in ALL CAPS or all lowercase at registration. Shouting
-   someone's name back at them reads badly, so normalise those two cases —
+   someone's name back at them reads badly, so normalise those two cases,
    but leave deliberate mixed case (McDonald, d'Souza) exactly as entered. */
 function tidyName(name) {
   var s = String(name || '').trim().replace(/\s+/g, ' ');
@@ -129,10 +133,10 @@ function renderResult(r) {
   var passed = String(r.result).toUpperCase() === 'PASS';
 
   var displayName = tidyName(r.name);
-  $('rName').textContent = displayName || '—';
+  $('rName').textContent = displayName || '-';
   $('rUniversity').textContent = r.university || '';
   $('rEmail').textContent = r.email || '';
-  $('rRank').textContent = r.rank || '—';
+  $('rRank').textContent = r.rank || '-';
   $('rRankOf').textContent = '';
   $('rMarks').textContent = r.marks;
   $('rTotal').textContent = total;
@@ -149,7 +153,7 @@ function renderResult(r) {
 
   var flagged = (r.tabSwitches > 0) || (r.copyAttempts > 0) || (r.screenshotAttempts > 0);
   $('conductNote').textContent = flagged
-    ? 'These figures were recorded automatically during your exam. Leaving the exam tab — including an incoming call or notification on a phone — counts as a tab switch, and did not by itself affect your marks.'
+    ? 'These figures were recorded automatically during your exam. Leaving the exam tab, including an incoming call or notification on a phone, counts as a tab switch, and did not by itself affect your marks.'
     : 'No irregularities were recorded during your examination.';
 
   /* score bar */
@@ -171,16 +175,16 @@ function renderResult(r) {
     $('verdictTitle').textContent = 'Congratulations' + (first ? ', ' + first : '') + '!';
     $('verdictMsg').textContent =
       'You have passed Round 1 with ' + scoreText + ', ranking ' + r.rank +
-      '. You are through to the next round — well done, and thank you for taking part.';
+      '. You are through to the next round. Well done, and thank you for taking part.';
   } else {
     $('verdictTitle').textContent = 'Not this time' + (first ? ', ' + first : '');
     /* Tell the truth without rubbing it in. "Just short" is only honest for
-       someone who was actually close — saying it to a candidate who scored 8%
+       someone who was actually close, saying it to a candidate who scored 8%
        reads as sarcasm. */
     var gap = passPct - r.percent;
     var body;
     if (gap <= 10) {
-      body = 'You scored ' + scoreText + ' — only ' + (Math.round(gap * 10) / 10) +
+      body = 'You scored ' + scoreText + ', only ' + (Math.round(gap * 10) / 10) +
              ' percentage points short of the ' + passPct + '% needed to qualify. ' +
              'That is a narrow miss, and a frustrating one.';
     } else if (r.percent >= 15) {
@@ -190,7 +194,7 @@ function renderResult(r) {
              'do get in touch with us.';
     }
     $('verdictMsg').textContent = body +
-      ' Sitting a national olympiad at all takes real courage, and this is one paper on one evening — ' +
+      ' Sitting a national olympiad at all takes real courage, and this is one paper on one evening - ' +
       'not a verdict on what you are capable of. We very much hope to see you again next year.';
   }
 
@@ -198,7 +202,7 @@ function renderResult(r) {
   $('nrVenue').textContent = CFG.NEXT_ROUND_VENUE || 'University of Chittagong';
   $('nrLead').textContent = passed
     ? 'As a qualifier, you are invited to sit Round 2 in person at the ' +
-      (CFG.NEXT_ROUND_VENUE || 'University of Chittagong') + '. Please plan to attend on campus — this round is not held online.'
+      (CFG.NEXT_ROUND_VENUE || 'University of Chittagong') + '. Please plan to attend on campus, this round is not held online.'
     : 'Round 2 will be held offline at the ' + (CFG.NEXT_ROUND_VENUE || 'University of Chittagong') +
       ' for qualifying participants.';
   /* Hide the paragraph entirely when there is no detail text, rather than
@@ -208,7 +212,7 @@ function renderResult(r) {
   $('nrDetail').classList.toggle('hidden', !detail);
 
   /* The Round 2 button appears only for a pass, and carries the verified
-     lookup id so the registration form knows who is arriving — the backend
+     lookup id so the registration form knows who is arriving, the backend
      re-checks that id against the Results sheet before letting anyone in. */
   var cta = $('r2Cta');
   if (passed && r.lookupId) {
@@ -232,6 +236,20 @@ function renderResult(r) {
   }
 
   showOnly('resultBox');
+
+  /* Arriving from the Certificates page, the visitor came here for one thing.
+     Once the result is on screen, walk them down to the certificate button
+     instead of leaving them to hunt for it. */
+  if (CAME_FOR_CERTIFICATE && certCard && !certCard.classList.contains('hidden')) {
+    setTimeout(function () {
+      certCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var b = $('certBtn');
+      if (b) {
+        b.classList.add('pulse');
+        setTimeout(function () { b.classList.remove('pulse'); }, 2600);
+      }
+    }, 700);
+  }
 }
 
 /* ---------------- wiring ---------------- */

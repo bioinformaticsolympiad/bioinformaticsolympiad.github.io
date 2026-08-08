@@ -1,11 +1,11 @@
 ﻿/**
  * =====================================================================
- * BBO 3.0 — Online Examination backend (Google Apps Script)
+ * BBO 3.0 - Online Examination backend (Google Apps Script)
  * ---------------------------------------------------------------------
  * Handles registration, answer autosave, submission, confirmation email
  * and grading for the Biology & Bioinformatics Olympiad 3.0.
  *
- * SETUP — do these in order:
+ * SETUP, do these in order:
  *   1. Open the Google Sheet that will hold the data.
  *   2. Extensions ▸ Apps Script, delete the sample code, paste this file.
  *   3. Run  setup()  once (it creates every tab and the trigger).
@@ -26,7 +26,7 @@ var CONFIG = {
 
   /* Bump this whenever you paste in a new Code.gs. Opening the /exec URL in a
      browser shows it, so you can tell at a glance whether the deployment is
-     actually serving the code you just pasted — a redeploy that silently kept
+     actually serving the code you just pasted, a redeploy that silently kept
      an older version is otherwise very hard to spot.                          */
   CODE_VERSION: 'v4-round2',
   // Must match exam/config.js START_ISO / DURATION_MIN
@@ -60,7 +60,7 @@ var CONFIG = {
   ROUND2_MAX_UPLOAD_KB: 3000,
   EMAIL_SUBJECT: 'Your BBO 3.0 answers have been received',
   REPLY_TO: 'bioinformatics.olympiad@gmail.com',
-  ORG_NAME: 'BioPC — Biology & Bioinformatics Olympiad',
+  ORG_NAME: 'BioPC - Biology & Bioinformatics Olympiad',
   SITE_URL: 'https://olympiad.biopc.org'
 };
 
@@ -108,7 +108,7 @@ function setup() {
   ]);
   ensureSheet(ss, SHEETS.LOG, ['Timestamp', 'Where', 'Message', 'Payload']);
 
-  // Email queue worker — runs every 5 minutes, respects the daily quota.
+  // Email queue worker, runs every 5 minutes, respects the daily quota.
   ScriptApp.getProjectTriggers().forEach(function (t) {
     if (t.getHandlerFunction() === 'processEmailQueue') ScriptApp.deleteTrigger(t);
   });
@@ -128,7 +128,7 @@ function ensureSheet(ss, name, headers) {
   if (sh.getLastRow() === 0) {
     sh.appendRow(headers);
   } else {
-    /* Sheet already exists from an earlier setup — rewrite the header row so a
+    /* Sheet already exists from an earlier setup, rewrite the header row so a
        newly added column (e.g. ScreenshotAttempts) appears without losing data.
        Existing rows keep their values; the new column is simply blank for them. */
     var width = Math.max(headers.length, sh.getLastColumn());
@@ -151,7 +151,7 @@ function sheet(name) {
  * getUi().alert() opens a modal in the SPREADSHEET tab and waits for someone to
  * click OK. Run a function from the Apps Script editor and that dialog appears
  * in a tab you are not looking at, so the script sits there until it is killed
- * at the six-minute limit — which looks exactly like the code hanging.
+ * at the six-minute limit, which looks exactly like the code hanging.
  * toast() shows in the sheet and returns immediately; Logger.log() puts the
  * same text in the editor's execution log.
  */
@@ -159,7 +159,7 @@ function notify(message) {
   Logger.log(message);
   try {
     SpreadsheetApp.getActiveSpreadsheet().toast(message.slice(0, 240), 'BBO 3.0 Exam', 12);
-  } catch (e) { /* no spreadsheet context — the log is enough */ }
+  } catch (e) { /* no spreadsheet context, the log is enough */ }
   return message;
 }
 
@@ -250,7 +250,7 @@ function handleSubmit(d) {
   var token = clean(d.token, 60);
   if (!token) return json({ ok: false, error: 'Missing token' });
 
-  // Window check — generous, so a slow connection never loses a paper.
+  // Window check, generous, so a slow connection never loses a paper.
   var endMs = new Date(CONFIG.START_ISO).getTime() + CONFIG.DURATION_MIN * 60000;
   if (Date.now() > endMs + CONFIG.GRACE_MIN * 60000) {
     // Still record it, but flag it for the organisers to review.
@@ -269,7 +269,7 @@ function handleSubmit(d) {
   };
   if (!reg.email) reg = findRegistration(token);
 
-  /* Idempotency via the script cache — a constant-time lookup instead of
+  /* Idempotency via the script cache, a constant-time lookup instead of
      scanning the Submissions sheet. If the cache has been evicted we may write
      a duplicate row; gradeAll() keeps the first paper per token, so a duplicate
      never affects the result. */
@@ -314,8 +314,8 @@ function handleSubmit(d) {
    Powers olympiad.biopc.org/result/.
 
    The participant list never leaves this script. The page sends a typed email
-   and gets back exactly one person's result, or — when the address is close but
-   not exact — a short list of MASKED suggestions plus an opaque id. Selecting a
+   and gets back exactly one person's result, or, when the address is close but
+   not exact, a short list of MASKED suggestions plus an opaque id. Selecting a
    suggestion returns the result via that id, so no email address is ever
    disclosed to someone who did not already know it.
    ================================================================ */
@@ -333,7 +333,7 @@ function lookupId(email) {
   return hex.slice(0, 20);
 }
 
-/* ma••••ha@gmail.com — enough to recognise your own address, not enough to harvest. */
+/* ma••••ha@gmail.com, enough to recognise your own address, not enough to harvest. */
 function maskEmail(email) {
   var at = String(email).indexOf('@');
   if (at < 1) return '•••';
@@ -435,7 +435,7 @@ function handleResultLookup(d) {
   return json({ ok: true, found: false, suggestions: out, total: rows.length });
 }
 
-/* First name plus an initial — helps someone spot their own row without
+/* First name plus an initial, helps someone spot their own row without
    publishing full names against addresses. */
 function maskName(name) {
   var parts = String(name).trim().split(/\s+/);
@@ -716,10 +716,10 @@ function confirmationHtml(name, subId, attempted) {
             '<td style="padding:8px;border:1px solid #e8f0ec"><strong>' + attempted + ' of ' + CONFIG.TOTAL_MARKS + '</strong></td></tr>' +
       '</table>' +
       '<p style="background:#fff5e5;border-left:4px solid #f0a500;padding:12px 14px;font-size:14px;border-radius:6px">' +
-        '<strong>This email confirms receipt only — it does not contain your score.</strong> ' +
+        '<strong>This email confirms receipt only, it does not contain your score.</strong> ' +
         'Results will be announced later on our official channels.</p>' +
       '<p style="font-size:14px">Thank you for taking part.</p>' +
-      '<p style="font-size:14px;margin-bottom:0">— ' + escHtml(CONFIG.ORG_NAME) + '<br>' +
+      '<p style="font-size:14px;margin-bottom:0"> - ' + escHtml(CONFIG.ORG_NAME) + '<br>' +
         '<a href="' + CONFIG.SITE_URL + '" style="color:#0d6e3a">' + CONFIG.SITE_URL + '</a></p>' +
     '</div>' +
   '</div>';
@@ -779,7 +779,7 @@ function gradeAll() {
     };
   });
 
-  // De-duplicate by email — keep the earliest paper.
+  // De-duplicate by email, keep the earliest paper.
   var byEmail = {};
   var rows = [];
   Object.keys(records).map(function (k) { return records[k]; })
@@ -816,7 +816,7 @@ function gradeAll() {
   if (rows.length) sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
   sh.autoResizeColumns(1, headers.length);
 
-  /* Look the column up by name — a hard-coded index silently breaks the count
+  /* Look the column up by name, a hard-coded index silently breaks the count
      whenever a column is added. */
   var resultCol = headers.indexOf('Result');
   var passed = rows.filter(function (r) { return r[resultCol] === 'PASS'; }).length;

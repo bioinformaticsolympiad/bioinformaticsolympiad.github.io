@@ -1,5 +1,5 @@
 /* =====================================================
-   BBO 3.0 — Result checker configuration
+   BBO 3.0 - Result checker configuration
    Edit ONLY this file to change wording or the backend URL.
    ===================================================== */
 window.BBO_RESULT_CONFIG = {
