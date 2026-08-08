@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#0c1f4a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&family=Great+Vibes&family=Ibarra+Real+Nova:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="round2.css">
 </head>
 <body>
@@ -425,7 +425,23 @@
 
 <div id="toast" class="toast hidden"></div>
 
+<!-- floating certificate progress popup -->
+<div id="certPopup" class="cert-popup hidden" role="status" aria-live="polite">
+  <div class="cert-popup-inner">
+    <div class="cert-spinner" id="certSpinner" aria-hidden="true"></div>
+    <div class="cert-tick hidden" id="certTick" aria-hidden="true">✓</div>
+    <div class="cert-copy">
+      <strong id="certTitle">Your certificate is generating</strong>
+      <span id="certMsg">It will take 2–3 minutes. Please don't leave this page.</span>
+    </div>
+    <button type="button" class="cert-close hidden" id="certClose" aria-label="Close">×</button>
+  </div>
+  <a href="#" class="cert-manual hidden" id="certManual">Download didn't start? Tap here</a>
+</div>
+
 <script src="config.js"></script>
+<script src="../assets/certificate/layout.js"></script>
+<script src="../assets/certificate/certificate.js"></script>
 <script src="round2.js"></script>
 </body>
 </html>

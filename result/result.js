@@ -218,6 +218,19 @@ function renderResult(r) {
     cta.classList.add('hidden');
   }
 
+  /* Certificate. The button carries the same verified id and lands on the
+     Round 2 page, where the certificate is built and downloaded. */
+  var certCard = $('certCard');
+  if (certCard) {
+    if (passed && r.lookupId) {
+      $('certBtn').setAttribute('href',
+        '../round2/?t=' + encodeURIComponent(r.lookupId) + '&cert=1');
+      certCard.classList.remove('hidden');
+    } else {
+      certCard.classList.add('hidden');
+    }
+  }
+
   showOnly('resultBox');
 }
 

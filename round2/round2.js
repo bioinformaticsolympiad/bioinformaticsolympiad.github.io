@@ -9,6 +9,7 @@
 
 var CFG = window.BBO_R2_CONFIG || {};
 var LOOKUP_ID = null;
+var CERT_MODE = false;
 var CANDIDATE = null;
 var STATE = null;
 var SHOT = null;          // { data: base64, type: mime, kb: number }
@@ -305,6 +306,57 @@ function renderDone(res, pkg) {
   show('doneBox');
 }
 
+/* ---------------- certificate ----------------
+   Reached from the result page with &cert=1. The registration page stays
+   fully usable while this runs; the popup is the only overlay. */
+function certUI(state, title, msg) {
+  var p = $('certPopup');
+  p.classList.remove('hidden', 'done', 'error');
+  if (state) p.classList.add(state);
+  $('certSpinner').classList.toggle('hidden', state === 'done' || state === 'error');
+  $('certTick').classList.toggle('hidden', state !== 'done');
+  $('certClose').classList.toggle('hidden', !state);
+  $('certTitle').textContent = title;
+  $('certMsg').textContent = msg;
+}
+
+function runCertificate(candidate) {
+  if (!window.BBOCertificate) return;
+
+  var waitMs = CFG.CERT_MIN_WAIT_MS != null ? CFG.CERT_MIN_WAIT_MS : 8000;
+  certUI(null, 'Your certificate is generating',
+    'It will take 2–3 minutes. Please don\'t leave this page.');
+
+  $('certClose').onclick = function () { $('certPopup').classList.add('hidden'); };
+
+  var started = Date.now();
+  var record = {
+    name: candidate.name,
+    rank: candidate.rank,
+    certificateId: candidate.certificateId || ''
+  };
+
+  window.BBOCertificate.generate(record, '../assets/certificate/template.png')
+    .then(function (out) {
+      /* Hold the popup for the promised interval even though the drawing
+         itself is quick, so the message on screen stays truthful. */
+      var wait = Math.max(0, waitMs - (Date.now() - started));
+      setTimeout(function () {
+        window.BBOCertificate.download(out);
+        certUI('done', 'Congratulations!',
+          'Your certificate has been downloaded in your device.');
+        var manual = $('certManual');
+        manual.classList.remove('hidden');
+        manual.setAttribute('href', out.dataUrl);
+        manual.setAttribute('download', out.filename);
+      }, wait);
+    })
+    .catch(function (err) {
+      certUI('error', 'Certificate could not be generated',
+        (err && err.message ? err.message + ' ' : '') + 'Please reload the page and try again.');
+    });
+}
+
 /* ---------------- boot ---------------- */
 function setAll(selector, text) {
   Array.prototype.forEach.call(document.querySelectorAll(selector), function (el) {
@@ -396,6 +448,7 @@ function boot() {
 
   var m = location.search.match(/[?&]t=([^&]+)/);
   LOOKUP_ID = m ? decodeURIComponent(m[1]) : null;
+  CERT_MODE = /[?&]cert=1\b/.test(location.search);
 
   if (!CFG.API_URL || CFG.API_URL.indexOf('http') !== 0) {
     $('gateTitle').textContent = 'Registration is not available yet';
@@ -415,6 +468,10 @@ function boot() {
 
     CANDIDATE = res.candidate;
     STATE = res.state;
+
+    /* Certificate runs regardless of which screen the registration flow
+       lands on — already registered, closed, or the form itself. */
+    if (CERT_MODE) runCertificate(CANDIDATE);
 
     if (res.alreadyRegistered) {
       var prev = res.alreadyRegistered;

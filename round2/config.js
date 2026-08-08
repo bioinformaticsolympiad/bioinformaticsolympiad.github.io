@@ -26,5 +26,13 @@ window.BBO_R2_CONFIG = {
   /* Screenshots are resized in the browser before upload so a 5 MB phone photo
      does not have to travel to the server. */
   MAX_IMAGE_WIDTH: 1400,
-  JPEG_QUALITY: 0.82
+  JPEG_QUALITY: 0.82,
+
+  /* ---- Certificate ------------------------------------------------------
+     How long the "generating" popup stays up before the download fires.
+     Drawing the certificate actually takes about a second, so this is purely
+     how long the participant is asked to wait. 180000 would give the literal
+     "2-3 minutes"; 8 seconds is long enough to read the message without
+     making 861 people sit and stare at a page.                             */
+  CERT_MIN_WAIT_MS: 8000
 };

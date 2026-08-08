@@ -155,6 +155,12 @@ h3{font-size:1.15rem;color:var(--navy);margin-bottom:.3rem}
 .next-round h3{font-size:1.25rem;margin-bottom:.6rem}
 .next-round p{margin-bottom:.5rem}
 
+.cert-card{text-align:center;border-color:var(--accent2);
+  background:linear-gradient(135deg,#f2fafe,#eef7ff)}
+.cert-card h3{font-size:1.25rem;margin-bottom:.5rem}
+.cert-card p{max-width:520px;margin-left:auto;margin-right:auto}
+.cert-card .btn{margin:.75rem 0 .5rem}
+
 .r2-cta{margin-top:1.25rem;padding-top:1.25rem;border-top:1px dashed var(--accent);text-align:center}
 .r2-cta .btn{margin-bottom:.6rem}
 .btn-lg{padding:1rem 2.2rem;font-size:1.02rem}
