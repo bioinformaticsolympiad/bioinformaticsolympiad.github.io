@@ -41,6 +41,61 @@ function toast(msg, isErr) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function () { t.classList.add('hidden'); }, 4000);
 }
+/**
+ * Scroll to an element over a set duration.
+ *
+ * scrollIntoView({behavior:'smooth'}) travels at a fixed browser-chosen speed,
+ * which on a long result page is over almost before it is noticed. Animating it
+ * here lets the journey take a deliberate couple of seconds, with an ease in and
+ * out so it starts gently, flows, and settles rather than stopping dead.
+ * A visitor who grabs the scrollbar or flicks the page cancels it immediately.
+ */
+function glideTo(el, duration, done) {
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var startY = window.pageYOffset || document.documentElement.scrollTop;
+  var rect = el.getBoundingClientRect();
+  var targetY = Math.max(0, startY + rect.top - Math.max(0, (window.innerHeight - rect.height) / 2));
+  var distance = targetY - startY;
+
+  /* Nothing to animate for a hidden tab: requestAnimationFrame is paused there,
+     so a link opened in the background would otherwise sit unscrolled. Put the
+     page where it belongs straight away and let them arrive to it. */
+  if (reduceMotion || document.hidden || Math.abs(distance) < 8 || !window.requestAnimationFrame) {
+    window.scrollTo(0, targetY);
+    if (done) done();
+    return;
+  }
+
+  /* easeInOutCubic: slow start, steady middle, soft landing */
+  var ease = function (t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  };
+
+  var startTime = null, cancelled = false;
+  var cancel = function () { cancelled = true; };
+  window.addEventListener('wheel', cancel, { passive: true });
+  window.addEventListener('touchstart', cancel, { passive: true });
+  window.addEventListener('keydown', cancel);
+
+  function stop() {
+    window.removeEventListener('wheel', cancel);
+    window.removeEventListener('touchstart', cancel);
+    window.removeEventListener('keydown', cancel);
+    if (done) done();
+  }
+
+  function step(now) {
+    if (cancelled) { stop(); return; }
+    if (startTime === null) startTime = now;
+    var t = Math.min(1, (now - startTime) / duration);
+    window.scrollTo(0, Math.round(startY + distance * ease(t)));
+    if (t < 1) window.requestAnimationFrame(step); else stop();
+  }
+  window.requestAnimationFrame(step);
+}
+
 function showOnly(id) {
   ['suggestBox', 'notFound', 'resultBox'].forEach(function (s) {
     $(s).classList.toggle('hidden', s !== id);
@@ -242,13 +297,14 @@ function renderResult(r) {
      instead of leaving them to hunt for it. */
   if (CAME_FOR_CERTIFICATE && certCard && !certCard.classList.contains('hidden')) {
     setTimeout(function () {
-      certCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      var b = $('certBtn');
-      if (b) {
-        b.classList.add('pulse');
-        setTimeout(function () { b.classList.remove('pulse'); }, 2600);
-      }
-    }, 700);
+      glideTo(certCard, 2600, function () {
+        var b = $('certBtn');
+        if (b) {
+          b.classList.add('pulse');
+          setTimeout(function () { b.classList.remove('pulse'); }, 2600);
+        }
+      });
+    }, 900);
   }
 }
 

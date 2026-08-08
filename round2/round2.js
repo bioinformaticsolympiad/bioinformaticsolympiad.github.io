@@ -325,7 +325,7 @@ function runCertificate(candidate) {
 
   var waitMs = CFG.CERT_MIN_WAIT_MS != null ? CFG.CERT_MIN_WAIT_MS : 8000;
   certUI(null, 'Your certificate is generating',
-    'It will take 1 minute. Please don\'t leave this page.');
+    'It may take 1 minute. Please don\'t leave this page.');
 
   $('certClose').onclick = function () { $('certPopup').classList.add('hidden'); };
 
