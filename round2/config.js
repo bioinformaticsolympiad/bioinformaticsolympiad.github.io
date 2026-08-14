@@ -17,7 +17,7 @@ window.BBO_R2_CONFIG = {
   /* bKash numbers shown on the payment step. Send Money (personal). */
   BKASH_NUMBERS: ["01622488559", "01855310554"],
 
-  WHATSAPP_URL: "https://chat.whatsapp.com/DfYeBUPUYvL5ff5UTmMNuX?s=cl&p=a&ilr=0",
+  WHATSAPP_URL: "https://chat.whatsapp.com/H2DNQoGnegb0dnHhnI9v1l?s=cl&p=a&mlu=4",
 
   SUPPORT_EMAIL: "bioinformatics.olympiad@gmail.com",
   FB_PAGE_NAME: "BioPC - A Bioinformatics Research and Training Center",
