@@ -52,7 +52,7 @@ var CONFIG = {
      close registration by hand at any time.                                   */
   ROUND2_OPEN: true,
   ROUND2_CAPACITY: 350,
-  ROUND2_DEADLINE_ISO: '2026-08-31T23:59:59+06:00',
+  ROUND2_DEADLINE_ISO: '2026-09-10T23:59:59+06:00',
   ROUND2_FEE_EXAM: 500,
   ROUND2_FEE_FULL: 600,
   ROUND2_DRIVE_FOLDER: 'BBO 3.0 Round 2 payment screenshots',
