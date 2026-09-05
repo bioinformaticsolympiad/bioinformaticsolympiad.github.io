@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioPC Quiz Test | Official Dynamic MCQ Quiz Test Platform</title>
+  <meta name="description"
+    content="Official real-time 10-minute competitive quiz examination conducted and held by BioPC, featuring Kahoot-style speed scoring, strict linear progression, and anti-cheat proctoring.">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono for Timer -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- BioPC Official Favicon & App Icon -->
+  <link rel="icon" type="image/png" href="Logo.png">
+  <link rel="apple-touch-icon" href="Logo.png">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dark-theme">
+
+  <!-- Background Ambient Mesh Glows -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Global Header Navigation -->
+  <header class="app-header" id="appHeader">
+    <div class="header-container">
+      <div class="brand-logo" id="brandLogo" title="BioPC - A Bioinformatics Lab of Research and Training">
+        <div class="logo-icon">
+          <img src="Logo.png" alt="BioPC Logo" class="brand-logo-img">
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">BioPC <span class="brand-accent">Academy</span></span>
+          <span class="brand-badge">BioPC Quiz Test</span>
+        </div>
+      </div>
+
+      <div class="header-status-bar">
+        <div class="connection-status-pill" id="globalConnStatus" title="System Connection Status">
+          <span class="status-dot online"></span>
+          <span class="status-label" id="connStatusText">Connected</span>
+        </div>
+        <div class="session-state-pill" id="globalExamStatusPill">
+          <span class="state-dot" id="examStatusDot"></span>
+          <span class="state-label" id="examStatusText">Status: Checking...</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Discreet Admin Cockpit Access Button (Only Administrators) -->
+        <button class="admin-discreet-btn" id="btnTriggerAdminAuth" title="Administrator Control Cockpit">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span class="btn-text">Admin Access</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Multi-Panel Container -->
+  <main class="main-container" id="mainContainer">
+
+    <!-- ============================================================= -->
+    <!-- VIEW 1: PARTICIPANT PORTAL ENTRY & REGISTRATION               -->
+    <!-- ============================================================= -->
+    <section class="panel active-panel" id="viewParticipantEntry">
+      <div class="entry-layout-grid">
+
+        <!-- Left: Official Examination Rules & Guidelines Card -->
+        <div class="rules-card glass-panel">
+          <div class="rules-card-header">
+            <div class="rules-badge">
+              <img src="Logo.png" alt="BioPC" class="rules-badge-logo">
+              <span>BioPC Official Quiz Regulations</span>
+            </div>
+            <h2 class="rules-main-title">BioPC Examination Protocol &amp; Scoring Rules</h2>
+            <p class="rules-subtitle">Competitive Quiz Test organized and held by <strong>BioPC</strong>. Please
+              thoroughly review all regulations before launching your session.</p>
+          </div>
+
+          <div class="rules-grid">
+            <div class="rule-box">
+              <div class="rule-icon icon-clock">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div class="rule-content">
+                <h4 class="rule-heading">Timed Quiz Examination</h4>
+                <p class="rule-desc">Decentralized individual countdown starts the exact moment you enter. Closing or
+                  reloading the tab continues the clock in real-time.</p>
+              </div>
+            </div>
+
+            <div class="rule-box highlight-speed">
+              <div class="rule-icon icon-speed">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+              <div class="rule-content">
+                <h4 class="rule-heading">Kahoot-Style Live Speed Bonus</h4>
+                <p class="rule-desc">Each MCQ tracks your response time with a 60-second mathematical decay. Answering
+                  accurately in 5s awards <strong>~917 bonus points</strong>; 30s awards <strong>~500 bonus
+                    points</strong> (only for correct answers!).</p>
+              </div>
+            </div>
+
+            <div class="rule-box">
+              <div class="rule-icon icon-score">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+              <div class="rule-content">
+                <h4 class="rule-heading">Weighted Tie-Breaker Ranking</h4>
+                <p class="rule-desc">Base accuracy dominates: 1 mark per correct answer (Max: 10.0). Speed points break
+                  ties among equal scorers on the live leaderboard.</p>
+              </div>
+            </div>
+
+            <div class="rule-box highlight-danger">
+              <div class="rule-icon icon-shield">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <div class="rule-content">
+                <h4 class="rule-heading">Chrome "Ask Gemini" &amp; AI Strictly Prohibited</h4>
+                <p class="rule-desc">Interacting with Chrome's "Ask Gemini" sidebar, copying questions, right-clicking
+                  to ask AI, or leaving the window is strictly prohibited. Violations immediately terminate and lock
+                  your exam, requiring BioPC Administrator authorization for a 2nd attempt.</p>
+              </div>
+            </div>
+
+            <div class="rule-box highlight-speed">
+              <div class="rule-icon icon-cloud">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <div class="rule-content">
+                <h4 class="rule-heading">Strict Linear Order &amp; 5s Auto-Advance</h4>
+                <p class="rule-desc">Questions must be answered sequentially one-by-one. When you select an answer, your
+                  points &amp; speed bonus are revealed immediately, and after <strong>5 seconds</strong> it
+                  automatically advances to the next question (or you can click to advance manually at any time!).</p>
+              </div>
+            </div>
+
+            <div class="rule-box">
+              <div class="rule-icon icon-keys">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
+                </svg>
+              </div>
+              <div class="rule-content">
+                <h4 class="rule-heading">Keyboard Accessibility</h4>
+                <p class="rule-desc">Speed up your responses by pressing keys <kbd>A</kbd>, <kbd>B</kbd>, <kbd>C</kbd>,
+                  <kbd>D</kbd> to select options and <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> to navigate.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Registration Form Card -->
+        <div class="entry-card-wrapper">
+          <div class="entry-card glass-panel">
+            <div class="card-header">
+              <div class="header-icon-wrap header-logo-wrap" title="BioPC Research and Training">
+                <img src="Logo.png" alt="BioPC Logo" class="entry-header-logo">
+              </div>
+              <h1 class="card-title">BioPC Candidate Authentication</h1>
+              <p class="card-subtitle">Enter your official details to register for the live competitive session held by
+                BioPC.</p>
+            </div>
+
+            <form id="participantRegisterForm" novalidate>
+              <div class="form-group">
+                <label for="regFullName" class="form-label">Full Name <span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <span class="input-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </span>
+                  <input type="text" id="regFullName" class="form-control" placeholder="e.g. Tanvir Ahmed" required
+                    autocomplete="name">
+                </div>
+
+                <span class="field-error" id="errorFullName"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="regInstitution" class="form-label">University<span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <span class="input-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 3L2 10h20L12 3z" />
+                    </svg>
+                  </span>
+                  <input type="text" id="regInstitution" class="form-control"
+                    placeholder="e.g. University of Chittagong" required>
+                </div>
+                <span class="field-error" id="errorInstitution"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="regDepartment" class="form-label">Department / Academic Major <span
+                    class="required">*</span></label>
+                <div class="input-wrapper">
+                  <span class="input-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                    </svg>
+                  </span>
+                  <input type="text" id="regDepartment" class="form-control"
+                    placeholder="e.g. Biochemistry and Molecular Biology" required>
+                </div>
+                <span class="field-error" id="errorDepartment"></span>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="regEmail" class="form-label">Email Address <span class="required">*</span></label>
+                  <div class="input-wrapper">
+                    <span class="input-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                    </span>
+                    <input type="email" id="regEmail" class="form-control" placeholder="name@domain.com" required
+                      autocomplete="email">
+                  </div>
+                  <span class="field-error" id="errorEmail"></span>
+                </div>
+
+                <div class="form-group col-half">
+                  <label for="regPhone" class="form-label">Phone Number (11 Digits BD) <span
+                      class="required">*</span></label>
+                  <div class="input-wrapper">
+                    <span class="input-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                    </span>
+                    <input type="tel" id="regPhone" class="form-control" placeholder="017XXXXXXXX" maxlength="11"
+                      required>
+                  </div>
+                  <span class="field-error" id="errorPhone"></span>
+                </div>
+              </div>
+
+              <!-- Explicit Rule Agreement Checkbox -->
+              <div class="form-agreement-box">
+                <label class="agreement-label">
+                  <input type="checkbox" id="chkAgreeRules" required>
+                  <span class="checkbox-custom"></span>
+                  <span class="agreement-text">I agree to abide by all BioPC examination rules, speed-bonus policies,
+                    and strict Chrome 'Ask Gemini' / AI anti-cheat regulations.</span>
+                </label>
+                <span class="field-error" id="errorAgreeRules"></span>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btnSubmitRegistration">
+                <span class="btn-spinner hidden" id="regSpinner"></span>
+                <span class="btn-label">Verify &amp; Enter Examination Portal</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- VIEW 2: DYNAMIC WAITING LOBBY                                  -->
+    <!-- ============================================================= -->
+    <section class="panel" id="viewWaitingLobby">
+      <div class="lobby-wrapper">
+        <div class="lobby-card glass-panel">
+          <!-- Animated Radar / Pulse Ring -->
+          <div class="radar-container">
+            <div class="radar-ring ring-1"></div>
+            <div class="radar-ring ring-2"></div>
+            <div class="radar-ring ring-3"></div>
+            <div class="radar-center radar-logo-center" title="BioPC Exam Session Standby">
+              <img src="Logo.png" alt="BioPC Logo" class="radar-logo-img">
+            </div>
+          </div>
+
+          <div class="lobby-status-badge">
+            <span class="pulse-dot"></span>
+            <span id="lobbyStatusLabel">LOCKED &bull; Waiting for Administrator</span>
+          </div>
+
+          <h1 class="lobby-title">BioPC Candidate Waiting Lobby</h1>
+          <p class="lobby-desc">
+            Welcome, <strong id="lobbyCandidateName">Candidate</strong>! Your registration is approved for the official
+            <strong>BioPC Quiz Test</strong>.
+            The examination window is currently closed. This room continuously polls the server and will launch your
+            test the moment the BioPC Administrator opens the session.
+          </p>
+
+          <div class="lobby-poll-indicator">
+            <div class="poll-loader-bar">
+              <div class="poll-progress-inner" id="pollProgressBar"></div>
+            </div>
+            <span class="poll-text" id="pollStatusText">Polling server every 3 seconds...</span>
+          </div>
+
+          <!-- Live Top 5 Leaderboard Standings in Lobby -->
+          <div class="lobby-top5-card glass-panel" id="lobbyTop5Section"
+            style="margin: 1.2rem 0; padding: 1rem; border-radius: var(--radius-md); text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+              <h4
+                style="margin: 0; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; color: var(--text-white);">
+                <span>🏆 BioPC Top 5 Rank Leaderboard</span>
+              </h4>
+              <span class="text-xs text-muted" id="lobbyTop5CountBadge">Live Standings</span>
+            </div>
+            <div id="lobbyTop5List" style="display: flex; flex-direction: column; gap: 0.45rem;">
+              <div class="text-xs text-muted" style="text-align: center; padding: 0.5rem;">No submissions yet. Be among
+                the first to rank in the Top 5!</div>
+            </div>
+          </div>
+
+          <!-- Guidelines Box -->
+          <div class="guidelines-card">
+            <h3 class="guidelines-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              BioPC Examination Guidelines
+            </h3>
+            <ul class="guidelines-list">
+              <li><strong>Timed Examination:</strong> Individual countdown starts the moment the exam is
+                launched.</li>
+              <li><strong>Strict Sequential Order:</strong> You must answer each question sequentially before advancing.
+              </li>
+              <li><strong>Chrome "Ask Gemini" Prohibited:</strong> Using Chrome's AI side panel or leaving the window
+                triggers an instant lock requiring Administrator permission to retake.</li>
+              <li><strong>Speed Bonus Tie-Breaker:</strong> Rapid accurate answers award up to <strong>1,000 speed bonus
+                  points</strong> per question!</li>
+            </ul>
+          </div>
+
+          <div class="lobby-actions">
+            <button class="btn btn-secondary" id="btnManualLobbyRefresh">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              Force Sync Status
+            </button>
+            <button class="btn btn-outline" id="btnLobbySignOut">Exit Standby</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- VIEW 3: ACTIVE EXAMINATION SUITE                              -->
+    <!-- ============================================================= -->
+    <section class="panel" id="viewExamSuite">
+      <div class="exam-layout">
+
+        <!-- Top Exam HUD Bar -->
+        <div class="exam-hud-bar glass-panel">
+          <div class="hud-left">
+            <div class="hud-brand-pill" title="BioPC Official Competitive Examination">
+              <img src="Logo.png" alt="BioPC" class="hud-brand-logo">
+              <span class="hud-brand-text">BioPC</span>
+            </div>
+            <div class="candidate-pill">
+              <span class="avatar-letter" id="hudCandidateAvatar">T</span>
+              <div class="candidate-info">
+                <span class="candidate-name" id="hudCandidateName">Candidate</span>
+                <div class="candidate-meta-line">
+                  <span class="candidate-inst" id="hudCandidateInst">Institution</span>
+                  <span class="candidate-dept-badge" id="hudCandidateDept">Department</span>
+                </div>
+              </div>
+            </div>
+            <div class="hud-strike-pill" id="hudStrikePill" title="Tab Blur Proctoring Strikes">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span id="hudStrikeCount">0 Strikes</span>
+            </div>
+            <!-- BioPC Anti-Gemini / AI Guard Pill -->
+            <div class="hud-guard-pill" id="hudAiGuardPill"
+              title="BioPC Anti-Cheat: Chrome Gemini / AI Assistance Prohibited">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span>AI Guard: No Gemini</span>
+            </div>
+            <!-- Live Accumulated Base Score Pill -->
+            <div class="hud-score-pill" id="hudLiveScorePill" title="Live Points & Accuracy Recorded">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              <span class="hud-score-label">Score:</span>
+              <strong id="hudLiveBaseScore" class="font-mono">0.0</strong><span class="hud-score-sub">/10</span>
+            </div>
+            <!-- Live Accumulated Speed Bonus Pill -->
+            <div class="hud-speed-pill" id="hudSpeedPill" title="Cumulative Speed Bonus Points Recorded">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <span class="hud-speed-label">Speed Bonus:</span>
+              <strong id="hudTotalSpeedBonus" class="font-mono">0 pts</strong>
+            </div>
+          </div>
+
+          <div class="hud-center">
+            <div class="timer-card" id="examTimerCard">
+              <div class="timer-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div class="timer-value-wrap">
+                <span class="timer-display" id="examTimerDisplay">10:00</span>
+                <span class="timer-sub">Personal Timer</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hud-right">
+            <div class="progress-pill">
+              <span class="progress-label">Progress:</span>
+              <span class="progress-ratio" id="hudProgressRatio">0 / 10</span>
+              <div class="progress-mini-bar">
+                <div class="progress-mini-fill" id="hudProgressFill" style="width: 0%;"></div>
+              </div>
+            </div>
+            <button class="btn btn-danger btn-sm" id="btnTriggerFinish">Submit Paper</button>
+          </div>
+        </div>
+
+        <!-- Main Question Presentation Card -->
+        <div class="exam-body-grid">
+          <div class="question-main-area">
+            <!-- Practice Round Orientation Banner -->
+            <div class="practice-mode-banner hidden" id="practiceModeBanner">
+              <div class="practice-banner-content">
+                <div class="practice-badge-pill">
+                  <span class="practice-icon">🧪</span>
+                  <span class="practice-label">PRACTICE ROUND &bull; QUESTION <span id="practiceCurrentStep">1</span> OF
+                    2</span>
+                </div>
+                <div class="practice-text-wrap">
+                  <strong style="color:var(--warning-300);">Orientation &amp; Rule Test:</strong>
+                  <span>Understand the question pattern, linear answer lock, and speed decay bar.</span>
+                  <span class="practice-zero-impact-tag">⚠️ 0 Final Marks Impact (Trial Only)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="question-card glass-panel" id="currentQuestionCard">
+
+              <div class="question-card-top">
+                <div class="q-meta">
+                  <span class="q-badge" id="qNumberBadge">Question 1 of 10</span>
+                  <span class="q-category-badge" id="qCategoryBadge">Science & Logic</span>
+                  <span class="q-linear-badge" id="qLinearBadge">Step 1 &bull; Strict Order</span>
+                </div>
+                <button class="flag-btn" id="btnToggleFlag" title="Flag this question for notes">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                    <line x1="4" y1="22" x2="4" y2="15" />
+                  </svg>
+                  <span id="flagBtnText">Flag</span>
+                </button>
+              </div>
+
+              <!-- Dynamic Live Question Speed Meter & Bonus Decay Bar -->
+              <div class="live-speed-tracker" id="liveSpeedTracker">
+                <div class="speed-meta-row">
+                  <div class="speed-time-badge">
+                    <span class="speed-bolt-pulse">⚡</span>
+                    <span class="speed-subtext">Response Clock:</span>
+                    <strong id="liveQuestionElapsed">00.0s</strong>
+                  </div>
+                  <div class="speed-potential-badge" id="speedPotentialBadge">
+                    <span class="speed-subtext">Potential Speed Bonus:</span>
+                    <strong id="liveQuestionBonus">+1,000 pts</strong>
+                  </div>
+                </div>
+                <div class="speed-decay-bar-wrap">
+                  <div class="speed-decay-fill" id="speedDecayFill" style="width: 100%;"></div>
+                </div>
+                <div class="speed-status-banner" id="liveSpeedStatusBanner">
+                  <span class="speed-pulse-indicator"></span>
+                  <span id="liveSpeedStatusText">Decaying 60s Kahoot window &bull; Answer fast for max tie-breaker
+                    points!</span>
+                </div>
+              </div>
+
+              <div class="question-text-wrapper">
+                <h2 class="question-prompt" id="qPromptText">Loading question prompt...</h2>
+              </div>
+
+              <!-- Options Container -->
+              <div class="options-container" id="optionsContainer">
+                <!-- Option tiles rendered dynamically -->
+              </div>
+
+              <!-- Dynamic Immediate Points & Answer Feedback Card -->
+              <div class="question-feedback-card hidden" id="questionFeedbackCard">
+                <div class="feedback-header">
+                  <div class="feedback-badge" id="feedbackBadge">
+                    <span class="feedback-icon" id="feedbackIcon">🎯</span>
+                    <span class="feedback-title" id="feedbackTitle">CORRECT!</span>
+                  </div>
+                  <div class="feedback-points-tag" id="feedbackPointsTag">+1,850 pts</div>
+                </div>
+                <div class="feedback-body">
+                  <div class="feedback-breakdown-row">
+                    <span class="breakdown-chip chip-score" id="chipBaseScore">Base Accuracy: <strong>+1.0
+                        Mark</strong></span>
+                    <span class="breakdown-chip chip-speed" id="chipSpeedBonus">Speed Bonus: <strong>+850
+                        pts</strong></span>
+                    <span class="breakdown-chip chip-time" id="chipResponseTime">Response Time:
+                      <strong>4.2s</strong></span>
+                  </div>
+                  <div class="feedback-explanation hidden" id="feedbackExplanation">
+                    <span class="explanation-title">Explanation:</span>
+                    <span id="feedbackExplanationText"></span>
+                  </div>
+                  <div class="feedback-action-row">
+                    <button class="btn btn-primary btn-block" id="btnFeedbackProceed">
+                      <span id="feedbackProceedBtnText">Proceed to Next Question (5s)</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
+                    <!-- 5-Second Dynamic Auto-Advance Progress & Countdown Indicator -->
+                    <div class="auto-advance-indicator hidden" id="autoAdvanceIndicator">
+                      <div class="auto-advance-meta">
+                        <div style="display:flex; align-items:center; gap:0.4rem;">
+                          <span class="auto-advance-icon">⏱️</span>
+                          <span class="auto-advance-text" id="autoAdvanceText">Auto-advancing in
+                            <strong>5s</strong>...</span>
+                        </div>
+                        <span class="auto-advance-hint">(or click button to proceed now)</span>
+                      </div>
+                      <div class="auto-advance-bar">
+                        <div class="auto-advance-fill" id="autoAdvanceFill" style="width: 100%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Question Navigation Controls -->
+              <div class="question-card-footer">
+                <div class="footer-left-info">
+                  <span class="linear-mode-notice">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Sequential Exam &bull; Answer each question to advance
+                  </span>
+                </div>
+                <div class="footer-right-actions">
+                  <button class="btn btn-primary" id="btnNextQuestion">
+                    <span id="btnNextText">Next Question</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question Matrix Sidebar -->
+          <aside class="question-sidebar glass-panel">
+            <h3 class="sidebar-title">Question Navigator</h3>
+            <p class="sidebar-subtitle">Strict Linear Order &bull; Complete sequentially</p>
+
+            <div class="question-matrix-grid" id="questionMatrixGrid">
+              <!-- 10 Question Pills rendered via JS -->
+            </div>
+
+            <div class="matrix-legend">
+              <div class="legend-item"><span class="legend-dot status-answered"></span> Answered</div>
+              <div class="legend-item"><span class="legend-dot status-current"></span> Current</div>
+              <div class="legend-item"><span class="legend-dot status-locked"></span> Locked</div>
+            </div>
+
+            <div class="sidebar-stats-card">
+              <div class="sidebar-stat-row">
+                <span>Answered:</span>
+                <strong id="statAnsweredCount">0</strong>
+              </div>
+              <div class="sidebar-stat-row">
+                <span>Score Earned:</span>
+                <strong id="statScoreCount" style="color:var(--success-400)">0.0 / 10</strong>
+              </div>
+              <div class="sidebar-stat-row">
+                <span>Speed Points:</span>
+                <strong id="statSpeedCount" style="color:var(--cyan-400)">0 pts</strong>
+              </div>
+              <div class="sidebar-stat-row">
+                <span>Remaining:</span>
+                <strong id="statRemainingCount">10</strong>
+              </div>
+            </div>
+
+            <button class="btn btn-danger btn-block btn-lg" id="btnSidebarSubmit">
+              Finish & Submit Exam
+            </button>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- VIEW 4: PARTICIPANT POST-EXAM RESULTS CARD                     -->
+    <!-- ============================================================= -->
+    <section class="panel" id="viewParticipantResults">
+      <div class="results-wrapper">
+        <div class="results-card glass-panel" id="resultsPrintCard">
+          <!-- BioPC Official Institutional Certificate Header -->
+          <div class="results-cert-header">
+            <div class="results-cert-logo-box">
+              <img src="Logo.png" alt="BioPC Official Logo" class="results-biopc-logo">
+            </div>
+            <div class="results-cert-titles">
+              <span class="cert-org-name">BioPC</span>
+              <span class="cert-org-sub">A Bioinformatics Lab of Research and Training</span>
+              <span class="cert-doc-type">Official Performance Scorecard &amp; Record</span>
+            </div>
+            <div class="results-cert-stamp">
+              <span class="cert-stamp-badge">VERIFIED RESULT</span>
+            </div>
+          </div>
+
+          <div class="results-trophy-wrap">
+            <div class="trophy-glow"></div>
+            <div class="trophy-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+            </div>
+          </div>
+
+          <h1 class="results-title">BioPC Examination Scorecard</h1>
+          <p class="results-subtitle">Official BioPC Quiz Test results for <strong
+              id="resCandidateName">Candidate</strong> (<span id="resCandidateDept">Department</span> &bull; <span
+              id="resCandidateInst">Institution</span>)! Your answers and Kahoot-style speed metrics have been locked
+            into the system.</p>
+
+          <!-- Core Score Cards -->
+          <div class="score-cards-grid">
+            <div class="metric-box box-accent">
+              <span class="metric-label">Base Accuracy</span>
+              <div class="metric-value"><span id="resBaseScore">0</span><span class="metric-sub"
+                  id="resTotalQDenominator">/10</span></div>
+              <span class="metric-detail">1.0 Mark per correct answer</span>
+            </div>
+
+            <div class="metric-box box-speed">
+              <span class="metric-label">Speed Bonus</span>
+              <div class="metric-value"><span id="resSpeedBonus">0</span><span class="metric-sub">pts</span></div>
+              <span class="metric-detail">Decay-based response bonus</span>
+            </div>
+
+            <div class="metric-box box-combined">
+              <span class="metric-label">Kahoot Tie-Breaker Score</span>
+              <div class="metric-value" id="resCombinedScore">0</div>
+              <span class="metric-detail">(Base &times; 10000) + Speed Bonus</span>
+            </div>
+
+            <div class="metric-box box-strikes">
+              <span class="metric-label">Integrity Flags</span>
+              <div class="metric-value" id="resViolations">0</div>
+              <span class="metric-detail">Tab Switches &amp; Window Blurs</span>
+            </div>
+          </div>
+
+          <!-- Top 5 Rank Leaderboard Section -->
+          <div class="top5-leaderboard-section" id="resultsTop5Section" style="margin-top: 1.8rem;">
+            <div class="section-header-wrap"
+              style="justify-content: space-between; align-items: flex-end; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div>
+                <h3 class="breakdown-heading" style="display:flex; align-items:center; gap:0.5rem; margin:0;">
+                  <span>🏆 BioPC Competition Top 5 Leaderboard</span>
+                </h3>
+                <p class="text-xs text-muted" id="resultsTop5Subtitle" style="margin: 0.25rem 0 0 0;">
+                  Current standings among all participants who completed the exam
+                </p>
+              </div>
+              <span class="breakdown-pill" id="resultsTotalParticipantsPill">0 Submissions</span>
+            </div>
+
+            <div class="top5-card-container glass-panel"
+              style="padding: 0; overflow-x: auto; border-radius: var(--radius-md);">
+              <table class="data-table top5-table" id="resultsTop5Table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Candidate</th>
+                    <th>Department</th>
+                    <th>Base Pts</th>
+                    <th>Speed Bonus</th>
+                    <th>Combined Score</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="resultsTop5TableBody">
+                  <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">Awaiting completed submissions...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Personal Standing Card (Shown when candidate is outside top 5) -->
+            <div id="resultsPersonalStandingBox" class="personal-standing-box hidden"
+              style="margin-top: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(129, 140, 248, 0.3); font-size: 0.85rem; color: #c7d2fe; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <span>Your Standing: <strong id="resultsPersonalRankText" style="color:var(--text-white);">Rank
+                  #--</strong> of <span id="resultsTotalCandidatesCount">--</span> participants</span>
+              <span class="badge-status badge-reg">Verified Official Result</span>
+            </div>
+          </div>
+
+          <!-- Summary Breakdown Accordion/Details -->
+          <div class="results-breakdown-section">
+            <div class="section-header-wrap">
+              <h3 class="breakdown-heading">Question-by-Question Breakdown</h3>
+              <span class="breakdown-pill">Review Performance</span>
+            </div>
+            <div class="breakdown-list" id="resultsBreakdownList">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="results-footer-actions">
+            <button class="btn btn-outline" id="btnPrintResult">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
+              Print / Save Scorecard
+            </button>
+            <button class="btn btn-primary" id="btnResultsReturnHome">Return to Portal</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- VIEW 6: RETAKE PERMISSION & ATTEMPT LOCK PORTAL               -->
+    <!-- ============================================================= -->
+    <section class="panel" id="viewRetakePermission">
+      <div class="lobby-wrapper">
+        <div class="results-card glass-panel" style="max-width: 580px;">
+          <div class="retake-logo-badge" id="retakeStatusIcon">
+            <img src="Logo.png" alt="BioPC Logo" class="retake-logo-img">
+          </div>
+
+          <h2 class="results-title" id="retakeCardTitle">BioPC Examination Attempt Limit Reached</h2>
+          <p class="results-subtitle" id="retakeCardSubtitle">
+            Candidate <strong id="retakeCandidateName">Candidate</strong>
+            (<code><span id="retakeCandidateToken">TOK_XXXX</span></code>) has already submitted an exam paper.
+          </p>
+
+          <!-- Prohibited AI / Chrome Gemini Activity Alert Banner -->
+          <div class="ai-violation-alert-banner" id="retakeAiAlertBanner"
+            style="display:none; background: rgba(239, 68, 68, 0.16); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 1.2rem; text-align: left;">
+            <div
+              style="display:flex; align-items:center; gap:0.6rem; color:#f87171; font-weight:700; font-size:0.95rem; margin-bottom:0.35rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>PROHIBITED AI / CHROME GEMINI USAGE DETECTED</span>
+            </div>
+            <p style="font-size:0.84rem; color:#e2e8f0; margin:0; line-height:1.45;">
+              Your examination was automatically terminated and locked because interaction with Chrome's <strong>"Ask
+                Gemini"</strong> side panel or external AI assistance was detected. Under <strong>BioPC</strong>
+              examination rules, generative AI and sidebar tools are strictly prohibited. To be considered for a second
+              attempt, submit your formal explanation to the Administrator below.
+            </p>
+          </div>
+
+          <!-- Status Banner -->
+          <div class="warning-count-banner" id="retakeStatusBanner"
+            style="justify-content: center; gap: 0.8rem; font-weight: 600;">
+            <span id="retakeStatusBadge">Attempt Status: SUBMITTED</span>
+          </div>
+
+          <div class="submission-summary-box" style="text-align: left;">
+            <div class="summary-row">
+              <span>Institution:</span>
+              <strong id="retakeCandidateInst">--</strong>
+            </div>
+            <div class="summary-row">
+              <span>Department:</span>
+              <strong id="retakeCandidateDept">--</strong>
+            </div>
+            <div class="summary-row">
+              <span>Email:</span>
+              <strong id="retakeCandidateEmail">--</strong>
+            </div>
+            <div class="summary-row">
+              <span>Phone:</span>
+              <strong id="retakeCandidatePhone">--</strong>
+            </div>
+            <div class="summary-row">
+              <span>Single Attempt Policy:</span>
+              <strong class="text-danger">1 Attempt Maximum</strong>
+            </div>
+          </div>
+
+          <!-- Section 1: If SUBMITTED and hasn't requested permission yet -->
+          <div id="retakeRequestFormSection">
+            <p class="text-sm text-muted" style="margin-bottom: 1.2rem;">
+              To protect competitive integrity, a 2nd attempt requires direct Administrator authorization. If you
+              experienced a technical glitch or abnormal disconnection, submit your permission request below:
+            </p>
+
+            <form id="formSubmitRetakeRequest"
+              style="display: flex; flex-direction: column; gap: 0.85rem; text-align: left;">
+              <div class="form-group">
+                <label for="inputRetakeReason" class="form-label">Detailed Reason for Retake Request <span
+                    class="required">*</span></label>
+                <textarea id="inputRetakeReason" class="form-control" rows="3"
+                  placeholder="Explain the circumstance (e.g. power failure, browser crash, disconnected during Q4)..."
+                  required></textarea>
+                <span class="field-error" id="errorRetakeReason"></span>
+              </div>
+              <button type="submit" class="btn btn-warning btn-block btn-lg" id="btnSendRetakeRequest">
+                <span class="btn-spinner hidden" id="retakeSpinner"></span>
+                <span>Send Permission Request to Administrator</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Section 2: If PERMISSION_REQUESTED and pending review -->
+          <div id="retakePendingSection" class="hidden">
+            <div class="radar-container" style="margin: 1.2rem auto; width: 90px; height: 90px;">
+              <div class="radar-ring ring-1"></div>
+              <div class="radar-ring ring-2"></div>
+              <div class="radar-center" style="width: 36px; height: 36px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+            </div>
+            <h3 style="font-size: 1.15rem; color: var(--warning-400); margin-bottom: 0.5rem;">Request Pending Admin
+              Review</h3>
+            <p class="text-sm text-muted" style="margin-bottom: 0.8rem;">
+              Your permission request has been queued in the Administrator Cockpit. When the Administrator reviews and
+              grants access, this screen will automatically update.
+            </p>
+            <div class="submission-summary-box" style="text-align: left; font-size: 0.85rem;">
+              <span class="text-muted">Submitted Reason:</span>
+              <p id="retakePendingReasonDisplay"
+                style="color: var(--text-light); font-style: italic; margin-top: 0.3rem;"></p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1rem;">
+              <button class="btn btn-secondary btn-sm" id="btnCheckRetakeStatus">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 4v6h-6M1 20v-6h6" />
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+                Sync Status Now
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 3: If RETAKE_DENIED -->
+          <div id="retakeDeniedSection" class="hidden">
+            <div
+              style="margin: 1rem 0; padding: 1.2rem; border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3);">
+              <h3 style="font-size: 1.15rem; color: var(--danger-400); margin-bottom: 0.4rem;">⛔ Retake Permission
+                Denied</h3>
+              <p class="text-sm" style="color: var(--text-light);">
+                The Administrator has reviewed your request and <strong>DENIED</strong> authorization for a 2nd exam
+                attempt. Your initial submission score stands as final.
+              </p>
+            </div>
+          </div>
+
+          <!-- Section 4: If RETAKE_APPROVED -->
+          <div id="retakeApprovedSection" class="hidden">
+            <div
+              style="margin: 1rem 0; padding: 1.2rem; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);">
+              <h3 style="font-size: 1.15rem; color: var(--success-400); margin-bottom: 0.4rem;">🎉 Retake Permission
+                Granted!</h3>
+              <p class="text-sm" style="color: var(--text-light); margin-bottom: 1rem;">
+                The Administrator has approved your request for a fresh examination attempt. You may launch your session
+                now.
+              </p>
+              <button class="btn btn-success btn-block btn-lg" id="btnLaunchApprovedRetake">
+                Launch Retake Exam Session
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+            <button class="btn btn-outline btn-sm" id="btnRetakeReturnToHome">Sign Out / Return to Home</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- VIEW 5: ADMINISTRATOR CONTROL COCKPIT (HUD)                   -->
+    <!-- ============================================================= -->
+    <section class="panel" id="viewAdminCockpit">
+      <div class="admin-cockpit-layout">
+
+        <!-- Cockpit Header Controls -->
+        <div class="cockpit-header glass-panel">
+          <div class="cockpit-title-wrap">
+            <div class="cockpit-logo-crest" title="BioPC - Research and Training">
+              <img src="Logo.png" alt="BioPC Logo" class="cockpit-brand-logo">
+            </div>
+            <div>
+              <h1 class="cockpit-title">Administrator Command Cockpit</h1>
+              <span class="cockpit-subtitle">Live Proctoring HUD &bull; Full CRUD Question Studio &bull; Excel
+                Export</span>
+            </div>
+          </div>
+
+          <div class="cockpit-header-controls">
+            <div class="header-refresh-control">
+              <label for="selectAdminAutoRefresh" class="text-xs text-muted">Refresh:</label>
+              <select id="selectAdminAutoRefresh" class="form-control select-xs">
+                <option value="5000">Every 5s</option>
+                <option value="10000" selected>Every 10s</option>
+                <option value="30000">Every 30s</option>
+                <option value="0">Paused</option>
+              </select>
+            </div>
+
+            <button class="btn btn-secondary btn-sm" id="btnAdminForceSync" title="Force sync all cockpit data">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              <span>Sync</span>
+            </button>
+            <button class="btn btn-outline btn-sm btn-danger-outline" id="btnAdminMasterResetHeader"
+              title="Master Reset: Start fresh exam round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              <span>Reset All</span>
+            </button>
+            <button class="btn btn-outline btn-sm" id="btnAdminLogout">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Global Session Control Bar -->
+        <div class="session-control-card glass-panel">
+          <div class="control-col">
+            <label class="control-label">Global Exam Status:</label>
+            <div class="status-toggle-group">
+              <button class="status-btn btn-state-locked" id="btnSetStatusLocked" data-status="LOCKED">
+                <span class="state-icon">&#128274;</span>
+                <span>LOCKED</span>
+              </button>
+              <button class="status-btn btn-state-open" id="btnSetStatusOpen" data-status="OPEN">
+                <span class="state-icon">&#9654;</span>
+                <span>OPEN</span>
+              </button>
+              <button class="status-btn btn-state-ended" id="btnSetStatusEnded" data-status="ENDED">
+                <span class="state-icon">&#9209;</span>
+                <span>ENDED</span>
+              </button>
+            </div>
+            <span class="control-hint">Participants waiting in lobby automatically enter when status is
+              <strong>OPEN</strong>.</span>
+          </div>
+
+          <div class="control-col col-duration">
+            <label for="adminExamDurationSelect" class="control-label">Exam Duration:</label>
+            <div class="input-inline">
+              <select id="adminExamDurationSelect" class="form-control select-duration">
+                <option value="5">5 Minutes</option>
+                <option value="10" selected>10 Minutes (Standard)</option>
+                <option value="15">15 Minutes</option>
+                <option value="20">20 Minutes</option>
+                <option value="30">30 Minutes</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" id="btnSaveDuration">Save</button>
+            </div>
+            <span class="control-hint">Applied to all active and incoming participant sessions.</span>
+          </div>
+        </div>
+
+        <!-- Metric Cards Row -->
+        <div class="cockpit-metrics-grid">
+          <div class="admin-stat-card glass-panel">
+            <div class="stat-icon icon-cyan">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div class="stat-meta">
+              <span class="stat-num" id="adminStatRegistered">0</span>
+              <span class="stat-name">Registered Candidates</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card glass-panel">
+            <div class="stat-icon icon-emerald">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <div class="stat-meta">
+              <span class="stat-num" id="adminStatInExam">0</span>
+              <span class="stat-name">Active in Exam</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card glass-panel">
+            <div class="stat-icon icon-purple">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <div class="stat-meta">
+              <span class="stat-num" id="adminStatSubmissions">0</span>
+              <span class="stat-name">Submitted Papers</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card glass-panel">
+            <div class="stat-icon icon-rose">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <div class="stat-meta">
+              <span class="stat-num" id="adminStatViolations">0</span>
+              <span class="stat-name">Integrity Strikes</span>
+            </div>
+          </div>
+
+          <div class="admin-stat-card glass-panel" id="adminStatCardRetakes">
+            <div class="stat-icon icon-amber">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+                <line x1="22" y1="11" x2="16" y2="11" />
+              </svg>
+            </div>
+            <div class="stat-meta">
+              <span class="stat-num" id="adminStatRetakeRequests">0</span>
+              <span class="stat-name">Retake Requests</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cockpit Tab Navigation -->
+        <div class="cockpit-tabs-container">
+          <div class="cockpit-tabs-bar">
+            <button class="cockpit-tab active" data-tab="tabLeaderboard">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              Submissions Leaderboard
+            </button>
+            <button class="cockpit-tab" data-tab="tabParticipants">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+              </svg>
+              Active Candidates Roster
+            </button>
+            <button class="cockpit-tab" data-tab="tabRetakeRequests" id="tabBtnRetakeRequests">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+                <line x1="22" y1="11" x2="16" y2="11" />
+              </svg>
+              <span>Retake Requests</span>
+              <span class="badge-status badge-severity-warning" id="adminPendingRetakeBadge"
+                style="display:none; font-size:0.68rem; padding:0.15rem 0.45rem; margin-left:0.25rem;">0</span>
+            </button>
+            <button class="cockpit-tab" data-tab="tabQuestionBank">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              Question Bank Studio
+            </button>
+            <button class="cockpit-tab" data-tab="tabAuditLogs">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              Proctoring Audit Log
+            </button>
+            <button class="cockpit-tab" data-tab="tabAdminSettings">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              Admin Security &amp; Settings
+            </button>
+          </div>
+
+          <!-- Tab Content 1: Submissions Leaderboard -->
+          <div class="cockpit-tab-panel active" id="tabLeaderboard">
+            <!-- Top 5 Champions Showcase -->
+            <div class="admin-top5-showcase glass-panel" id="adminTop5Section">
+              <div class="top5-header">
+                <div class="top5-badge-title">
+                  <span class="top5-trophy">&#127942;</span>
+                  <h4>BioPC Quiz Test — Top 5 Champions Podium</h4>
+                </div>
+                <span class="text-xs text-muted">Auto-ranked by Kahoot Speed Score &amp; Accuracy</span>
+              </div>
+              <div class="top5-podium-grid" id="adminTop5PodiumCards">
+                <!-- Injected dynamically by renderAdminLeaderboard -->
+                <div class="top5-empty-state">No candidate submissions recorded yet.</div>
+              </div>
+            </div>
+
+            <div class="table-card glass-panel">
+              <!-- Advanced Toolbar with Search & Download Excel -->
+              <div class="tab-toolbar">
+                <div class="toolbar-search-wrap">
+                  <span class="toolbar-search-icon">&#128269;</span>
+                  <input type="text" id="searchLeaderboardInput" class="form-control form-control-sm"
+                    placeholder="Search candidate or token...">
+                </div>
+                <div class="toolbar-actions">
+                  <button class="btn btn-success btn-sm btn-excel" id="btnExportLeaderboardExcel">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span>Download in Excel (.csv)</span>
+                  </button>
+                  <button class="btn btn-outline btn-sm btn-danger-outline" id="btnResetLeaderboardQuick"
+                    title="Clear all recorded test submissions from the leaderboard">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    <span>Reset Leaderboard</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Candidate Name</th>
+                      <th>Department</th>
+                      <th>Base Score</th>
+                      <th>Speed Bonus</th>
+                      <th>Combined Kahoot Score</th>
+                      <th>Tab Strikes</th>
+                      <th>Time Taken</th>
+                      <th>Submitted At</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaderboardTableBody">
+                    <tr>
+                      <td colspan="10" class="text-center py-4">No submissions yet recorded.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content 2: Candidates Roster -->
+          <div class="cockpit-tab-panel" id="tabParticipants">
+            <div class="table-card glass-panel">
+              <!-- Toolbar with Filter, Search & Export -->
+              <div class="tab-toolbar">
+                <div class="toolbar-search-wrap">
+                  <span class="toolbar-search-icon">&#128269;</span>
+                  <input type="text" id="searchParticipantsInput" class="form-control form-control-sm"
+                    placeholder="Search by name, dept, email, phone...">
+                </div>
+                <div class="toolbar-filters">
+                  <select id="selectParticipantStatusFilter" class="form-control form-control-sm">
+                    <option value="ALL">All Statuses</option>
+                    <option value="REGISTERED">Registered</option>
+                    <option value="IN_EXAM">In Exam</option>
+                    <option value="SUBMITTED">Submitted</option>
+                    <option value="PERMISSION_REQUESTED">Retake Requested</option>
+                    <option value="RETAKE_APPROVED">Retake Approved</option>
+                    <option value="RETAKE_DENIED">Retake Denied</option>
+                    <option value="DISQUALIFIED">Disqualified</option>
+                  </select>
+                  <button class="btn btn-secondary btn-sm" id="btnExportParticipantsExcel">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                    </svg>
+                    Export Roster
+                  </button>
+                  <button class="btn btn-outline btn-sm btn-danger-outline" id="btnResetParticipantsQuick"
+                    title="Clear all registered candidates">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    <span>Reset Candidates</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Token</th>
+                      <th>Full Name</th>
+                      <th>Institution</th>
+                      <th>Department</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Current Status</th>
+                      <th>Registered</th>
+                      <th>Admin Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="participantsTableBody">
+                    <tr>
+                      <td colspan="9" class="text-center py-4">No registered candidates.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content: Retake Permission Requests -->
+          <div class="cockpit-tab-panel" id="tabRetakeRequests">
+            <div class="table-card glass-panel">
+              <div class="tab-toolbar">
+                <div class="toolbar-search-wrap">
+                  <span class="toolbar-search-icon">&#128269;</span>
+                  <input type="text" id="searchRetakeRequestsInput" class="form-control form-control-sm"
+                    placeholder="Search retake requests...">
+                </div>
+                <div class="toolbar-filters">
+                  <span class="qb-count-badge" id="retakeReqSummaryBadge">0 Pending Requests</span>
+                  <button class="btn btn-outline btn-sm btn-warning-outline" id="btnResetRetakeRequestsQuick"
+                    title="Reset all retake permission requests">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M23 4v6h-6M1 20v-6h6" />
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    <span>Reset Requests</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Requested At</th>
+                      <th>Token</th>
+                      <th>Candidate Name</th>
+                      <th>Institution</th>
+                      <th>Contact</th>
+                      <th>Submitted Reason</th>
+                      <th>Status</th>
+                      <th>Admin Authorization</th>
+                    </tr>
+                  </thead>
+                  <tbody id="retakeRequestsTableBody">
+                    <tr>
+                      <td colspan="8" class="text-center py-4 text-muted">No retake permission requests recorded.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content 3: Question Bank Studio (CRUD) -->
+          <div class="cockpit-tab-panel" id="tabQuestionBank">
+            <div class="table-card glass-panel">
+              <div class="tab-toolbar">
+                <div class="toolbar-search-wrap">
+                  <span class="toolbar-search-icon">&#128269;</span>
+                  <input type="text" id="searchQuestionBankInput" class="form-control form-control-sm"
+                    placeholder="Search questions or categories...">
+                </div>
+                <div class="toolbar-filters">
+                  <span class="qb-count-badge" id="qbCountBadge">10 Questions Active</span>
+                  <button class="btn btn-primary btn-sm" id="btnOpenCreateQuestionModal">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Add New MCQ
+                  </button>
+                  <button class="btn btn-outline btn-sm" id="btnResetDefaultQuestions"
+                    title="Restore default question bank">
+                    Reset Defaults
+                  </button>
+                </div>
+              </div>
+
+              <div class="question-bank-list" id="questionBankViewerList">
+                <!-- Rendered dynamically with Edit and Delete capabilities -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content 4: Proctoring Audit Log -->
+          <div class="cockpit-tab-panel" id="tabAuditLogs">
+            <div class="table-card glass-panel">
+              <div class="tab-toolbar">
+                <div class="toolbar-search-wrap">
+                  <span class="toolbar-search-icon">&#128269;</span>
+                  <input type="text" id="searchAuditLogsInput" class="form-control form-control-sm"
+                    placeholder="Search violations by name or token...">
+                </div>
+                <div class="toolbar-filters">
+                  <select id="selectAuditSeverityFilter" class="form-control form-control-sm">
+                    <option value="ALL">All Severities</option>
+                    <option value="VIOLATION">Violations Only</option>
+                    <option value="WARNING">Warnings Only</option>
+                  </select>
+                  <button class="btn btn-outline btn-sm btn-danger-outline" id="btnClearAuditLogs">Clear Log</button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Candidate Token</th>
+                      <th>Candidate Name</th>
+                      <th>Event Type</th>
+                      <th>Details</th>
+                      <th>Severity</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditLogsTableBody">
+                    <tr>
+                      <td colspan="6" class="text-center py-4">No integrity events logged.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content 5: Admin Security & System Settings -->
+          <div class="cockpit-tab-panel" id="tabAdminSettings">
+            <div class="table-card glass-panel">
+              <div class="admin-settings-layout">
+                <!-- Section 1: Platform Preferences & GitHub Standalone Config -->
+                <div class="settings-section">
+                  <h3 class="settings-sec-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="3" />
+                      <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                    Platform Preferences &amp; Hosting Architecture
+                  </h3>
+                  <p class="settings-sec-desc">Global platform preferences, duration defaults, and data backups.
+                    (Accessible strictly within Admin Cockpit).</p>
+
+                  <div
+                    style="background: rgba(37, 99, 235, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+                    <div
+                      style="display:flex; align-items:center; gap:0.5rem; color:var(--primary-400); font-weight:600; font-size:0.9rem;">
+                      <span>⚡ Standalone GitHub Deployment Engine</span>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--text-light); margin:0.3rem 0 0; line-height:1.4;">
+                      100% Client-Side In-Memory &amp; LocalStorage. Zero Google Apps Script or external server
+                      dependencies required.
+                    </p>
+                  </div>
+
+                  <form id="formCockpitPreferences" class="settings-form">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
+                      <div class="form-group">
+                        <label for="cockpitSettingOrgName" class="form-label">Host Organization Name</label>
+                        <input type="text" id="cockpitSettingOrgName" class="form-control" value="BioPC"
+                          placeholder="e.g. BioPC">
+                      </div>
+                      <div class="form-group">
+                        <label for="cockpitSettingDuration" class="form-label">Default Exam Duration</label>
+                        <select id="cockpitSettingDuration" class="form-control">
+                          <option value="5">5 Minutes (Sprint Round)</option>
+                          <option value="10" selected>10 Minutes (Standard)</option>
+                          <option value="15">15 Minutes</option>
+                          <option value="20">20 Minutes</option>
+                          <option value="30">30 Minutes (Comprehensive)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; align-items:center; margin-top:0.6rem; flex-wrap:wrap;">
+                      <button type="button" class="btn btn-primary" id="btnSaveCockpitSettings">Save
+                        Preferences</button>
+                      <button type="button" class="btn btn-secondary" id="btnExportPlatformJson">
+                        <span>💾 Backup All Exam Data (JSON)</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- Section 2: Change Administrator Passkey with Gmail Confirmation -->
+                <div class="settings-section">
+                  <h3 class="settings-sec-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Change Administrator Passkey (Gmail Confirmation Required)
+                  </h3>
+                  <p class="settings-sec-desc">
+                    Protected by Verified Master Email: <strong
+                      style="color:var(--primary-300);">mdmustakkhan47@gmail.com</strong>.
+                    To modify the secret master passkey, confirmation must be verified via a 6-digit code.
+                  </p>
+                  <form id="formChangeAdminKey" class="settings-form">
+                    <div class="form-group">
+                      <label for="inputCurrentAdminKey" class="form-label">Current Master Passkey</label>
+                      <input type="password" id="inputCurrentAdminKey" class="form-control"
+                        placeholder="Enter current master key" required autocomplete="current-password">
+                    </div>
+
+                    <div class="form-group">
+                      <label for="inputAdminVerifyEmail" class="form-label">Master Administrator Gmail</label>
+                      <div style="display:flex; gap:0.5rem;">
+                        <input type="email" id="inputAdminVerifyEmail" class="form-control"
+                          placeholder="mdmustakkhan47@gmail.com" required autocomplete="email">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btnSendChangePassOtp"
+                          style="white-space:nowrap;">
+                          <span>Send Code</span>
+                        </button>
+                      </div>
+                      <span class="text-xs text-muted">A 6-digit verification code will be dispatched to
+                        mdmustakkhan47@gmail.com.</span>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="inputChangePassOtp" class="form-label">6-Digit Gmail Confirmation Code</label>
+                      <input type="text" id="inputChangePassOtp" class="form-control"
+                        placeholder="Enter 6-digit code sent to mdmustakkhan47@gmail.com" required maxlength="6"
+                        autocomplete="one-time-code">
+                    </div>
+
+                    <div
+                      style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
+                      <div class="form-group">
+                        <label for="inputNewAdminKey" class="form-label">New Master Passkey</label>
+                        <input type="password" id="inputNewAdminKey" class="form-control"
+                          placeholder="Enter new secret key" required autocomplete="new-password">
+                      </div>
+                      <div class="form-group">
+                        <label for="inputConfirmAdminKey" class="form-label">Confirm New Master Passkey</label>
+                        <input type="password" id="inputConfirmAdminKey" class="form-control"
+                          placeholder="Confirm new secret key" required autocomplete="new-password">
+                      </div>
+                    </div>
+                    <span class="field-error" id="errorChangeAdminKey"></span>
+                    <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">Verify &amp; Update Admin
+                      Passkey</button>
+                  </form>
+                </div>
+
+                <div class="settings-section section-danger-zone">
+                  <h3 class="settings-sec-title text-danger">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    Master System Reset &amp; Disaster Recovery Center
+                  </h3>
+                  <p class="settings-sec-desc">Perform individual table resets or execute a full 1-click platform wipe
+                    to initiate a brand-new competitive round.</p>
+
+                  <!-- Master 1-Click Platform Reset Highlight Banner -->
+                  <div
+                    style="background: rgba(239, 68, 68, 0.12); border: 1.5px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <div
+                      style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                      <div style="max-width: 600px;">
+                        <h4 style="color:var(--danger-400); font-size:1.05rem; margin-bottom:0.25rem; font-weight:700;">
+                          ⚡ Master Platform Reset (Start Fresh Exam Batch)</h4>
+                        <p style="font-size:0.8rem; color:var(--text-light); margin:0; line-height:1.4;">Completely
+                          wipes all candidate registrations, clears submissions, clears retake requests, resets audit
+                          logs, locks exam status, and restores default question bank. Perfect for starting fresh.</p>
+                      </div>
+                      <button class="btn btn-danger btn-lg" id="btnMasterPlatformReset">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2">
+                          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                          <path d="M3 3v5h5" />
+                        </svg>
+                        <span>Reset Entire Platform</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Granular Section Reset Controls Grid -->
+                  <h4 style="font-size:0.9rem; color:var(--text-light); margin-bottom:0.85rem; font-weight:700;">
+                    Granular Tab &amp; Table Reset Controls:</h4>
+                  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.85rem;">
+                    <div class="glass-panel"
+                      style="padding:1rem; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
+                      <div>
+                        <strong style="color:var(--text-white); font-size:0.88rem;">Submissions Leaderboard</strong>
+                        <p style="font-size:0.76rem; color:var(--text-muted); margin-top:0.25rem;">Clears all candidate
+                          scores, answers, and speed tie-breakers.</p>
+                      </div>
+                      <button class="btn btn-outline btn-sm btn-danger-outline" id="btnPurgeAllSubmissions">Reset
+                        Submissions</button>
+                    </div>
+
+                    <div class="glass-panel"
+                      style="padding:1rem; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
+                      <div>
+                        <strong style="color:var(--text-white); font-size:0.88rem;">Active Candidates Roster</strong>
+                        <p style="font-size:0.76rem; color:var(--text-muted); margin-top:0.25rem;">Clears all student
+                          profiles, institutions, and session tokens.</p>
+                      </div>
+                      <button class="btn btn-outline btn-sm btn-danger-outline" id="btnPurgeAllParticipants">Reset
+                        Candidates</button>
+                    </div>
+
+                    <div class="glass-panel"
+                      style="padding:1rem; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
+                      <div>
+                        <strong style="color:var(--text-white); font-size:0.88rem;">Retake Permission Queue</strong>
+                        <p style="font-size:0.76rem; color:var(--text-muted); margin-top:0.25rem;">Clears all pending
+                          &amp; processed 2nd-attempt authorization requests.</p>
+                      </div>
+                      <button class="btn btn-outline btn-sm btn-warning-outline" id="btnPurgeAllRetakeRequests">Reset
+                        Retake Queue</button>
+                    </div>
+
+                    <div class="glass-panel"
+                      style="padding:1rem; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
+                      <div>
+                        <strong style="color:var(--text-white); font-size:0.88rem;">Proctoring Audit Log</strong>
+                        <p style="font-size:0.76rem; color:var(--text-muted); margin-top:0.25rem;">Clears all logged
+                          window blurs, tab switches, and integrity strikes.</p>
+                      </div>
+                      <button class="btn btn-outline btn-sm btn-danger-outline" id="btnPurgeAllAuditLogs">Reset Audit
+                        Log</button>
+                    </div>
+
+                    <div class="glass-panel"
+                      style="padding:1rem; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); display:flex; flex-direction:column; justify-content:space-between; gap:0.75rem;">
+                      <div>
+                        <strong style="color:var(--text-white); font-size:0.88rem;">Question Bank Studio</strong>
+                        <p style="font-size:0.76rem; color:var(--text-muted); margin-top:0.25rem;">Restores original 10
+                          high-impact competitive MCQs.</p>
+                      </div>
+                      <button class="btn btn-outline btn-sm" id="btnResetAllQuestionsToDefault">Reset Questions</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: ADMINISTRATOR AUTHENTICATION                           -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="adminAuthModal">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="modal-icon-wrap modal-logo-wrap" title="BioPC Administration">
+          <img src="Logo.png" alt="BioPC Logo" class="modal-header-logo">
+        </div>
+        <h3 class="modal-title" id="adminAuthModalTitle">Administrator Authentication</h3>
+        <button class="modal-close-btn" id="btnCloseAdminModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Standard Login Form -->
+        <div id="adminAuthLoginForm">
+          <p class="modal-text" id="adminAuthSubtitle">Enter your private BioPC Administrator master passkey to access
+            the control cockpit.</p>
+          <div class="form-group">
+            <label for="adminSecretKeyInput" class="form-label">Admin Master Passkey</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 2l-2 2m-1.5 1.5L14 9l-3-3 2.5-2.5a2.12 2.12 0 0 1 3 0l4.5 4.5z" />
+                  <circle cx="7.5" cy="16.5" r="4.5" />
+                </svg>
+              </span>
+              <input type="password" id="adminSecretKeyInput" class="form-control"
+                placeholder="Enter private master passkey" autocomplete="current-password">
+            </div>
+            <span class="field-error" id="errorAdminKey"></span>
+          </div>
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+            <div class="modal-badge-hint" style="color:var(--text-muted); font-size: 0.78rem; margin:0;">
+              <span>🔒 Secured via SHA-256</span>
+            </div>
+            <button type="button" id="btnShowRecoveryForm"
+              style="background:none; border:none; color:var(--primary-400); font-size:0.8rem; cursor:pointer; text-decoration:underline; padding:0;">
+              Forgot Passkey? Reset via Gmail
+            </button>
+          </div>
+        </div>
+
+        <!-- First-Time Master Passkey Setup Form -->
+        <div id="adminAuthSetupForm" class="hidden">
+          <p class="modal-text" style="color:var(--primary-300); font-weight:500;">
+            <strong>Setup Master Passkey:</strong> Create your private administrator passkey. Only you will know this
+            password. It will be securely hashed on your device and will never be exposed in your GitHub repository.
+          </p>
+          <div class="form-group">
+            <label for="adminNewSetupKeyInput" class="form-label">Choose Master Passkey</label>
+            <input type="password" id="adminNewSetupKeyInput" class="form-control"
+              placeholder="Create your secret passkey" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label for="adminConfirmSetupKeyInput" class="form-label">Confirm Master Passkey</label>
+            <input type="password" id="adminConfirmSetupKeyInput" class="form-control"
+              placeholder="Repeat your secret passkey" autocomplete="new-password">
+            <span class="field-error" id="errorAdminSetupKey"></span>
+          </div>
+        </div>
+
+        <!-- Emergency Passkey Recovery Form via Gmail (mdmustakkhan47@gmail.com) -->
+        <div id="adminAuthRecoveryForm" class="hidden">
+          <p class="modal-text" style="color:var(--primary-300); font-size:0.85rem;">
+            <strong>Emergency Passkey Recovery:</strong> Enter the verified master administrator Gmail address
+            (<code>mdmustakkhan47@gmail.com</code>) to receive a secure 6-digit confirmation code.
+          </p>
+          <div class="form-group">
+            <label for="adminRecoveryEmailInput" class="form-label">Administrator Gmail Address</label>
+            <div style="display:flex; gap:0.5rem;">
+              <input type="email" id="adminRecoveryEmailInput" class="form-control"
+                placeholder="mdmustakkhan47@gmail.com" autocomplete="email">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnSendRecoveryCode"
+                style="white-space:nowrap;">
+                <span>Send Code</span>
+              </button>
+            </div>
+            <span class="field-error" id="errorRecoveryEmail"></span>
+          </div>
+
+          <div id="recoveryOtpSection" class="hidden" style="margin-top:0.75rem;">
+            <div class="form-group">
+              <label for="adminRecoveryOtpInput" class="form-label">6-Digit Confirmation Code</label>
+              <input type="text" id="adminRecoveryOtpInput" class="form-control" placeholder="Enter 6-digit code"
+                maxlength="6" autocomplete="one-time-code">
+            </div>
+            <div class="form-group">
+              <label for="adminRecoveryNewPassInput" class="form-label">New Master Passkey</label>
+              <input type="password" id="adminRecoveryNewPassInput" class="form-control"
+                placeholder="Choose new secret passkey" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label for="adminRecoveryConfirmPassInput" class="form-label">Confirm New Master Passkey</label>
+              <input type="password" id="adminRecoveryConfirmPassInput" class="form-control"
+                placeholder="Confirm new secret passkey" autocomplete="new-password">
+              <span class="field-error" id="errorRecoveryPass"></span>
+            </div>
+          </div>
+
+          <div style="margin-top:0.85rem;">
+            <button type="button" id="btnBackToLogin"
+              style="background:none; border:none; color:var(--text-muted); font-size:0.82rem; cursor:pointer; text-decoration:underline; padding:0;">
+              &larr; Back to Passkey Login
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelAdminAuth">Cancel</button>
+        <button class="btn btn-primary" id="btnSubmitAdminAuth">
+          <span class="btn-spinner hidden" id="adminAuthSpinner"></span>
+          <span id="btnSubmitAdminAuthText">Authenticate</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: PROCTORING INTEGRITY WARNING (TAB-SWITCH / BLUR)       -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="proctorWarningModal">
+    <div class="modal-card glass-panel modal-danger">
+      <div class="modal-header">
+        <div class="modal-icon-wrap icon-warning-glow">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <h3 class="modal-title text-danger">BioPC Integrity Warning: Window Unfocus Detected</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-text">
+          You navigated away from the exam browser window or activated an external browser tool.
+          <strong>Notice:</strong> BioPC strictly prohibits using Chrome's <em>"Ask Gemini"</em> sidebar, copying
+          questions to AI, or switching tabs.
+          This violation has been logged to the <strong>BioPC Proctoring Audit Log</strong>.
+        </p>
+        <div class="warning-count-banner">
+          <span>Recorded BioPC Strikes:</span>
+          <strong id="modalStrikeCount">1</strong>
+        </div>
+        <p class="text-sm text-muted">
+          Accessing Chrome's "Ask Gemini" or repeating window switch violations will result in <strong>immediate exam
+            lockout</strong>. An admin permission request will be mandatory for any 2nd exam attempt.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger btn-block" id="btnDismissProctorWarning">I Understand &amp; Return to
+          Exam</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: BIG NOTICE BEFORE OFFICIAL FINAL EXAM (QUESTIONS 1-10) -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="modalOfficialExamNotice">
+    <div class="modal-card glass-panel modal-notice-card"
+      style="max-width: 650px; border: 2px solid rgba(239, 68, 68, 0.6); box-shadow: 0 0 50px rgba(239, 68, 68, 0.25);">
+      <div class="modal-header"
+        style="border-bottom: 1.5px solid rgba(239, 68, 68, 0.35); padding: 1.25rem 1.5rem; display:flex; align-items:center;">
+        <div class="modal-notice-logo-wrap" title="BioPC Official Examination">
+          <img src="Logo.png" alt="BioPC Logo" class="modal-notice-logo">
+        </div>
+        <div style="margin-left: 0.85rem;">
+          <h3 class="modal-title" style="color: var(--danger-400); font-size: 1.3rem; letter-spacing: -0.01em;">
+            ATTENTION: OFFICIAL FINAL EXAM</h3>
+          <span class="text-xs text-muted"
+            style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light);">BioPC
+            Official Competitive Examination</span>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem;">
+        <!-- Big Notice Highlight Box -->
+        <div
+          style="background: rgba(239, 68, 68, 0.12); border: 1.5px solid rgba(239, 68, 68, 0.45); border-radius: var(--radius-md); padding: 1.15rem; margin-bottom: 1.35rem;">
+          <div
+            style="font-weight: 800; color: var(--danger-400); font-size: 1.05rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🚨 PRACTICE TRIAL COMPLETED — OFFICIAL MARKS NOW ACTIVE!</span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-white); margin: 0; line-height: 1.5;">
+            The 2 practice questions are now completed. <strong>No marks from the practice questions will be added to
+              your final score.</strong> You are now beginning the official examination starting at <strong>Question 1,
+              Question 2, ... through Question 10</strong>.
+          </p>
+        </div>
+
+        <div
+          style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.88rem; color: var(--text-light); line-height: 1.45;">
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span
+              style="background: rgba(59, 130, 246, 0.25); color: var(--primary-300); font-weight: 800; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">1</span>
+            <div><strong style="color: var(--text-white);">Official Questions 1 to 10:</strong> From this moment
+              forward, each correct answer counts for <strong>+1.0 Mark</strong> plus up to <strong>+1,000 speed bonus
+                points</strong> toward your official ranking.</div>
+          </div>
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span
+              style="background: rgba(59, 130, 246, 0.25); color: var(--primary-300); font-weight: 800; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">2</span>
+            <div><strong style="color: var(--text-white);">10-Minute Official Timer Starts Now:</strong> Your personal
+              countdown timer will start counting down from 10:00 the moment you click the button below.</div>
+          </div>
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span
+              style="background: rgba(59, 130, 246, 0.25); color: var(--primary-300); font-weight: 800; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">3</span>
+            <div><strong style="color: var(--text-white);">Strict Linear Progression:</strong> Answer Question 1 first
+              to unlock Question 2. Once an option is clicked, it is instantly locked and cannot be changed.</div>
+          </div>
+          <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+            <span
+              style="background: rgba(239, 68, 68, 0.25); color: var(--danger-400); font-weight: 800; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">4</span>
+            <div><strong style="color: var(--danger-300);">Anti-Cheat AI Alert:</strong> Clicking Chrome's <em>"Ask
+                Gemini"</em> sidebar or switching windows will trigger an immediate lockout requiring admin permission!
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="padding: 1.25rem 1.5rem; background: rgba(0, 0, 0, 0.35); border-top: 1px solid var(--border-subtle);">
+        <button class="btn btn-danger btn-block btn-lg" id="btnStartOfficialFinalExam"
+          style="font-size: 1.05rem; font-weight: 800; padding: 0.95rem 1.5rem; display: flex; justify-content: center; align-items: center; gap: 0.6rem; letter-spacing: 0.02em;">
+          <span>🚀 I Am Alert &amp; Ready &bull; Start Official Exam (Question 1)</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: SUBMISSION CONFIRMATION                                -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="confirmSubmitModal">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <div class="modal-icon-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+        <h3 class="modal-title">Confirm Final Submission</h3>
+        <button class="modal-close-btn" id="btnCloseConfirmModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-text">Are you sure you want to finalize your examination?</p>
+        <div class="submission-summary-box">
+          <div class="summary-row">
+            <span>Answered Questions:</span>
+            <strong class="text-success" id="confirmAnsweredCount">0 / 10</strong>
+          </div>
+          <div class="summary-row">
+            <span>Unanswered Questions:</span>
+            <strong class="text-warning" id="confirmUnansweredCount">10</strong>
+          </div>
+          <div class="summary-row">
+            <span>Time Remaining:</span>
+            <strong id="confirmTimeRemaining">--:--</strong>
+          </div>
+        </div>
+        <p class="text-sm text-muted">Once submitted, answers cannot be modified.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btnCancelSubmission">Continue Exam</button>
+        <button class="btn btn-danger" id="btnFinalizeSubmission">
+          <span class="btn-spinner hidden" id="submitSpinner"></span>
+          <span>Submit Final Answers</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- ============================================================= -->
+  <!-- MODAL: PLATFORM PREFERENCES & GITHUB DEPLOYMENT HUB           -->
+  <!-- ============================================================= -->
+
+
+  <!-- ============================================================= -->
+  <!-- MODAL: MCQ QUESTION EDITOR STUDIO (ADD / EDIT)                -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="questionEditorModal">
+    <div class="modal-card glass-panel modal-card-lg">
+      <div class="modal-header">
+        <div class="modal-icon-wrap icon-cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        </div>
+        <h3 class="modal-title" id="modalQEditorTitle">Create New Multiple Choice Question</h3>
+        <button class="modal-close-btn" id="btnCloseQEditorModal">&times;</button>
+      </div>
+
+      <form id="questionEditorForm">
+        <div class="modal-body">
+          <input type="hidden" id="editQuestionId" value="">
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="inputQCategory" class="form-label">Subject / Category <span class="required">*</span></label>
+              <input type="text" id="inputQCategory" class="form-control" placeholder="e.g. Computer Science" required>
+            </div>
+            <div class="form-group col-half">
+              <label class="form-label">Mark as Correct Option <span class="required">*</span></label>
+              <div class="correct-radio-pill-group">
+                <label class="radio-pill-item"><input type="radio" name="correctRadioChoice" value="0"
+                    checked><span>A</span></label>
+                <label class="radio-pill-item"><input type="radio" name="correctRadioChoice"
+                    value="1"><span>B</span></label>
+                <label class="radio-pill-item"><input type="radio" name="correctRadioChoice"
+                    value="2"><span>C</span></label>
+                <label class="radio-pill-item"><input type="radio" name="correctRadioChoice"
+                    value="3"><span>D</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputQPrompt" class="form-label">Question Text / Problem Statement <span
+                class="required">*</span></label>
+            <textarea id="inputQPrompt" class="form-control textarea-prompt" rows="3"
+              placeholder="Enter the full question prompt..." required></textarea>
+          </div>
+
+          <!-- 4 Options Inputs -->
+          <div class="options-edit-grid">
+            <div class="form-group opt-edit-item">
+              <label for="inputOptA" class="form-label">Option A <span class="required">*</span></label>
+              <input type="text" id="inputOptA" class="form-control" placeholder="Answer choice A" required>
+            </div>
+            <div class="form-group opt-edit-item">
+              <label for="inputOptB" class="form-label">Option B <span class="required">*</span></label>
+              <input type="text" id="inputOptB" class="form-control" placeholder="Answer choice B" required>
+            </div>
+            <div class="form-group opt-edit-item">
+              <label for="inputOptC" class="form-label">Option C <span class="required">*</span></label>
+              <input type="text" id="inputOptC" class="form-control" placeholder="Answer choice C" required>
+            </div>
+            <div class="form-group opt-edit-item">
+              <label for="inputOptD" class="form-label">Option D <span class="required">*</span></label>
+              <input type="text" id="inputOptD" class="form-control" placeholder="Answer choice D" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputQExplanation" class="form-label">Detailed Solution / Rationale (Optional)</label>
+            <textarea id="inputQExplanation" class="form-control" rows="2"
+              placeholder="Explain why the selected option is correct..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btnCancelEditQuestion">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveQuestion">Save MCQ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- MODAL: SUBMISSION DETAIL INSPECTOR (ADMIN AUDIT)              -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay hidden" id="submissionDetailModal">
+    <div class="modal-card glass-panel modal-card-lg">
+      <div class="modal-header">
+        <div class="modal-icon-wrap icon-purple">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+        </div>
+        <h3 class="modal-title" id="submissionDetailTitle">Submission Inspection</h3>
+        <button class="modal-close-btn" id="btnCloseSubDetailModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="submission-summary-box" id="subDetailMetaBox">
+          <!-- Populated dynamically -->
+        </div>
+        <h4 style="font-size:0.9rem; margin-bottom:0.75rem; color:var(--text-white);">Candidate Question Responses &amp;
+          Timings</h4>
+        <div class="breakdown-list" id="subDetailBreakdownList">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="btnCloseSubDetailModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Core JavaScript Application -->
+  <script src="script.js"></script>
+</body>
+
+</html>
