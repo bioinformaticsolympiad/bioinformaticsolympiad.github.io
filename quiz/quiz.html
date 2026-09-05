@@ -1746,41 +1746,21 @@
           </div>
         </div>
 
-        <!-- Emergency Passkey Recovery Form via Gmail (biopc.mustak@gmail.com) -->
+        <!-- Emergency Passkey Recovery Form via Confidential Admin Gmail Dispatch -->
         <div id="adminAuthRecoveryForm" class="hidden">
           <p class="modal-text" style="color:var(--primary-300); font-size:0.85rem;">
-            <strong>Emergency Passkey Recovery:</strong> Enter the verified master administrator Gmail address
-            (<code>biopc.mustak@gmail.com</code>). The 6-digit confirmation code will be dispatched directly to your Gmail inbox.
+            <strong>Emergency Passkey Recovery:</strong> Click the button below to dispatch a confidential 6-digit confirmation PIN directly to the registered administrator Gmail inbox.
           </p>
-          <div class="form-group">
-            <label for="adminRecoveryEmailInput" class="form-label">Administrator Gmail Address</label>
-            <div style="display:flex; gap:0.5rem;">
-              <input type="email" id="adminRecoveryEmailInput" class="form-control"
-                placeholder="biopc.mustak@gmail.com" autocomplete="email">
-              <button type="button" class="btn btn-secondary btn-sm" id="btnSendRecoveryCode"
-                style="white-space:nowrap;">
-                <span>Send Code</span>
-              </button>
-            </div>
-            <span class="field-error" id="errorRecoveryEmail"></span>
-          </div>
 
-          <!-- Discreet Google Apps Script Web App Connection (Code.gs) -->
-          <details style="margin: 0.5rem 0 0.75rem; font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" id="detailsRecoveryGasConfig">
-            <summary style="outline: none; user-select: none;">⚙️ Google Apps Script / Gmail Dispatcher URL</summary>
-            <div style="padding: 0.6rem; margin-top: 0.4rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;">
-              <label for="adminRecoveryGasUrlInput" style="display:block; font-size:0.75rem; margin-bottom:0.25rem; color:var(--text-light);">Web App Deployment URL (Code.gs):</label>
-              <div style="display:flex; gap:0.35rem;">
-                <input type="url" id="adminRecoveryGasUrlInput" class="form-control" style="font-size:0.75rem; padding:0.35rem 0.5rem;"
-                  placeholder="https://script.google.com/macros/s/.../exec"
-                  value="https://script.google.com/macros/s/AKfycbxj-gpHSwq4FCrxQoJX5CYWMArau2KgTI9pk2rJRoW7Ty3VTDCZpYVdQuJFY7bi9Ezgvw/exec">
-                <button type="button" class="btn btn-outline btn-sm" id="btnSaveRecoveryGasUrl" style="padding:0.25rem 0.6rem; font-size:0.75rem;">Save</button>
-              </div>
-              <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:0.25rem;">
-                Connects Code.gs to dispatch real verification codes directly to biopc.mustak@gmail.com.
-              </span>
-            </div>
-          </details>
+          <input type="hidden" id="adminRecoveryEmailInput" value="biopc.mustak@gmail.com">
+          <input type="hidden" id="adminRecoveryGasUrlInput" value="https://script.google.com/macros/s/AKfycbxj-gpHSwq4FCrxQoJX5CYWMArau2KgTI9pk2rJRoW7Ty3VTDCZpYVdQuJFY7bi9Ezgvw/exec">
+
+          <div style="margin: 1rem 0; text-align: center;">
+            <button type="button" class="btn btn-primary btn-sm" id="btnSendRecoveryCode" style="padding: 0.65rem 1.25rem; font-size: 0.88rem; width: 100%;">
+              <span>📧 Send 6-Digit PIN to Registered Admin Gmail</span>
+            </button>
+            <span class="field-error" id="errorRecoveryEmail" style="display:block; margin-top:0.35rem;"></span>
+          </div>
 
           <div id="recoveryOtpSection" class="hidden" style="margin-top:0.75rem;">
             <div class="form-group">

@@ -2997,22 +2997,17 @@ function initAdminAuth() {
     });
   }
 
-  // Send Recovery Code to biopc.mustak@gmail.com
+  // Send Recovery Code to authorized administrator Gmail
   if (btnSendRecoveryCode) {
     btnSendRecoveryCode.addEventListener('click', async () => {
-      const email = (inputRecoveryEmail ? inputRecoveryEmail.value : '').trim().toLowerCase();
-      if (email !== ADMIN_MASTER_EMAIL.toLowerCase()) {
-        if (errorRecoveryEmail) errorRecoveryEmail.textContent = `Access Denied: Emergency recovery is restricted strictly to ${ADMIN_MASTER_EMAIL}`;
-        showToast('Unauthorized recovery email address', 'danger');
-        return;
-      }
+      const email = ADMIN_MASTER_EMAIL;
 
       const recoveryGasInput = document.getElementById('adminRecoveryGasUrlInput');
       const gasUrl = (recoveryGasInput ? recoveryGasInput.value.trim() : '') || getActiveGasUrl();
 
       const originalBtnHtml = btnSendRecoveryCode.innerHTML;
       btnSendRecoveryCode.disabled = true;
-      btnSendRecoveryCode.innerHTML = '<span>Sending...</span>';
+      btnSendRecoveryCode.innerHTML = '<span>Sending PIN...</span>';
 
       const otp = String(Math.floor(100000 + Math.random() * 900000));
       STATE.activeAdminRecoveryOtp = otp;
@@ -3044,14 +3039,8 @@ function initAdminAuth() {
       if (errorRecoveryEmail) errorRecoveryEmail.textContent = '';
       if (recoveryOtpSection) recoveryOtpSection.classList.remove('hidden');
 
-      // CRITICAL SECURITY REQUIREMENT:
-      // NEVER show the recovery code on screen! No alert(), no code in toast, no popup!
-      // The code is sent ONLY to Gmail (biopc.mustak@gmail.com).
-      if (emailSentViaGas) {
-        showToast(`Verification code dispatched to ${ADMIN_MASTER_EMAIL}! Please check your Gmail inbox.`, 'success');
-      } else {
-        showToast(`Verification code dispatched to ${ADMIN_MASTER_EMAIL}! Please check your Gmail inbox.`, 'success');
-      }
+      // CRITICAL SECURITY: Never leak email or code on screen
+      showToast('Confidential 6-digit PIN dispatched to the registered administrator Gmail inbox! Please check your email.', 'success');
 
       if (inputRecoveryOtp) setTimeout(() => inputRecoveryOtp.focus(), 100);
     });
@@ -3078,7 +3067,7 @@ function initAdminAuth() {
     try {
       if (isRecoveryMode) {
         // Recovery Mode Validation & Reset
-        const email = (inputRecoveryEmail ? inputRecoveryEmail.value : '').trim().toLowerCase();
+        const email = ADMIN_MASTER_EMAIL;
         const otp = (inputRecoveryOtp ? inputRecoveryOtp.value : '').trim();
         const newPass = (inputRecoveryNewPass ? inputRecoveryNewPass.value : '').trim();
         const confirmPass = (inputRecoveryConfirmPass ? inputRecoveryConfirmPass.value : '').trim();
