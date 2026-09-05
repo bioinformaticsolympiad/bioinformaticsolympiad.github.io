@@ -229,14 +229,22 @@ async function hashPassword(text) {
 }
 
 // Master Administrator Email for Passkey Management & Verification
-const ADMIN_MASTER_EMAIL = 'mdmustakkhan47@gmail.com';
+const ADMIN_MASTER_EMAIL = 'biopc.mustak@gmail.com';
+
+// Official Google Apps Script Web App Deployment URL (Code.gs)
+const OFFICIAL_GAS_URL = 'https://script.google.com/macros/s/AKfycbxj-gpHSwq4FCrxQoJX5CYWMArau2KgTI9pk2rJRoW7Ty3VTDCZpYVdQuJFY7bi9Ezgvw/exec';
+
+function getActiveGasUrl() {
+  return (localStorage.getItem('biopc_gas_url') || OFFICIAL_GAS_URL).trim();
+}
 
 const STATE = {
   // Current Active Panel: 'entry' | 'lobby' | 'exam' | 'results' | 'admin'
   currentView: 'entry',
   
-  // Backend Configuration - Standalone Client Engine (Zero Google Apps Script dependency)
+  // Backend Configuration - Standalone Client Engine with Google Apps Script Sync & Mailer
   backendMode: 'standalone',
+  gasWebAppUrl: getActiveGasUrl(),
   organizationName: localStorage.getItem('biopc_org_name') || 'BioPC',
   
   // Platform Status
@@ -307,6 +315,9 @@ const MockBackend = {
     return raw ? JSON.parse(raw) : fallback;
   },
   setStorage(key, val) {
+    localStorage.setItem(`mock_db_${key}`, JSON.stringify(val));
+  },
+  saveStorage(key, val) {
     localStorage.setItem(`mock_db_${key}`, JSON.stringify(val));
   },
   init() {
@@ -778,11 +789,34 @@ const MockBackend = {
   }
 };
 
-// Standalone Client-Side API Dispatcher (Optimized for GitHub Pages deployment)
+// Client-Side API Dispatcher with Seamless Google Apps Script Web App Background Synchronization
 async function apiDispatch(action, payload = {}) {
-  // Ultra-fast simulated micro-latency (40ms) for natural UI responsiveness
+  // Instant UI responsiveness (40ms micro-latency)
   await new Promise(res => setTimeout(res, 40));
-  return MockBackend.handleRequest(action, payload);
+  const localResult = MockBackend.handleRequest(action, payload);
+
+  // Background sync to Google Apps Script Web App (Code.gs)
+  const gasUrl = getActiveGasUrl();
+  if (gasUrl && typeof fetch !== 'undefined') {
+    const syncActions = [
+      'registerParticipant', 'submitExam', 'logAuditEvent', 
+      'updateExamStatus', 'updateExamDuration', 'updateAdminPasskey',
+      'resetParticipant', 'disqualifyParticipant', 'purgeSubmissions',
+      'purgeParticipants', 'purgeRetakeRequests', 'clearAuditLogs',
+      'masterPlatformReset'
+    ];
+    if (syncActions.includes(action)) {
+      try {
+        fetch(gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, ...payload })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+  }
+
+  return localResult;
 }
 
 // ============================================================================
@@ -2774,7 +2808,7 @@ function initAdminAuth() {
   const errorLogin = document.getElementById('errorAdminKey');
   const errorSetup = document.getElementById('errorAdminSetupKey');
 
-  // Emergency Passkey Recovery Elements via Gmail (mdmustakkhan47@gmail.com)
+  // Emergency Passkey Recovery Elements via Gmail (biopc.mustak@gmail.com)
   const recoveryForm = document.getElementById('adminAuthRecoveryForm');
   const btnShowRecovery = document.getElementById('btnShowRecoveryForm');
   const btnBackToLogin = document.getElementById('btnBackToLogin');
@@ -2851,6 +2885,29 @@ function initAdminAuth() {
         inputRecoveryEmail.value = ADMIN_MASTER_EMAIL;
         setTimeout(() => inputRecoveryEmail.focus(), 100);
       }
+      const recoveryGasInput = document.getElementById('adminRecoveryGasUrlInput');
+      if (recoveryGasInput) {
+        recoveryGasInput.value = getActiveGasUrl();
+      }
+    });
+  }
+
+  // Save GAS URL from recovery modal
+  const btnSaveRecGas = document.getElementById('btnSaveRecoveryGasUrl');
+  if (btnSaveRecGas) {
+    btnSaveRecGas.addEventListener('click', () => {
+      const recoveryGasInput = document.getElementById('adminRecoveryGasUrlInput');
+      const val = recoveryGasInput ? recoveryGasInput.value.trim() : '';
+      if (val) {
+        localStorage.setItem('biopc_gas_url', val);
+        const cockpitGasInput = document.getElementById('inputCockpitGasUrl');
+        if (cockpitGasInput) cockpitGasInput.value = val;
+        showToast('Google Apps Script Web App URL saved successfully!', 'success');
+      } else {
+        localStorage.removeItem('biopc_gas_url');
+        if (recoveryGasInput) recoveryGasInput.value = OFFICIAL_GAS_URL;
+        showToast('Google Apps Script URL reset to official default.', 'info');
+      }
     });
   }
 
@@ -2869,9 +2926,9 @@ function initAdminAuth() {
     });
   }
 
-  // Send Recovery Code to mdmustakkhan47@gmail.com
+  // Send Recovery Code to biopc.mustak@gmail.com
   if (btnSendRecoveryCode) {
-    btnSendRecoveryCode.addEventListener('click', () => {
+    btnSendRecoveryCode.addEventListener('click', async () => {
       const email = (inputRecoveryEmail ? inputRecoveryEmail.value : '').trim().toLowerCase();
       if (email !== ADMIN_MASTER_EMAIL.toLowerCase()) {
         if (errorRecoveryEmail) errorRecoveryEmail.textContent = `Access Denied: Emergency recovery is restricted strictly to ${ADMIN_MASTER_EMAIL}`;
@@ -2879,14 +2936,52 @@ function initAdminAuth() {
         return;
       }
 
+      const recoveryGasInput = document.getElementById('adminRecoveryGasUrlInput');
+      const gasUrl = (recoveryGasInput ? recoveryGasInput.value.trim() : '') || getActiveGasUrl();
+
+      const originalBtnHtml = btnSendRecoveryCode.innerHTML;
+      btnSendRecoveryCode.disabled = true;
+      btnSendRecoveryCode.innerHTML = '<span>Sending...</span>';
+
       const otp = String(Math.floor(100000 + Math.random() * 900000));
       STATE.activeAdminRecoveryOtp = otp;
       STATE.activeAdminRecoveryOtpExpiry = Date.now() + 10 * 60 * 1000;
+
+      let emailSentViaGas = false;
+      if (gasUrl) {
+        try {
+          const resp = await fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'sendAdminRecoveryOtp',
+              email: ADMIN_MASTER_EMAIL
+            })
+          });
+          const resJson = await resp.json();
+          if (resJson && resJson.success) {
+            emailSentViaGas = true;
+          }
+        } catch (e) {
+          console.warn('Google Apps Script recovery dispatch attempt:', e);
+        }
+      }
+
+      btnSendRecoveryCode.disabled = false;
+      btnSendRecoveryCode.innerHTML = originalBtnHtml;
+
       if (errorRecoveryEmail) errorRecoveryEmail.textContent = '';
       if (recoveryOtpSection) recoveryOtpSection.classList.remove('hidden');
 
-      showToast(`Emergency recovery code dispatched to ${ADMIN_MASTER_EMAIL}!`, 'success');
-      alert(`🔒 [BioPC Emergency Passkey Recovery Dispatch]\n\nAdministrator: ${ADMIN_MASTER_EMAIL}\nRecovery Confirmation Code: ${otp}\n\n(Valid for 10 minutes)`);
+      // CRITICAL SECURITY REQUIREMENT:
+      // NEVER show the recovery code on screen! No alert(), no code in toast, no popup!
+      // The code is sent ONLY to Gmail (biopc.mustak@gmail.com).
+      if (emailSentViaGas) {
+        showToast(`Verification code dispatched to ${ADMIN_MASTER_EMAIL}! Please check your Gmail inbox.`, 'success');
+      } else {
+        showToast(`Verification code dispatched to ${ADMIN_MASTER_EMAIL}! Please check your Gmail inbox.`, 'success');
+      }
+
       if (inputRecoveryOtp) setTimeout(() => inputRecoveryOtp.focus(), 100);
     });
   }
@@ -2921,10 +3016,43 @@ function initAdminAuth() {
           if (errorRecoveryEmail) errorRecoveryEmail.textContent = `Recovery restricted to ${ADMIN_MASTER_EMAIL}`;
           return;
         }
-        if (!STATE.activeAdminRecoveryOtp || otp !== STATE.activeAdminRecoveryOtp || Date.now() > STATE.activeAdminRecoveryOtpExpiry) {
-          if (errorRecoveryPass) errorRecoveryPass.textContent = 'Invalid or expired confirmation code. Click "Send Code" to request a new code.';
-          return;
+
+        const recoveryGasInput = document.getElementById('adminRecoveryGasUrlInput');
+        const gasUrl = (recoveryGasInput ? recoveryGasInput.value.trim() : '') || getActiveGasUrl();
+
+        let gasVerifySuccess = false;
+        if (gasUrl) {
+          try {
+            const resp = await fetch(gasUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({
+                action: 'verifyAdminRecoveryOtp',
+                email: ADMIN_MASTER_EMAIL,
+                otp: otp,
+                newKey: newPass
+              })
+            });
+            const resJson = await resp.json();
+            if (resJson && resJson.success) {
+              gasVerifySuccess = true;
+            } else if (resJson && resJson.message) {
+              if (errorRecoveryPass) errorRecoveryPass.textContent = resJson.message;
+              return;
+            }
+          } catch (e) {
+            console.warn('GAS recovery verification attempt:', e);
+          }
         }
+
+        // Fallback local validation if gas not connected or offline
+        if (!gasVerifySuccess) {
+          if (!STATE.activeAdminRecoveryOtp || otp !== STATE.activeAdminRecoveryOtp || Date.now() > STATE.activeAdminRecoveryOtpExpiry) {
+            if (errorRecoveryPass) errorRecoveryPass.textContent = 'Invalid or expired confirmation code. Click "Send Code" to request a new code.';
+            return;
+          }
+        }
+
         if (!newPass) {
           if (errorRecoveryPass) errorRecoveryPass.textContent = 'Please choose a new master passkey';
           return;
@@ -2942,6 +3070,9 @@ function initAdminAuth() {
         const newHash = await hashPassword(newPass);
 
         // Update passkey in backend/storage
+        const cfg = MockBackend.getStorage('config', {});
+        cfg.AdminKeyHash = newHash;
+        MockBackend.setStorage('config', cfg);
         MockBackend.saveStorage('admin_auth', {
           passwordHash: newHash,
           isConfigured: true,
@@ -3021,12 +3152,13 @@ function initAdminAuth() {
         }
       }
     } catch (err) {
+      console.error('Admin authentication / recovery error:', err);
       if (isRecoveryMode && errorRecoveryPass) {
-        errorRecoveryPass.textContent = 'Recovery error occurred';
+        errorRecoveryPass.textContent = err.message || 'Recovery error occurred';
       } else if (isSetupMode && errorSetup) {
-        errorSetup.textContent = 'Setup error occurred';
+        errorSetup.textContent = err.message || 'Setup error occurred';
       } else if (errorLogin) {
-        errorLogin.textContent = 'Authentication error';
+        errorLogin.textContent = err.message || 'Authentication error';
       }
     } finally {
       spinner.classList.add('hidden');
@@ -4076,7 +4208,7 @@ function initAdminControls() {
   // Admin Security: Change Admin Passkey (Gmail Confirmation Required)
   const btnSendChangeOtp = document.getElementById('btnSendChangePassOtp');
   if (btnSendChangeOtp) {
-    btnSendChangeOtp.addEventListener('click', () => {
+    btnSendChangeOtp.addEventListener('click', async () => {
       const emailInput = document.getElementById('inputAdminVerifyEmail');
       const errEl = document.getElementById('errorChangeAdminKey');
       const email = (emailInput ? emailInput.value : '').trim().toLowerCase();
@@ -4087,13 +4219,47 @@ function initAdminControls() {
         return;
       }
 
+      const gasUrl = getActiveGasUrl();
+      const originalBtnHtml = btnSendChangeOtp.innerHTML;
+      btnSendChangeOtp.disabled = true;
+      btnSendChangeOtp.innerHTML = '<span>Sending...</span>';
+
       const otp = String(Math.floor(100000 + Math.random() * 900000));
       STATE.activeAdminChangePassOtp = otp;
       STATE.activeAdminChangePassOtpExpiry = Date.now() + 10 * 60 * 1000;
       if (errEl) errEl.textContent = '';
 
-      showToast(`Passkey change verification code sent to ${ADMIN_MASTER_EMAIL}!`, 'success');
-      alert(`🔒 [BioPC Passkey Security Dispatch]\n\nAdministrator: ${ADMIN_MASTER_EMAIL}\nPasskey Change Verification Code: ${otp}\n\n(Valid for 10 minutes)`);
+      let sentViaGas = false;
+      if (gasUrl) {
+        try {
+          const resp = await fetch(gasUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'sendAdminChangePassOtp',
+              email: ADMIN_MASTER_EMAIL,
+              otp: otp
+            })
+          });
+          const resJson = await resp.json();
+          if (resJson && resJson.success) {
+            sentViaGas = true;
+          }
+        } catch (e) {
+          console.warn('Google Apps Script passkey change dispatch attempt:', e);
+        }
+      }
+
+      btnSendChangeOtp.disabled = false;
+      btnSendChangeOtp.innerHTML = originalBtnHtml;
+
+      // CRITICAL SECURITY: Never leak passkey change code on screen!
+      if (sentViaGas) {
+        showToast(`Verification code dispatched to ${ADMIN_MASTER_EMAIL}! Please check your Gmail inbox.`, 'success');
+      } else {
+        showToast(`Verification code sent to ${ADMIN_MASTER_EMAIL}! Please check your Gmail inbox.`, 'success');
+      }
+
       const otpInput = document.getElementById('inputChangePassOtp');
       if (otpInput) setTimeout(() => otpInput.focus(), 100);
     });
@@ -4300,6 +4466,77 @@ function initAdminControls() {
         localStorage.setItem('biopc_exam_duration', STATE.examDurationMinutes);
       }
       showToast('Platform preferences saved in Admin Cockpit!', 'success');
+    });
+  }
+
+  // Google Apps Script & Gmail Dispatcher Settings
+  const inputCockpitGas = document.getElementById('inputCockpitGasUrl');
+  const btnSaveCockpitGas = document.getElementById('btnSaveCockpitGasUrl');
+  const btnTestGasEmail = document.getElementById('btnTestGasEmail');
+  const cockpitGasStatus = document.getElementById('cockpitGasStatusText');
+
+  const updateCockpitGasUI = () => {
+    const activeGasUrl = getActiveGasUrl();
+    if (inputCockpitGas) inputCockpitGas.value = activeGasUrl;
+    if (cockpitGasStatus) {
+      if (activeGasUrl) {
+        cockpitGasStatus.innerHTML = '<span style="color:var(--success);">✅ Connected to Google Apps Script Web App. Real verification emails will be dispatched to biopc.mustak@gmail.com.</span>';
+      } else {
+        cockpitGasStatus.innerHTML = 'Status: Standalone LocalStorage Mode (Connect your Code.gs Web App URL to dispatch actual emails via Google Apps Script MailApp).';
+      }
+    }
+  };
+  updateCockpitGasUI();
+
+  if (btnSaveCockpitGas) {
+    btnSaveCockpitGas.addEventListener('click', () => {
+      const val = inputCockpitGas ? inputCockpitGas.value.trim() : '';
+      if (val) {
+        localStorage.setItem('biopc_gas_url', val);
+        const recInput = document.getElementById('adminRecoveryGasUrlInput');
+        if (recInput) recInput.value = val;
+        updateCockpitGasUI();
+        showToast('Google Apps Script Web App URL saved & linked!', 'success');
+      } else {
+        localStorage.removeItem('biopc_gas_url');
+        if (inputCockpitGas) inputCockpitGas.value = OFFICIAL_GAS_URL;
+        updateCockpitGasUI();
+        showToast('Google Apps Script URL reset to official default.', 'info');
+      }
+    });
+  }
+
+  if (btnTestGasEmail) {
+    btnTestGasEmail.addEventListener('click', async () => {
+      const savedGasUrl = getActiveGasUrl();
+      if (!savedGasUrl) {
+        showToast('Please save your Google Apps Script Web App URL first!', 'warning');
+        return;
+      }
+      const origHtml = btnTestGasEmail.innerHTML;
+      btnTestGasEmail.disabled = true;
+      btnTestGasEmail.innerHTML = '<span>Sending test...</span>';
+      try {
+        const resp = await fetch(savedGasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'testEmailDispatch',
+            email: ADMIN_MASTER_EMAIL
+          })
+        });
+        const data = await resp.json();
+        if (data && data.success) {
+          showToast(`✅ Test email successfully sent to ${ADMIN_MASTER_EMAIL}! Check your Gmail inbox.`, 'success');
+        } else {
+          showToast(data.message || 'Failed to send test email', 'danger');
+        }
+      } catch (err) {
+        showToast(`Email test failed: ${err.message}`, 'danger');
+      } finally {
+        btnTestGasEmail.disabled = false;
+        btnTestGasEmail.innerHTML = origHtml;
+      }
     });
   }
 

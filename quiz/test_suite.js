@@ -668,8 +668,8 @@ function runTests() {
       const standaloneSecuritySuiteValid = noPlaintextInHTML && noGasInSettings && hashSetupPassed && authPassed && changePassPassed;
       console.log(`Standalone GitHub Engine & Smart SHA-256 Admin Suite: ${standaloneSecuritySuiteValid ? 'PASSED' : 'FAILED'}`);
 
-      // Test 16: Public Settings Isolation & Gmail-Verified Passkey Protection (mdmustakkhan47@gmail.com)
-      console.log('\n[TEST 16] Verifying Public Settings Isolation & Gmail Confirmation (mdmustakkhan47@gmail.com):');
+      // Test 16: Public Settings Isolation & Gmail-Verified Passkey Protection (biopc.mustak@gmail.com)
+      console.log('\n[TEST 16] Verifying Public Settings Isolation & Gmail Confirmation (biopc.mustak@gmail.com):');
       
       // 1. Settings button completely removed from candidate header & public views
       const noSettingsButtonInPublicHeader = !data.includes('id="btnOpenSettings"');
@@ -685,8 +685,8 @@ function runTests() {
       const cockpitSettingsPassed = cockpitHasOrgNameSetting && cockpitHasDurationSetting && cockpitHasSaveButton && cockpitHasExportJson;
       console.log(` - Step 2: Platform Preferences securely located exclusively within Admin Cockpit: ${cockpitSettingsPassed ? 'PASSED' : 'FAILED'}`);
 
-      // 3. Admin Passkey Change & Emergency Recovery Email Binding to mdmustakkhan47@gmail.com
-      const ADMIN_MASTER_EMAIL = 'mdmustakkhan47@gmail.com';
+      // 3. Admin Passkey Change & Emergency Recovery Email Binding to biopc.mustak@gmail.com
+      const ADMIN_MASTER_EMAIL = 'biopc.mustak@gmail.com';
       const changePassEmailField = data.includes('id="inputAdminVerifyEmail"');
       const sendChangeOtpBtn = data.includes('id="btnSendChangePassOtp"');
       const changePassOtpField = data.includes('id="inputChangePassOtp"');
@@ -694,7 +694,7 @@ function runTests() {
       const recoveryEmailField = data.includes('id="adminRecoveryEmailInput"');
       const sendRecoveryCodeBtn = data.includes('id="btnSendRecoveryCode"');
       const recoveryOtpSectionPresent = data.includes('id="recoveryOtpSection"');
-      const emailBindingInHTML = data.includes('mdmustakkhan47@gmail.com');
+      const emailBindingInHTML = data.includes('biopc.mustak@gmail.com');
       const uiBindingPassed = changePassEmailField && sendChangeOtpBtn && changePassOtpField && recoveryFormPresent && recoveryEmailField && sendRecoveryCodeBtn && recoveryOtpSectionPresent && emailBindingInHTML;
       console.log(` - Step 3: Admin Passkey Change & Recovery forms bound to ${ADMIN_MASTER_EMAIL}: ${uiBindingPassed ? 'PASSED' : 'FAILED'}`);
 
@@ -718,7 +718,7 @@ function runTests() {
       }
 
       const badEmailRejected = requestChangePassOtp('hacker@unknown.com').success === false;
-      const goodEmailAccepted = requestChangePassOtp('mdmustakkhan47@gmail.com').success === true;
+      const goodEmailAccepted = requestChangePassOtp('biopc.mustak@gmail.com').success === true;
       const otpDispatchPassed = badEmailRejected && goodEmailAccepted && mockAdminState.activeAdminChangePassOtp === '849201';
       console.log(` - Step 4: OTP dispatch strictly rejects unauthorized emails & accepts ${ADMIN_MASTER_EMAIL}: ${otpDispatchPassed ? 'PASSED' : 'FAILED'}`);
 
@@ -736,8 +736,8 @@ function runTests() {
         return { success: true, newHash };
       }
 
-      const changeBadOtpFailed = executeChangePasskey(testSecretKey, 'mdmustakkhan47@gmail.com', '999999', 'NextGen2026!').success === false;
-      const changeGoodOtpSucceeds = executeChangePasskey(testSecretKey, 'mdmustakkhan47@gmail.com', '849201', 'NextGen2026!').success === true;
+      const changeBadOtpFailed = executeChangePasskey(testSecretKey, 'biopc.mustak@gmail.com', '999999', 'NextGen2026!').success === false;
+      const changeGoodOtpSucceeds = executeChangePasskey(testSecretKey, 'biopc.mustak@gmail.com', '849201', 'NextGen2026!').success === true;
       const updatedHashValid = mockAdminState.activeAdminKeyHash === crypto.createHash('sha256').update('NextGen2026!').digest('hex');
       const passkeyChangePassed = changeBadOtpFailed && changeGoodOtpSucceeds && updatedHashValid;
       console.log(` - Step 5: Passkey change strictly enforces Gmail OTP validation before applying SHA-256 update: ${passkeyChangePassed ? 'PASSED' : 'FAILED'}`);
@@ -760,9 +760,9 @@ function runTests() {
         return { success: true, newHash };
       }
 
-      requestRecoveryOtp('mdmustakkhan47@gmail.com');
-      const recoveryWrongOtp = executeEmergencyRecovery('mdmustakkhan47@gmail.com', '000000', 'RecoveredSecret2026!').success === false;
-      const recoveryRightOtp = executeEmergencyRecovery('mdmustakkhan47@gmail.com', '314159', 'RecoveredSecret2026!').success === true;
+      requestRecoveryOtp('biopc.mustak@gmail.com');
+      const recoveryWrongOtp = executeEmergencyRecovery('biopc.mustak@gmail.com', '000000', 'RecoveredSecret2026!').success === false;
+      const recoveryRightOtp = executeEmergencyRecovery('biopc.mustak@gmail.com', '314159', 'RecoveredSecret2026!').success === true;
       const recoveryHashValid = mockAdminState.activeAdminKeyHash === crypto.createHash('sha256').update('RecoveredSecret2026!').digest('hex');
       const emergencyRecoveryPassed = recoveryWrongOtp && recoveryRightOtp && recoveryHashValid;
       console.log(` - Step 6: Emergency passkey recovery successfully resets passkey via ${ADMIN_MASTER_EMAIL}: ${emergencyRecoveryPassed ? 'PASSED' : 'FAILED'}`);
