@@ -11,133 +11,133 @@
 const DEFAULT_QUESTIONS = [
   {
     id: 1,
-    category: "BioPC Organization",
-    question: "Who is the founder of BioPC?",
+    category: "CADD Fundamentals",
+    question: "What does CADD stand for?",
     options: [
-      "Md. Mustak Khan",
-      "Md. Hridoy Ahmed",
-      "Md. Shariful Islam",
-      "Shishir Dattu"
+      "Computer-Aided Drug Design",
+      "Chemical Analysis of Drug Data",
+      "Computational Approach to Disease Diagnosis",
+      "Cellular Assay for Drug Development"
     ],
-    correctIndex: 1,
-    explanation: "Md. Hridoy Ahmed is the founder of BioPC (A Bioinformatics Lab of Research and Training)."
+    correctIndex: 0,
+    explanation: "CADD (Computer-Aided Drug Design) integrates chemical, molecular, and quantum strategies to discover, design, and develop therapeutic chemical agents."
   },
   {
     id: 2,
-    category: "BioPC Organization",
-    question: "What is the full name of BioPC?",
+    category: "Drug Design Strategies",
+    question: "Which drug design approach relies on the 3D structure of the target protein (e.g., from X-ray, cryo-EM, or AlphaFold)?",
     options: [
-      "BioPC- A bioinformatics Lab of research and Training",
-      "BioPC- Biological Processing and Computing Laboratory",
-      "BioPC- Biomedical Protocol and Clinical Center",
-      "BioPC- Biotechnology Platform for Cellular Genomics"
+      "Ligand-Based Drug Design (LBDD)",
+      "Structure-Based Drug Design (SBDD)",
+      "Phenotypic screening",
+      "QSAR modeling only"
     ],
-    correctIndex: 0,
-    explanation: "BioPC stands for 'BioPC- A bioinformatics Lab of research and Training', committed to computational biology, data analysis, and advanced research training."
+    correctIndex: 1,
+    explanation: "SBDD uses the target's 3D structure to design molecules that fit its binding site, while LBDD is used when the target structure is unavailable and relies instead on known active/inactive ligands."
   },
   {
     id: 3,
-    category: "Bioinformatics",
-    question: "Which bioinformatics algorithm is primarily used for searching local sequence alignments against biological databases?",
+    category: "Structural Databases",
+    question: "What is the Protein Data Bank (PDB) primarily used for?",
     options: [
-      "BLAST (Basic Local Alignment Search Tool)",
-      "PyMOL",
-      "AutoDock Vina",
-      "Clustal Omega"
+      "Storing commercially available compounds for purchase",
+      "Housing experimentally determined 3D protein structures",
+      "Predicting ADMET properties of drug candidates",
+      "Tracking clinical trial results"
     ],
-    correctIndex: 0,
-    explanation: "BLAST is the primary heuristic search tool used to compare nucleotide or protein sequences against database libraries."
+    correctIndex: 1,
+    explanation: "PDB is the primary database for experimentally determined protein structures, solved via methods like X-ray crystallography, NMR spectroscopy, and cryo-electron microscopy."
   },
   {
     id: 4,
-    category: "Molecular Biology",
-    question: "According to the Central Dogma of molecular biology, what is the synthesis of RNA from a DNA template called?",
+    category: "Structural Quality & Docking",
+    question: "For a protein structure selected for docking studies, which resolution value is generally considered acceptable or better?",
     options: [
-      "Translation",
-      "Transcription",
-      "Replication",
-      "Reverse Transcription"
+      "≤ 2.5 Å",
+      "≥ 5.0 Å",
+      "Exactly 10 Å",
+      "Resolution doesn't matter for docking"
     ],
-    correctIndex: 1,
-    explanation: "Transcription is the biological process where an RNA polymerase synthesizes RNA using a DNA sequence as a template."
+    correctIndex: 0,
+    explanation: "A resolution of ≤ 2.5 Å is recommended (with ≤ 2.0 Å being best), since lower resolution values mean more precisely resolved atomic positions."
   },
   {
     id: 5,
-    category: "Bioinformatics",
-    question: "Which file format, starting with a '>' description line followed by sequence rows, is the standard for biological sequence representation?",
+    category: "Molecular Docking",
+    question: "In molecular docking, what does the \"scoring function\" do?",
     options: [
-      "PDB format",
-      "BED format",
-      "FASTA format",
-      "SAM format"
+      "Converts 2D structures into 3D coordinates",
+      "Estimates binding affinity by calculating interaction energies",
+      "Predicts a compound's toxicity",
+      "Validates the manuscript before submission"
     ],
-    correctIndex: 2,
-    explanation: "FASTA format is the universal text-based convention for representing nucleotide or peptide sequences, starting with a '>' header line."
+    correctIndex: 1,
+    explanation: "A scoring function is a mathematical model that estimates binding affinity between the ligand and receptor by calculating their interaction energies."
   },
   {
     id: 6,
-    category: "Cell Biology",
-    question: "Which eukaryotic organelle is known as the 'powerhouse of the cell' for generating the majority of cellular ATP?",
+    category: "Molecular Docking",
+    question: "\"Induced Fit\" docking, where the ligand is allowed to rotate or flex, is also known as:",
     options: [
-      "Endoplasmic Reticulum",
-      "Golgi Apparatus",
-      "Lysosome",
-      "Mitochondria"
+      "Rigid Docking",
+      "Flexible Docking",
+      "Static Docking",
+      "Lock-and-Key Docking"
     ],
-    correctIndex: 3,
-    explanation: "Mitochondria generate chemical energy in the form of Adenosine Triphosphate (ATP) via the citric acid cycle and oxidative phosphorylation."
+    correctIndex: 1,
+    explanation: "Flexible Docking, also called \"Induced Fit,\" allows the smaller molecule to rotate or flex, with the most favorable pose selected based on energy. Rigid Docking (\"Lock and Key\") treats both molecules as fixed."
   },
   {
     id: 7,
-    category: "Scientific Research & Writing",
-    question: "Which software is widely used by researchers for reference management and manuscript citation?",
+    category: "ADMET & Drug-Likeness",
+    question: "Which of the following is NOT one of the ideal drug-likeness parameters checked by tools like SwissADME?",
     options: [
-      "AutoDock Vina",
-      "Zotero",
-      "PyMOL",
-      "MEGA (Molecular Evolutionary Genetics Analysis)"
+      "Molecular weight under 500",
+      "5 or fewer hydrogen bond donors",
+      "Author's institutional affiliation",
+      "10 or fewer hydrogen bond acceptors"
     ],
-    correctIndex: 1,
-    explanation: "Zotero is a popular open-source reference management software used to collect, organize, annotate, cite, and share manuscript references and bibliographies."
+    correctIndex: 2,
+    explanation: "Drug-likeness parameters (molecular weight, H-bond donors/acceptors, molar refractivity, BBB permeability, etc.) are chemical properties — author affiliation is a manuscript detail, not an ADMET parameter."
   },
   {
     id: 8,
-    category: "Genetics & Biochemistry",
-    question: "In double-stranded DNA structure, how many hydrogen bonds form between Guanine (G) and Cytosine (C) base pairs?",
+    category: "Scientific Writing & IMRaD",
+    question: "In the IMRaD structure for a CADD manuscript, what should the Introduction section end with?",
     options: [
-      "1 Hydrogen Bond",
-      "2 Hydrogen Bonds",
-      "3 Hydrogen Bonds",
-      "4 Hydrogen Bonds"
+      "A summary of the results",
+      "A clearly stated aim or objective of the study",
+      "The list of software tools used",
+      "The conflict of interest statement"
     ],
-    correctIndex: 2,
-    explanation: "Guanine and Cytosine form 3 hydrogen bonds (G≡C), which provides greater thermal stability compared to Adenine-Thymine pairs (2 hydrogen bonds)."
+    correctIndex: 1,
+    explanation: "The Introduction should build up context (disease burden, treatment limitations, target rationale, literature gap) and end with a clearly stated aim or objective for the present study."
   },
   {
     id: 9,
-    category: "Structural Bioinformatics",
-    question: "Which global archive serves as the single primary worldwide repository for experimentally determined 3D structures of macromolecules?",
+    category: "Scientific Writing",
+    question: "Which section of a manuscript should be written objectively, without interpretation, simply reporting exact values?",
     options: [
-      "PDB (Protein Data Bank)",
-      "GenBank",
-      "GEO (Gene Expression Omnibus)",
-      "Ensembl"
+      "Discussion",
+      "Results",
+      "Conclusion",
+      "Abstract"
     ],
-    correctIndex: 0,
-    explanation: "The Protein Data Bank (PDB) is the worldwide archive of 3D macromolecular structures determined by X-ray crystallography, Cryo-EM, and NMR."
+    correctIndex: 1,
+    explanation: "The Results section should present findings objectively — exact docking scores, MD stability trends, binding free energies, and ADMET data — with interpretation reserved for the Discussion."
   },
   {
     id: 10,
-    category: "Molecular Biology",
-    question: "Which triplet codon serves as the universal canonical start codon in mRNA, coding for the amino acid Methionine?",
+    category: "Scientific Writing Best Practices",
+    question: "Which of these is listed as a common mistake to avoid when writing a CADD manuscript?",
     options: [
-      "UAA",
-      "UAG",
-      "AUG",
-      "UGA"
+      "Comparing the top compound with a standard/reference drug",
+      "Overstating in silico findings as \"proven\" without experimental backing",
+      "Validating the docking protocol via re-docking",
+      "Listing software versions in the Methods"
     ],
-    correctIndex: 2,
-    explanation: "AUG is the universal start codon in messenger RNA, signaling the initiation of translation and coding for Methionine (Met)."
+    correctIndex: 1,
+    explanation: "A key pitfall is presenting computational (in silico) results as definitively \"proven\" when they haven't been experimentally validated — the other options are actually good practices, not mistakes."
   }
 ];
 
@@ -176,7 +176,7 @@ const PRACTICE_QUESTIONS = [
 function loadQuestionBank() {
   const saved = localStorage.getItem('apex_question_bank');
   const version = localStorage.getItem('biopc_qb_version');
-  if (saved && version === 'biopc_biology_bioinformatics_v2') {
+  if (saved && version === 'biopc_cadd_scientific_writing_v4') {
     try {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -184,7 +184,7 @@ function loadQuestionBank() {
       console.error('Failed to parse question bank from localStorage', e);
     }
   }
-  localStorage.setItem('biopc_qb_version', 'biopc_biology_bioinformatics_v2');
+  localStorage.setItem('biopc_qb_version', 'biopc_cadd_scientific_writing_v4');
   const fresh = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
   localStorage.setItem('apex_question_bank', JSON.stringify(fresh));
   return fresh;
@@ -276,6 +276,11 @@ const STATE = {
   
   // Proctoring Strikes
   strikeCount: Number(localStorage.getItem('apex_violations')) || 0,
+  
+  // Submission Flight & Cloud Synchronization State
+  isSubmitting: false,
+  submissionSynced: true,
+  submissionPendingSync: false,
   
   // Authenticated Admin Passkey (SHA-256 Encrypted Hash Only)
   adminAuthenticated: false,
@@ -631,10 +636,11 @@ const MockBackend = {
       }
 
       case 'submitExam': {
-        const targetP = participants.find(x => x.token === payload.sessionToken);
+        const token = payload.sessionToken || 'ANON';
+        const targetP = participants.find(x => x.token === token);
         const sub = {
           timestamp: new Date().toISOString(),
-          sessionToken: payload.sessionToken,
+          sessionToken: token,
           fullName: payload.fullName,
           department: payload.department || (targetP ? targetP.department : 'General'),
           baseScore: Number(payload.baseScore) || 0,
@@ -644,7 +650,14 @@ const MockBackend = {
           totalTimeSeconds: Number(payload.totalTimeSeconds) || 0,
           answersJSON: payload.answersJSON
         };
-        submissions.push(sub);
+        
+        // Deduplicate: If candidate already exists in submissions, update rather than pushing duplicate!
+        const existingIdx = submissions.findIndex(s => s.sessionToken === token || (token === 'ANON' && s.fullName === payload.fullName));
+        if (existingIdx > -1) {
+          submissions[existingIdx] = sub;
+        } else {
+          submissions.push(sub);
+        }
         this.setStorage('submissions', submissions);
 
         // Update participant state
@@ -743,6 +756,27 @@ const MockBackend = {
         localStorage.removeItem('apex_start_time');
 
         return { success: true, message: 'Platform fully reset' };
+      }
+
+      case 'deduplicateSubmissions': {
+        if (!isAuthorized(payload)) return { success: false, message: 'Unauthorized' };
+        const map = new Map();
+        let removed = 0;
+        submissions.forEach(s => {
+          const key = (s.sessionToken && s.sessionToken !== 'ANON') ? s.sessionToken : ((s.fullName || '') + '___' + (s.department || 'General'));
+          if (!map.has(key)) {
+            map.set(key, s);
+          } else {
+            removed++;
+            const ex = map.get(key);
+            if ((Number(s.combinedScore) || 0) > (Number(ex.combinedScore) || 0)) {
+              map.set(key, s);
+            }
+          }
+        });
+        const cleanList = Array.from(map.values());
+        this.setStorage('submissions', cleanList);
+        return { success: true, message: `Purged ${removed} duplicate entries.`, removedCount: removed, totalUnique: cleanList.length };
       }
 
       case 'getLiveHudData': {
@@ -856,16 +890,33 @@ async function apiDispatch(action, payload = {}) {
         'updateAdminPasskey', 'resetParticipant', 'disqualifyParticipant',
         'requestRetakePermission', 'approveRetake', 'denyRetake',
         'clearAuditLogs', 'purgeSubmissions', 'purgeParticipants',
-        'purgeRetakeRequests', 'masterPlatformReset'
+        'purgeRetakeRequests', 'masterPlatformReset', 'deduplicateSubmissions'
       ];
       if (postActions.includes(action)) {
-        const resp = await fetch(gasUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action, ...enrichedPayload })
-        });
-        const data = await resp.json();
+        let resp = null;
+        let data = null;
+        const maxAttempts = (action === 'submitExam') ? 3 : 1;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            resp = await fetch(gasUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action, ...enrichedPayload })
+            });
+            if (resp && resp.ok) {
+              data = await resp.json();
+              if (data) break;
+            }
+          } catch (fetchErr) {
+            console.warn(`[Cloud Sync] Attempt ${attempt}/${maxAttempts} for "${action}" encountered error:`, fetchErr);
+            if (attempt < maxAttempts) {
+              await new Promise(r => setTimeout(r, attempt * 600));
+            }
+          }
+        }
+
         if (data) {
+          data.syncedWithCloud = true;
           // If action was processed, update local cache
           if (data.success || data.alreadySubmitted) {
             MockBackend.handleRequest(action, enrichedPayload);
@@ -877,6 +928,9 @@ async function apiDispatch(action, payload = {}) {
             }
           }
           return data;
+        } else if (action === 'submitExam') {
+          // Cloud submission failed after all attempts: enqueue locally for automatic background sync
+          enqueuePendingSubmission(enrichedPayload);
         }
       }
 
@@ -891,12 +945,111 @@ async function apiDispatch(action, payload = {}) {
       }
     } catch (netErr) {
       console.warn(`[Cloud Sync] Using local engine fallback for "${action}":`, netErr);
+      if (action === 'submitExam') {
+        enqueuePendingSubmission(enrichedPayload);
+      }
     }
   }
 
   // 2. Local Fallback Engine (Offline or Standalone Mode)
   await new Promise(res => setTimeout(res, 40));
-  return MockBackend.handleRequest(action, enrichedPayload);
+  const fallbackResult = MockBackend.handleRequest(action, enrichedPayload);
+  if (action === 'submitExam') {
+    enqueuePendingSubmission(enrichedPayload);
+    fallbackResult.syncedWithCloud = false;
+    fallbackResult.isPendingCloudSync = true;
+  }
+  return fallbackResult;
+}
+
+// ----------------------------------------------------------------------------
+// Offline Submission Resilience & Background Google Sheets Synchronization
+// ----------------------------------------------------------------------------
+function enqueuePendingSubmission(payload) {
+  try {
+    const queue = JSON.parse(localStorage.getItem('apex_pending_submissions') || '[]');
+    const tok = payload.sessionToken || 'ANON';
+    const existingIdx = queue.findIndex(item => item.sessionToken === tok || (tok === 'ANON' && item.fullName === payload.fullName));
+    if (existingIdx > -1) {
+      queue[existingIdx] = payload;
+    } else {
+      queue.push(payload);
+    }
+    localStorage.setItem('apex_pending_submissions', JSON.stringify(queue));
+    console.info(`[Offline Sync Queue] Queued submission for ${payload.fullName || tok}.`);
+  } catch (e) {}
+}
+
+async function syncPendingSubmissions() {
+  const gasUrl = getActiveGasUrl();
+  if (!gasUrl) return;
+  let queue = [];
+  try {
+    queue = JSON.parse(localStorage.getItem('apex_pending_submissions') || '[]');
+  } catch (e) { queue = []; }
+  if (!queue.length) {
+    updateResultsSyncBadge(true);
+    return;
+  }
+
+  const remaining = [];
+  let anySynced = false;
+  for (const item of queue) {
+    try {
+      const resp = await fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'submitExam', ...item })
+      });
+      const data = await resp.json();
+      if (data && data.success) {
+        anySynced = true;
+        console.info(`[Offline Sync Queue] Successfully synced pending submission for ${item.fullName}`);
+      } else {
+        remaining.push(item);
+      }
+    } catch (err) {
+      remaining.push(item);
+    }
+  }
+  localStorage.setItem('apex_pending_submissions', JSON.stringify(remaining));
+  if (anySynced) {
+    showToast('Offline submission(s) successfully recorded into Google Sheets!', 'success');
+  }
+  updateResultsSyncBadge(remaining.length === 0);
+}
+
+function updateResultsSyncBadge(forceSynced) {
+  const banner = document.getElementById('resultsSyncBanner');
+  const icon = document.getElementById('resultsSyncIcon');
+  const text = document.getElementById('resultsSyncText');
+  const btnRetry = document.getElementById('btnRetrySync');
+  if (!banner || !text) return;
+
+  const queue = JSON.parse(localStorage.getItem('apex_pending_submissions') || '[]');
+  const isSynced = (forceSynced !== undefined ? forceSynced : (queue.length === 0 && STATE.submissionSynced));
+
+  if (isSynced) {
+    banner.className = 'sync-banner sync-success';
+    banner.style.background = 'rgba(34, 197, 94, 0.1)';
+    banner.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+    banner.style.color = '#4ade80';
+    if (icon) icon.textContent = '✅';
+    text.textContent = 'Submission recorded & verified in Google Sheets database.';
+    if (btnRetry) btnRetry.classList.add('hidden');
+  } else {
+    banner.className = 'sync-banner sync-pending';
+    banner.style.background = 'rgba(245, 158, 11, 0.1)';
+    banner.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+    banner.style.color = '#fbbf24';
+    if (icon) icon.textContent = '⏳';
+    text.textContent = 'Submission saved locally. Synchronizing with Google Sheets...';
+    if (btnRetry) {
+      btnRetry.classList.remove('hidden');
+      btnRetry.disabled = false;
+      btnRetry.textContent = 'Sync Now';
+    }
+  }
 }
 
 // ============================================================================
@@ -1064,15 +1217,17 @@ function initParticipantRegistration() {
       });
 
       if (resp && resp.success) {
+        const token = resp.sessionToken || resp.token;
         STATE.candidate = {
           fullName,
           institution,
           department: resp.department || department,
           email,
           phone,
-          sessionToken: resp.sessionToken
+          sessionToken: token
         };
         localStorage.setItem('apex_candidate', JSON.stringify(STATE.candidate));
+        if (token) localStorage.setItem('apex_session_token', token);
         updateGlobalStatusPill(resp.examStatus);
 
         showToast(`Welcome, ${fullName}! Registration verified.`, 'success');
@@ -1134,16 +1289,33 @@ function enterWaitingLobby() {
 
 function startLobbyPolling() {
   stopLobbyPolling();
-  // Immediate check
+  // Immediate initial check
   pollExamStatusLobby();
-  // Every 3.5 seconds
-  STATE.lobbyPollIntervalId = setInterval(pollExamStatusLobby, 3500);
+  
+  // Staggered polling (8 to 12 seconds with random jitter)
+  // Perfectly balances live auto-launch responsiveness while preventing server contention for 300+ candidates
+  const scheduleLobbyPoll = () => {
+    const jitterMs = 8000 + Math.floor(Math.random() * 4000);
+    STATE.lobbyPollTimeoutId = setTimeout(async () => {
+      if (STATE.currentView === 'lobby') {
+        await pollExamStatusLobby();
+        if (STATE.currentView === 'lobby') {
+          scheduleLobbyPoll();
+        }
+      }
+    }, jitterMs);
+  };
+  scheduleLobbyPoll();
 }
 
 function stopLobbyPolling() {
   if (STATE.lobbyPollIntervalId) {
     clearInterval(STATE.lobbyPollIntervalId);
     STATE.lobbyPollIntervalId = null;
+  }
+  if (STATE.lobbyPollTimeoutId) {
+    clearTimeout(STATE.lobbyPollTimeoutId);
+    STATE.lobbyPollTimeoutId = null;
   }
 }
 
@@ -1268,13 +1440,29 @@ function updateRetakeViewState(status, reason = '') {
 function startRetakePolling() {
   stopRetakePolling();
   pollRetakeStatus();
-  STATE.retakePollIntervalId = setInterval(pollRetakeStatus, 3500);
+  
+  const scheduleRetakePoll = () => {
+    const jitterMs = 8000 + Math.floor(Math.random() * 4000);
+    STATE.retakePollTimeoutId = setTimeout(async () => {
+      if (STATE.currentView === 'retake') {
+        await pollRetakeStatus();
+        if (STATE.currentView === 'retake') {
+          scheduleRetakePoll();
+        }
+      }
+    }, jitterMs);
+  };
+  scheduleRetakePoll();
 }
 
 function stopRetakePolling() {
   if (STATE.retakePollIntervalId) {
     clearInterval(STATE.retakePollIntervalId);
     STATE.retakePollIntervalId = null;
+  }
+  if (STATE.retakePollTimeoutId) {
+    clearTimeout(STATE.retakePollTimeoutId);
+    STATE.retakePollTimeoutId = null;
   }
 }
 
@@ -2584,13 +2772,31 @@ function openSubmitConfirmationModal() {
 }
 
 async function finalizeAndSubmit(isAutoTimeout = false) {
+  if (STATE.isSubmitting) {
+    console.warn('Submission already in flight, ignoring duplicate trigger.');
+    return;
+  }
+  STATE.isSubmitting = true;
+
   stopAutoAdvanceTimer();
   if (STATE.timerIntervalId) clearInterval(STATE.timerIntervalId);
   stopQuestionSpeedMeter();
 
-  // Close modals
-  document.getElementById('confirmSubmitModal').classList.add('hidden');
-  document.getElementById('proctorWarningModal').classList.add('hidden');
+  // Close modals & lock submit buttons
+  const confirmModal = document.getElementById('confirmSubmitModal');
+  if (confirmModal) confirmModal.classList.add('hidden');
+  const proctorModal = document.getElementById('proctorWarningModal');
+  if (proctorModal) proctorModal.classList.add('hidden');
+
+  const btnFinalize = document.getElementById('btnFinalizeSubmission');
+  if (btnFinalize) {
+    btnFinalize.disabled = true;
+    btnFinalize.innerHTML = '<span class="state-dot" style="display:inline-block; animation:pulse 1s infinite;"></span> Submitting answers...';
+  }
+  const btnTrigger = document.getElementById('btnTriggerFinish');
+  if (btnTrigger) btnTrigger.disabled = true;
+  const btnSidebar = document.getElementById('btnSidebarSubmit');
+  if (btnSidebar) btnSidebar.disabled = true;
 
   // Compute Base Score and Speed Bonus Points
   let baseScore = 0;
@@ -2605,8 +2811,10 @@ async function finalizeAndSubmit(isAutoTimeout = false) {
     }
   });
 
+  const candidateToken = STATE.candidate ? (STATE.candidate.sessionToken || STATE.candidate.token || localStorage.getItem('apex_session_token')) : (localStorage.getItem('apex_session_token') || 'ANON');
+
   const payload = {
-    sessionToken: STATE.candidate ? STATE.candidate.sessionToken : 'ANON',
+    sessionToken: candidateToken,
     fullName: STATE.candidate ? STATE.candidate.fullName : 'Anonymous',
     department: STATE.candidate ? (STATE.candidate.department || 'General') : 'General',
     baseScore: baseScore,
@@ -2616,10 +2824,22 @@ async function finalizeAndSubmit(isAutoTimeout = false) {
     answersJSON: STATE.userResponses
   };
 
+  let submitRes = null;
   try {
-    await apiDispatch('submitExam', payload);
+    submitRes = await apiDispatch('submitExam', payload);
+    STATE.submissionSynced = !!(submitRes && submitRes.syncedWithCloud);
+    STATE.submissionPendingSync = !STATE.submissionSynced;
   } catch (err) {
-    console.error('Submission error:', err);
+    console.error('Submission dispatch error:', err);
+    STATE.submissionSynced = false;
+    STATE.submissionPendingSync = true;
+    enqueuePendingSubmission(payload);
+  } finally {
+    STATE.isSubmitting = false;
+    if (btnFinalize) {
+      btnFinalize.disabled = false;
+      btnFinalize.innerHTML = 'Confirm Submission';
+    }
   }
 
   // Clear active exam state from localStorage so exam cannot be re-taken
@@ -2632,6 +2852,8 @@ async function finalizeAndSubmit(isAutoTimeout = false) {
   // Render Post-Exam Results Screen
   renderParticipantResults(baseScore, totalSpeedBonus, totalTimeSeconds);
   showPanel('results');
+  updateResultsSyncBadge();
+  syncPendingSubmissions();
 }
 
 function renderParticipantResults(baseScore, speedBonus, totalTimeSeconds) {
@@ -3333,7 +3555,30 @@ function renderAdminLeaderboard() {
   const tbody = document.getElementById('leaderboardTableBody');
   if (!tbody) return;
 
-  let list = STATE.cachedSubmissions;
+  // Deduplicate cached submissions by sessionToken / candidate
+  const uniqueMap = new Map();
+  (STATE.cachedSubmissions || []).forEach(s => {
+    const key = (s.sessionToken && s.sessionToken !== 'ANON') ? s.sessionToken : ((s.fullName || '') + '___' + (s.department || 'General'));
+    if (!uniqueMap.has(key)) {
+      uniqueMap.set(key, s);
+    } else {
+      const ex = uniqueMap.get(key);
+      if ((Number(s.combinedScore) || 0) > (Number(ex.combinedScore) || 0)) {
+        uniqueMap.set(key, s);
+      }
+    }
+  });
+  let list = Array.from(uniqueMap.values());
+  list.sort((a, b) => {
+    const sA = Number(a.combinedScore) || 0;
+    const sB = Number(b.combinedScore) || 0;
+    if (sB !== sA) return sB - sA;
+    const bA = Number(a.speedBonusPoints) || 0;
+    const bB = Number(b.speedBonusPoints) || 0;
+    if (bB !== bA) return bB - bA;
+    return (Number(a.totalTimeSeconds) || 0) - (Number(b.totalTimeSeconds) || 0);
+  });
+
   const q = STATE.activeLeaderboardFilter.trim().toLowerCase();
   if (q) {
     list = list.filter(s => 
@@ -3877,7 +4122,29 @@ function resetDefaultQuestionBank() {
 // EXCEL / CSV EXPORT ENGINES
 // ----------------------------------------------------------------------------
 function exportSubmissionsToCSV() {
-  const subs = STATE.cachedSubmissions;
+  const uniqueMap = new Map();
+  (STATE.cachedSubmissions || []).forEach(s => {
+    const key = (s.sessionToken && s.sessionToken !== 'ANON') ? s.sessionToken : ((s.fullName || '') + '___' + (s.department || 'General'));
+    if (!uniqueMap.has(key)) {
+      uniqueMap.set(key, s);
+    } else {
+      const ex = uniqueMap.get(key);
+      if ((Number(s.combinedScore) || 0) > (Number(ex.combinedScore) || 0)) {
+        uniqueMap.set(key, s);
+      }
+    }
+  });
+  const subs = Array.from(uniqueMap.values());
+  subs.sort((a, b) => {
+    const sA = Number(a.combinedScore) || 0;
+    const sB = Number(b.combinedScore) || 0;
+    if (sB !== sA) return sB - sA;
+    const bA = Number(a.speedBonusPoints) || 0;
+    const bB = Number(b.speedBonusPoints) || 0;
+    if (bB !== bA) return bB - bA;
+    return (Number(a.totalTimeSeconds) || 0) - (Number(b.totalTimeSeconds) || 0);
+  });
+
   if (!subs || subs.length === 0) {
     showToast('No submissions available to export.', 'warning');
     return;
@@ -4168,6 +4435,51 @@ function initAdminControls() {
   if (btnExportLeaderboard) {
     btnExportLeaderboard.addEventListener('click', exportSubmissionsToCSV);
   }
+
+  // Clean Google Sheet Duplicates
+  const btnCleanDuplicates = document.getElementById('btnCleanSheetDuplicates');
+  if (btnCleanDuplicates) {
+    btnCleanDuplicates.addEventListener('click', async () => {
+      if (!confirm('Scan and clean duplicate candidate submissions in your Google Sheet & Leaderboard?\n\nThis will keep each candidate\'s highest-scoring and fastest submission, and purge redundant duplicate rows from Google Sheets.')) {
+        return;
+      }
+      const origHtml = btnCleanDuplicates.innerHTML;
+      btnCleanDuplicates.disabled = true;
+      btnCleanDuplicates.innerHTML = '<span class="state-dot" style="display:inline-block; animation:pulse 1s infinite;"></span> Cleaning Sheet...';
+      try {
+        const resp = await apiDispatch('deduplicateSubmissions', {
+          adminKey: STATE.activeAdminKey
+        });
+        if (resp && resp.success) {
+          showToast(resp.message || 'Google Sheet submissions cleaned successfully!', 'success');
+          await fetchAdminHudData();
+        } else {
+          showToast(resp.message || 'Could not clean duplicates.', 'danger');
+        }
+      } catch (err) {
+        showToast('Error communicating with Google Sheets: ' + err.message, 'danger');
+      } finally {
+        btnCleanDuplicates.disabled = false;
+        btnCleanDuplicates.innerHTML = origHtml;
+      }
+    });
+  }
+
+  // Retry Sync Button on Results Screen
+  const btnRetrySync = document.getElementById('btnRetrySync');
+  if (btnRetrySync) {
+    btnRetrySync.addEventListener('click', async () => {
+      btnRetrySync.disabled = true;
+      btnRetrySync.textContent = 'Syncing...';
+      await syncPendingSubmissions();
+    });
+  }
+
+  // Auto-sync when device reconnects online
+  window.addEventListener('online', () => {
+    console.info('[Network] Online event detected. Auto-syncing pending submissions...');
+    syncPendingSubmissions();
+  });
 
   // Candidate Roster Search & Filter
   const searchCandidates = document.getElementById('searchParticipantsInput');

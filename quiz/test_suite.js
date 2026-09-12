@@ -770,37 +770,34 @@ function runTests() {
       const adminSecurityGmailSuiteValid = publicIsolationPassed && cockpitSettingsPassed && uiBindingPassed && otpDispatchPassed && passkeyChangePassed && emergencyRecoveryPassed;
       console.log(`Public Settings Isolation & Gmail Passkey Security Suite: ${adminSecurityGmailSuiteValid ? 'PASSED' : 'FAILED'}`);
 
-      // Test 17: BioPC Organization & Biology/Bioinformatics Question Bank Verification
+      // Test 17: Molecule to Manuscript: CADD & Scientific Writing Question Bank Verification
       const fs = require('fs');
       const scriptCode = fs.readFileSync('script.js', 'utf8');
 
-      // 1. Founder Question Verification
-      const hasFounderQ = scriptCode.includes('Who is the founder of BioPC?');
-      const hasFounderAns = scriptCode.includes('"Md. Hridoy Ahmed"');
-      const hasFounderDistractors = scriptCode.includes('"Md. Mustak Khan"') && scriptCode.includes('"Md. Shariful Islam"') && scriptCode.includes('"Shishir Dattu"');
-      const founderQPassed = hasFounderQ && hasFounderAns && hasFounderDistractors;
-      console.log(` - Step 1: Founder of BioPC question configured with correct answer (Md. Hridoy Ahmed) & exact specified options: ${founderQPassed ? 'PASSED' : 'FAILED'}`);
+      // 1. Q1 - Q3 Verification
+      const hasCaddQ = scriptCode.includes('What does CADD stand for?') && scriptCode.includes('Computer-Aided Drug Design');
+      const hasSbddQ = scriptCode.includes('Structure-Based Drug Design (SBDD)') && scriptCode.includes('Ligand-Based Drug Design (LBDD)');
+      const hasPdbQ = scriptCode.includes('Protein Data Bank (PDB)') && scriptCode.includes('Housing experimentally determined 3D protein structures');
+      const q1to3Passed = hasCaddQ && hasSbddQ && hasPdbQ;
+      console.log(` - Step 1: CADD fundamentals & structural databases (CADD, SBDD, PDB) configured: ${q1to3Passed ? 'PASSED' : 'FAILED'}`);
 
-      // 2. Full Name Question Verification
-      const hasFullNameQ = scriptCode.includes('What is the full name of BioPC?');
-      const hasFullNameAns = scriptCode.includes('BioPC- A bioinformatics Lab of research and Training') || scriptCode.includes('BioPC - A Bioinformatics Lab of Research and Training');
-      const fullNameQPassed = hasFullNameQ && hasFullNameAns;
-      console.log(` - Step 2: Full name of BioPC configured with correct definition (BioPC- A bioinformatics Lab of research and Training): ${fullNameQPassed ? 'PASSED' : 'FAILED'}`);
+      // 2. Q4 - Q7 Verification
+      const hasResolutionQ = scriptCode.includes('≤ 2.5 Å') && scriptCode.includes('docking studies');
+      const hasScoringQ = scriptCode.includes('scoring function') && scriptCode.includes('Estimates binding affinity by calculating interaction energies');
+      const hasInducedFitQ = scriptCode.includes('Induced Fit') && scriptCode.includes('Flexible Docking');
+      const hasAdmetQ = scriptCode.includes("Author's institutional affiliation") && scriptCode.includes('SwissADME');
+      const q4to7Passed = hasResolutionQ && hasScoringQ && hasInducedFitQ && hasAdmetQ;
+      console.log(` - Step 2: Docking & ADMET parameters (Resolution, Scoring function, Flexible docking, SwissADME) configured: ${q4to7Passed ? 'PASSED' : 'FAILED'}`);
 
-      // 3. 8 Basic Biology & Bioinformatics Core Concepts
-      const hasBlast = scriptCode.includes('BLAST (Basic Local Alignment Search Tool)');
-      const hasTranscription = scriptCode.includes('Transcription') && scriptCode.includes('Central Dogma');
-      const hasFasta = scriptCode.includes('FASTA format');
-      const hasMitochondria = scriptCode.includes('Mitochondria') && scriptCode.includes('powerhouse');
-      const hasZotero = scriptCode.includes('Zotero') && scriptCode.includes('manuscript citation');
-      const hasHydrogenBonds = scriptCode.includes('Guanine (G) and Cytosine (C)') && scriptCode.includes('3 Hydrogen Bonds');
-      const hasPdb = scriptCode.includes('PDB (Protein Data Bank)') && scriptCode.includes('3D');
-      const hasAug = scriptCode.includes('AUG') && scriptCode.includes('Methionine');
-      const bioCorePassed = hasBlast && hasTranscription && hasFasta && hasMitochondria && hasZotero && hasHydrogenBonds && hasPdb && hasAug;
-      console.log(` - Step 3: 8 specialized Biology, Bioinformatics & Citation questions configured (BLAST, Transcription, FASTA, Mitochondria, Zotero, G-C Bonds, PDB, AUG): ${bioCorePassed ? 'PASSED' : 'FAILED'}`);
+      // 3. Q8 - Q10 Verification
+      const hasImradQ = scriptCode.includes('IMRaD structure') && scriptCode.includes('A clearly stated aim or objective of the study');
+      const hasResultsQ = scriptCode.includes('simply reporting exact values') && scriptCode.includes('Results');
+      const hasMistakeQ = scriptCode.includes('common mistake to avoid') && scriptCode.includes('Overstating in silico findings');
+      const q8to10Passed = hasImradQ && hasResultsQ && hasMistakeQ;
+      console.log(` - Step 3: Scientific writing & manuscript best practices (IMRaD, Results section, in silico claims) configured: ${q8to10Passed ? 'PASSED' : 'FAILED'}`);
 
-      const qbStandardSuiteValid = founderQPassed && fullNameQPassed && bioCorePassed;
-      console.log(`BioPC & Biology/Bioinformatics Question Bank Suite: ${qbStandardSuiteValid ? 'PASSED' : 'FAILED'}`);
+      const qbStandardSuiteValid = q1to3Passed && q4to7Passed && q8to10Passed;
+      console.log(`Molecule to Manuscript: CADD & Scientific Writing Question Bank Suite: ${qbStandardSuiteValid ? 'PASSED' : 'FAILED'}`);
 
       // Test 18: Direct Start Main Questions & 5-Second Auto-Advance Engine Suite
       console.log('\n[TEST 18] Verifying Direct Start Main Questions & 5-Second Auto-Advance Countdown Engine:');

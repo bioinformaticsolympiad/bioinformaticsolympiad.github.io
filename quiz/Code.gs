@@ -151,14 +151,29 @@ function isAuthorizedAdmin(inputKey, config) {
   return false;
 }
 
+/**
+ * Universal Normalized Header Column Index Resolver
+ * Resolves column positions case-insensitively and regardless of spacing or symbols.
+ */
+function getHeaderIndexMap(headers) {
+  const map = {};
+  if (!headers || !Array.isArray(headers)) return map;
+  for (let i = 0; i < headers.length; i++) {
+    const key = String(headers[i] || '').trim().toLowerCase().replace(/[\s_\-]+/g, '');
+    if (key) {
+      map[key] = i;
+    }
+  }
+  return map;
+}
+
 // ==========================================
 // 3. HTTP GET HANDLER (doGet)
 // ==========================================
 
 function doGet(e) {
-  const lock = LockService.getScriptLock();
-  lock.tryLock(10000);
-  
+  // Read-only operations do not require a mutating lock.
+  // Removing lock prevents polling contention and lock timeouts during exams.
   try {
     const params = e ? e.parameter : {};
     const action = params.action || 'getExamStatus';
@@ -196,8 +211,6 @@ function doGet(e) {
     return createJsonResponse(result);
   } catch (error) {
     return createJsonResponse({ success: false, error: error.toString() });
-  } finally {
-    lock.releaseLock();
   }
 }
 
@@ -207,9 +220,15 @@ function doGet(e) {
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
-  lock.tryLock(10000);
-  
+  let hasLock = false;
+
   try {
+    try {
+      hasLock = lock.tryLock(30000);
+    } catch (lErr) {
+      hasLock = false;
+    }
+
     let payload = {};
     if (e && e.postData && e.postData.contents) {
       try {
@@ -314,12 +333,19 @@ function doPost(e) {
     else if (action === 'denyRetake') {
       result = handleDenyRetake(payload);
     }
+    else if (action === 'deduplicateSubmissions') {
+      result = handleDeduplicateSubmissions(payload);
+    }
     
     return createJsonResponse(result);
   } catch (error) {
     return createJsonResponse({ success: false, error: error.toString() });
   } finally {
-    lock.releaseLock();
+    if (hasLock) {
+      try {
+        lock.releaseLock();
+      } catch (relErr) {}
+    }
   }
 }
 
@@ -511,11 +537,11 @@ function handleSubmitExam(data) {
   const submissionsSheet = ss.getSheetByName('Submissions');
   const participantsSheet = ss.getSheetByName('Participants');
   
-  if (!submissionsSheet) return { success: false, message: 'Submissions sheet missing.' };
+  if (!submissionsSheet) return { success: false, message: 'Submissions sheet missing. Run setupSheets().' };
   
-  const token = String(data.sessionToken || '');
-  const fullName = String(data.fullName || 'Anonymous');
-  const department = String(data.department || 'General');
+  const token = String(data.sessionToken || data.token || '').trim();
+  const fullName = String(data.fullName || 'Anonymous').trim();
+  const department = String(data.department || 'General').trim();
   const baseScore = Number(data.baseScore) || 0;
   const speedBonusPoints = Number(data.speedBonusPoints) || 0;
   const combinedScore = (baseScore * 10000) + speedBonusPoints;
@@ -525,40 +551,85 @@ function handleSubmitExam(data) {
   
   const now = new Date().toISOString();
   
-  // Record Submission (check if Submissions has Department column)
-  const subHeaders = submissionsSheet.getDataRange().getValues()[0] || [];
-  const deptColIdx = subHeaders.indexOf('Department');
+  // Read existing Submissions headers and rows
+  const subData = submissionsSheet.getDataRange().getValues();
+  const subHeaders = subData[0] || [];
+  const colMap = getHeaderIndexMap(subHeaders);
+  
+  const tsIdx = colMap['timestamp'] !== undefined ? colMap['timestamp'] : 0;
+  const tokIdx = colMap['sessiontoken'] !== undefined ? colMap['sessiontoken'] : (colMap['token'] !== undefined ? colMap['token'] : 1);
+  const nameIdx = colMap['fullname'] !== undefined ? colMap['fullname'] : (colMap['name'] !== undefined ? colMap['name'] : 2);
+  const deptIdx = colMap['department'] !== undefined ? colMap['department'] : (colMap['dept'] !== undefined ? colMap['dept'] : (subHeaders.length >= 10 ? 3 : -1));
+  const baseIdx = colMap['basescore'] !== undefined ? colMap['basescore'] : (colMap['score'] !== undefined ? colMap['score'] : (deptIdx > -1 ? 4 : 3));
+  const bonusIdx = colMap['speedbonuspoints'] !== undefined ? colMap['speedbonuspoints'] : (colMap['bonus'] !== undefined ? colMap['bonus'] : (deptIdx > -1 ? 5 : 4));
+  const combIdx = colMap['combinedscore'] !== undefined ? colMap['combinedscore'] : (colMap['totalscore'] !== undefined ? colMap['totalscore'] : (deptIdx > -1 ? 6 : 5));
+  const tabIdx = colMap['tabswitches'] !== undefined ? colMap['tabswitches'] : (colMap['violations'] !== undefined ? colMap['violations'] : (deptIdx > -1 ? 7 : 6));
+  const timeIdx = colMap['totaltimeseconds'] !== undefined ? colMap['totaltimeseconds'] : (colMap['time'] !== undefined ? colMap['time'] : (deptIdx > -1 ? 8 : 7));
+  const ansIdx = colMap['answersjson'] !== undefined ? colMap['answersjson'] : (colMap['answers'] !== undefined ? colMap['answers'] : (deptIdx > -1 ? 9 : 8));
 
-  if (deptColIdx > -1) {
-    submissionsSheet.appendRow([
-      now, token, fullName, department, baseScore, speedBonusPoints,
-      combinedScore, tabSwitches, totalTimeSeconds, answersJSON
-    ]);
+  // Check if candidate already has an existing submission row (Deduplication / Upsert)
+  let existingRowIdx = -1;
+  for (let i = 1; i < subData.length; i++) {
+    const rowToken = String(subData[i][tokIdx] || '').trim();
+    const rowName = String(subData[i][nameIdx] || '').trim().toLowerCase();
+    const rowDept = deptIdx > -1 ? String(subData[i][deptIdx] || '').trim().toLowerCase() : '';
+    
+    if (token && token !== 'ANON' && rowToken && rowToken.toUpperCase() === token.toUpperCase()) {
+      existingRowIdx = i + 1;
+      break;
+    } else if ((!token || token === 'ANON') && fullName && rowName === fullName.toLowerCase() && (deptIdx === -1 || rowDept === department.toLowerCase())) {
+      existingRowIdx = i + 1;
+      break;
+    }
+  }
+
+  // Construct row values matching sheet layout
+  const numCols = Math.max(subHeaders.length, deptIdx > -1 ? 10 : 9);
+  const rowValues = new Array(numCols).fill('');
+  rowValues[tsIdx] = now;
+  rowValues[tokIdx] = token || ('TOK_' + Utilities.getUuid().substring(0, 8).toUpperCase());
+  rowValues[nameIdx] = fullName;
+  if (deptIdx > -1) rowValues[deptIdx] = department;
+  rowValues[baseIdx] = baseScore;
+  rowValues[bonusIdx] = speedBonusPoints;
+  rowValues[combIdx] = combinedScore;
+  rowValues[tabIdx] = tabSwitches;
+  rowValues[timeIdx] = totalTimeSeconds;
+  rowValues[ansIdx] = answersJSON;
+
+  let isUpdate = false;
+  if (existingRowIdx > 1) {
+    // Candidate already exists: Update row in-place! Strict single-entry guarantee.
+    submissionsSheet.getRange(existingRowIdx, 1, 1, rowValues.length).setValues([rowValues]);
+    isUpdate = true;
   } else {
-    submissionsSheet.appendRow([
-      now, token, fullName, baseScore, speedBonusPoints,
-      combinedScore, tabSwitches, totalTimeSeconds, answersJSON
-    ]);
+    // New submission: Append row
+    submissionsSheet.appendRow(rowValues);
   }
   
-  // Update participant status if exists
-  if (participantsSheet && token) {
-    const pData = participantsSheet.getDataRange().getValues();
-    const pHeaders = pData[0] || [];
-    const pDeptIdx = pHeaders.indexOf('Department');
-    const pStatusCol = pHeaders.indexOf('Status') > -1 ? (pHeaders.indexOf('Status') + 1) : (pDeptIdx > -1 ? 8 : 7);
+  // Update participant status in Participants sheet if exists
+  if (participantsSheet && token && token !== 'ANON') {
+    try {
+      const pData = participantsSheet.getDataRange().getValues();
+      const pHeaders = pData[0] || [];
+      const pMap = getHeaderIndexMap(pHeaders);
+      const pTokCol = pMap['sessiontoken'] !== undefined ? pMap['sessiontoken'] : (pMap['token'] !== undefined ? pMap['token'] : 1);
+      const pStatusCol = pMap['status'] !== undefined ? (pMap['status'] + 1) : (pMap['department'] !== undefined ? 8 : 7);
 
-    for (let i = 1; i < pData.length; i++) {
-      if (String(pData[i][1]) === token) {
-        participantsSheet.getRange(i + 1, pStatusCol).setValue('SUBMITTED');
-        break;
+      for (let i = 1; i < pData.length; i++) {
+        const pTok = String(pData[i][pTokCol] || '').trim();
+        if (pTok.toUpperCase() === token.toUpperCase()) {
+          participantsSheet.getRange(i + 1, pStatusCol).setValue('SUBMITTED');
+          break;
+        }
       }
-    }
+    } catch(pErr) {}
   }
   
   return {
     success: true,
-    message: 'Exam submitted successfully',
+    isUpdate: isUpdate,
+    message: isUpdate ? 'Exam submission updated successfully' : 'Exam submitted successfully',
     recordedScore: {
       baseScore: baseScore,
       speedBonusPoints: speedBonusPoints,
@@ -1071,30 +1142,71 @@ function handleMasterPlatformReset(data) {
 function getLeaderboardData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('Submissions');
-  if (!sheet) return { success: true, leaderboard: [] };
+  if (!sheet) return { success: true, leaderboard: [], top5: [] };
   
   const rows = sheet.getDataRange().getValues();
-  if (rows.length <= 1) return { success: true, leaderboard: [] };
+  if (rows.length <= 1) return { success: true, leaderboard: [], top5: [] };
   
   const headers = rows[0] || [];
-  const deptIdx = headers.indexOf('Department');
-  const hasDept = deptIdx > -1;
+  const colMap = getHeaderIndexMap(headers);
 
-  const list = [];
+  const tsIdx = colMap['timestamp'] !== undefined ? colMap['timestamp'] : 0;
+  const tokIdx = colMap['sessiontoken'] !== undefined ? colMap['sessiontoken'] : (colMap['token'] !== undefined ? colMap['token'] : 1);
+  const nameIdx = colMap['fullname'] !== undefined ? colMap['fullname'] : (colMap['name'] !== undefined ? colMap['name'] : 2);
+  const deptIdx = colMap['department'] !== undefined ? colMap['department'] : (colMap['dept'] !== undefined ? colMap['dept'] : (headers.length >= 10 ? 3 : -1));
+  const baseIdx = colMap['basescore'] !== undefined ? colMap['basescore'] : (colMap['score'] !== undefined ? colMap['score'] : (deptIdx > -1 ? 4 : 3));
+  const bonusIdx = colMap['speedbonuspoints'] !== undefined ? colMap['speedbonuspoints'] : (colMap['bonus'] !== undefined ? colMap['bonus'] : (deptIdx > -1 ? 5 : 4));
+  const combIdx = colMap['combinedscore'] !== undefined ? colMap['combinedscore'] : (colMap['totalscore'] !== undefined ? colMap['totalscore'] : (deptIdx > -1 ? 6 : 5));
+  const tabIdx = colMap['tabswitches'] !== undefined ? colMap['tabswitches'] : (colMap['violations'] !== undefined ? colMap['violations'] : (deptIdx > -1 ? 7 : 6));
+  const timeIdx = colMap['totaltimeseconds'] !== undefined ? colMap['totaltimeseconds'] : (colMap['time'] !== undefined ? colMap['time'] : (deptIdx > -1 ? 8 : 7));
+
+  // Map to deduplicate submissions by participant (retaining highest/best performance)
+  const candidateMap = new Map();
+
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    list.push({
-      timestamp: row[0],
-      sessionToken: row[1],
-      fullName: row[2],
-      department: hasDept ? (row[deptIdx] || 'General') : 'General',
-      baseScore: Number(hasDept ? row[4] : row[3]) || 0,
-      speedBonusPoints: Number(hasDept ? row[5] : row[4]) || 0,
-      combinedScore: Number(hasDept ? row[6] : row[5]) || 0,
-      tabSwitches: Number(hasDept ? row[7] : row[6]) || 0,
-      totalTimeSeconds: Number(hasDept ? row[8] : row[7]) || 0
-    });
+    const tok = String(row[tokIdx] || '').trim();
+    const name = String(row[nameIdx] || '').trim();
+    const dept = deptIdx > -1 ? String(row[deptIdx] || 'General').trim() : 'General';
+    
+    // Fallback key if token is generic or empty
+    const uniqueKey = (tok && tok !== 'ANON' && tok !== 'UNKNOWN') ? tok.toUpperCase() : (name.toLowerCase() + '___' + dept.toLowerCase());
+    if (!uniqueKey || uniqueKey === '___') continue;
+
+    const entry = {
+      timestamp: row[tsIdx] || new Date().toISOString(),
+      sessionToken: tok || 'ANON',
+      fullName: name || 'Anonymous',
+      department: dept || 'General',
+      baseScore: Number(row[baseIdx]) || 0,
+      speedBonusPoints: Number(row[bonusIdx]) || 0,
+      combinedScore: Number(row[combIdx]) || ((Number(row[baseIdx]) || 0) * 10000 + (Number(row[bonusIdx]) || 0)),
+      tabSwitches: Number(row[tabIdx]) || 0,
+      totalTimeSeconds: Number(row[timeIdx]) || 0
+    };
+
+    if (!candidateMap.has(uniqueKey)) {
+      candidateMap.set(uniqueKey, entry);
+    } else {
+      // Deduplicate: Compare with existing entry and keep best score / fastest time
+      const existing = candidateMap.get(uniqueKey);
+      let replace = false;
+      if (entry.combinedScore > existing.combinedScore) {
+        replace = true;
+      } else if (entry.combinedScore === existing.combinedScore) {
+        if (entry.speedBonusPoints > existing.speedBonusPoints) {
+          replace = true;
+        } else if (entry.speedBonusPoints === existing.speedBonusPoints && entry.totalTimeSeconds < existing.totalTimeSeconds) {
+          replace = true;
+        }
+      }
+      if (replace) {
+        candidateMap.set(uniqueKey, entry);
+      }
+    }
   }
+
+  const list = Array.from(candidateMap.values());
   
   // Sort descending by CombinedScore, speedBonus, baseScore, then ascending by totalTimeSeconds
   list.sort((a, b) => {
@@ -1106,8 +1218,100 @@ function getLeaderboardData() {
   
   return { 
     success: true, 
-    leaderboard: list.slice(0, 50),
-    top5: list.slice(0, 5)
+    leaderboard: list, // Return FULL list of all participants! Never cut off!
+    top5: list.slice(0, 5),
+    totalCount: list.length
+  };
+}
+
+function handleDeduplicateSubmissions(data) {
+  const config = getConfigMap();
+  const adminKey = String(data.adminKey || data.adminHash || '').trim();
+  if (!isAuthorizedAdmin(adminKey, config)) {
+    return { success: false, message: 'Unauthorized: Invalid Admin Key' };
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Submissions');
+  if (!sheet || sheet.getLastRow() <= 1) {
+    return { success: true, message: 'Submissions sheet is empty. No duplicates to remove.', removedCount: 0 };
+  }
+
+  const rows = sheet.getDataRange().getValues();
+  const headers = rows[0] || [];
+  const colMap = getHeaderIndexMap(headers);
+
+  const tokIdx = colMap['sessiontoken'] !== undefined ? colMap['sessiontoken'] : (colMap['token'] !== undefined ? colMap['token'] : 1);
+  const nameIdx = colMap['fullname'] !== undefined ? colMap['fullname'] : (colMap['name'] !== undefined ? colMap['name'] : 2);
+  const deptIdx = colMap['department'] !== undefined ? colMap['department'] : (colMap['dept'] !== undefined ? colMap['dept'] : (headers.length >= 10 ? 3 : -1));
+  const combIdx = colMap['combinedscore'] !== undefined ? colMap['combinedscore'] : (colMap['totalscore'] !== undefined ? colMap['totalscore'] : (deptIdx > -1 ? 6 : 5));
+  const bonusIdx = colMap['speedbonuspoints'] !== undefined ? colMap['speedbonuspoints'] : (colMap['bonus'] !== undefined ? colMap['bonus'] : (deptIdx > -1 ? 5 : 4));
+  const timeIdx = colMap['totaltimeseconds'] !== undefined ? colMap['totaltimeseconds'] : (colMap['time'] !== undefined ? colMap['time'] : (deptIdx > -1 ? 8 : 7));
+
+  const uniqueMap = new Map();
+  let duplicateCount = 0;
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const tok = String(row[tokIdx] || '').trim();
+    const name = String(row[nameIdx] || '').trim().toLowerCase();
+    const dept = deptIdx > -1 ? String(row[deptIdx] || '').trim().toLowerCase() : '';
+    const key = (tok && tok !== 'ANON') ? tok.toUpperCase() : (name + '___' + dept);
+
+    if (!key || key === '___') continue;
+
+    if (!uniqueMap.has(key)) {
+      uniqueMap.set(key, row);
+    } else {
+      duplicateCount++;
+      const existing = uniqueMap.get(key);
+      const existComb = Number(existing[combIdx]) || 0;
+      const newComb = Number(row[combIdx]) || 0;
+      const existBonus = Number(existing[bonusIdx]) || 0;
+      const newBonus = Number(row[bonusIdx]) || 0;
+      const existTime = Number(existing[timeIdx]) || 999999;
+      const newTime = Number(row[timeIdx]) || 999999;
+
+      let replace = false;
+      if (newComb > existComb) replace = true;
+      else if (newComb === existComb && newBonus > existBonus) replace = true;
+      else if (newComb === existComb && newBonus === existBonus && newTime < existTime) replace = true;
+
+      if (replace) {
+        uniqueMap.set(key, row);
+      }
+    }
+  }
+
+  if (duplicateCount > 0) {
+    const deduplicatedRows = Array.from(uniqueMap.values());
+    // Sort descending by combinedScore, speedBonus, time
+    deduplicatedRows.sort((a, b) => {
+      const cA = Number(a[combIdx]) || 0;
+      const cB = Number(b[combIdx]) || 0;
+      if (cB !== cA) return cB - cA;
+      const bonA = Number(a[bonusIdx]) || 0;
+      const bonB = Number(b[bonusIdx]) || 0;
+      if (bonB !== bonA) return bonB - bonA;
+      return (Number(a[timeIdx]) || 0) - (Number(b[timeIdx]) || 0);
+    });
+
+    // Clear old rows below header and write clean deduplicated records
+    if (sheet.getLastRow() > 1) {
+      sheet.deleteRows(2, sheet.getLastRow() - 1);
+    }
+    if (deduplicatedRows.length > 0) {
+      sheet.getRange(2, 1, deduplicatedRows.length, deduplicatedRows[0].length).setValues(deduplicatedRows);
+    }
+  }
+
+  return {
+    success: true,
+    message: duplicateCount > 0 
+      ? `Successfully purged ${duplicateCount} duplicate submission(s). Google Sheet now contains ${uniqueMap.size} unique candidate records.`
+      : `Google Sheet is already clean. No duplicate submissions found (${uniqueMap.size} unique records).`,
+    removedCount: duplicateCount,
+    totalUnique: uniqueMap.size
   };
 }
 
