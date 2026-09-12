@@ -7,7 +7,7 @@ window.BBO_R2_CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbxu9VWVo25LjQ3mS4BHr2MKJ_7fcoNRK4sr6F-NuJxvp-mJGIs6ZKjdOuFgsuvMy7pGHg/exec",
 
   VENUE: "University of Chittagong",
-  EXAM_WINDOW: "3rd week of September 2026",
+  EXAM_WINDOW: "2nd week of October 2026",
   DEADLINE_TEXT: "30 September 2026",
   CAPACITY: 350,
 
