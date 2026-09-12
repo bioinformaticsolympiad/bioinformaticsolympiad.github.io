@@ -8,7 +8,7 @@ window.BBO_R2_CONFIG = {
 
   VENUE: "University of Chittagong",
   EXAM_WINDOW: "2nd week of October 2026",
-  DEADLINE_TEXT: "30 September 2026",
+  DEADLINE_TEXT: "25 September 2026",
   CAPACITY: 350,
 
   FEE_EXAM: 500,
