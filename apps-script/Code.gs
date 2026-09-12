@@ -28,7 +28,7 @@ var CONFIG = {
      browser shows it, so you can tell at a glance whether the deployment is
      actually serving the code you just pasted, a redeploy that silently kept
      an older version is otherwise very hard to spot.                          */
-  CODE_VERSION: 'v4-round2',
+  CODE_VERSION: 'v5-round2-selfheal',
   // Must match exam/config.js START_ISO / DURATION_MIN
   START_ISO: '2026-07-31T21:00:00+06:00',
   DURATION_MIN: 40,
@@ -74,6 +74,13 @@ var ANSWER_KEY = {
   41:'C', 42:'B', 43:'B', 44:'C', 45:'A', 46:'B', 47:'B', 48:'B', 49:'C', 50:'C'
 };
 
+var ROUND2_HEADERS = [
+  'Timestamp', 'RegID', 'Seat', 'Name', 'University', 'Department', 'Email', 'Phone',
+  'Round1Percent', 'Round1Rank', 'AttendingCU', 'Package', 'Fee',
+  'PosterPresentation', 'PosterType', 'PhotographyContest', 'InstantSpeech',
+  'TransactionID', 'PaymentScreenshot', 'LookupID'
+];
+
 var SHEETS = {
   REG: 'Registrations',
   AUTOSAVE: 'Autosave',
@@ -100,19 +107,19 @@ function setup() {
     'AnswersJSON', 'Attempted', 'Reason', 'TabSwitches', 'CopyAttempts',
     'ScreenshotAttempts', 'EmailStatus'
   ]);
-  ensureSheet(ss, SHEETS.ROUND2, [
-    'Timestamp', 'RegID', 'Seat', 'Name', 'University', 'Department', 'Email', 'Phone',
-    'Round1Percent', 'Round1Rank', 'AttendingCU', 'Package', 'Fee',
-    'PosterPresentation', 'PosterType', 'PhotographyContest', 'InstantSpeech',
-    'TransactionID', 'PaymentScreenshot', 'LookupID'
-  ]);
+  ensureSheet(ss, SHEETS.ROUND2, ROUND2_HEADERS);
   ensureSheet(ss, SHEETS.LOG, ['Timestamp', 'Where', 'Message', 'Payload']);
 
   // Email queue worker, runs every 5 minutes, respects the daily quota.
+  /* Only create the email worker when emails are on. Creating time-based
+     triggers is the step most likely to fail with Google's generic
+     "unknown error", and with SEND_EMAILS false the trigger does nothing. */
   ScriptApp.getProjectTriggers().forEach(function (t) {
     if (t.getHandlerFunction() === 'processEmailQueue') ScriptApp.deleteTrigger(t);
   });
-  ScriptApp.newTrigger('processEmailQueue').timeBased().everyMinutes(5).create();
+  if (CONFIG.SEND_EMAILS) {
+    ScriptApp.newTrigger('processEmailQueue').timeBased().everyMinutes(5).create();
+  }
 
   var key = Object.keys(ANSWER_KEY).length;
   return notify(
@@ -551,6 +558,13 @@ function handleRound2Prefill(d) {
   });
 }
 
+/* The Round2 tab is created on first use, so registration works even if
+   setup() has never run successfully. */
+function round2Sheet() {
+  return sheet(SHEETS.ROUND2) ||
+    ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), SHEETS.ROUND2, ROUND2_HEADERS);
+}
+
 function round2Folder() {
   var it = DriveApp.getFoldersByName(CONFIG.ROUND2_DRIVE_FOLDER);
   return it.hasNext() ? it.next() : DriveApp.createFolder(CONFIG.ROUND2_DRIVE_FOLDER);
@@ -633,7 +647,7 @@ function handleRound2Register(d) {
   var seat = round2Taken() + 1;
   var regId = 'BBO3R2-' + ('000' + seat).slice(-3) + '-' + String(Math.abs(hashCode(id))).slice(0, 4);
 
-  sheet(SHEETS.ROUND2).appendRow([
+  round2Sheet().appendRow([
     new Date(), regId, seat, name, uni, dept,
     String(row.Email || ''), phone,
     parseFloat(row.Percent) || 0, parseFloat(row.Rank) || 0,
