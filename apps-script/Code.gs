@@ -854,26 +854,49 @@ function gradeAll(exam) {
     };
   });
 
-  // De-duplicate by email, keep the earliest paper.
-  var byEmail = {};
-  var rows = [];
-  Object.keys(records).map(function (k) { return records[k]; })
-    .sort(function (a, b) { return new Date(a.when) - new Date(b.when); })
-    .forEach(function (r) {
-      var key = String(r.email || '').toLowerCase().trim();
-      var dup = key && byEmail[key];
-      if (key) byEmail[key] = true;
+  /* One paper per candidate. A candidate who opens the exam on two devices
+     registers twice and can end up with two papers; the earliest sitting is
+     the one that counts. Later papers are not discarded, they are written to
+     a review sheet so the decision can be checked afterwards. */
+  var ordered = Object.keys(records).map(function (k) { return records[k]; })
+    .sort(function (a, b) { return new Date(a.when) - new Date(b.when); });
 
-      var g = score(r.answers, KEY);
-      rows.push([
-        r.when, r.submissionId, r.name, r.university, r.email, r.phone,
-        g.attempted, g.correct, g.wrong, g.blank, g.marks,
-        Math.round(g.marks / CONFIG.TOTAL_MARKS * 10000) / 100,
-        g.marks >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100 ? 'PASS' : 'FAIL',
-        r.source, dup ? 'DUPLICATE EMAIL' : '', r.reason || '',
-        r.tabSwitches || 0, r.copyAttempts || 0, r.screenshotAttempts || 0
-      ]);
-    });
+  var winnerByEmail = {}, keep = [], superseded = [];
+  ordered.forEach(function (r) {
+    var key = String(r.email || '').toLowerCase().trim();
+    if (!key) { keep.push(r); return; }          // no email, nothing to pair it with
+    if (winnerByEmail[key]) { superseded.push({ loser: r, winner: winnerByEmail[key] }); return; }
+    winnerByEmail[key] = r;
+    keep.push(r);
+  });
+
+  /* Count what was set aside, and single out the one case worth a human look:
+     the paper we kept was only recovered from autosave, an abandoned attempt,
+     while the paper we set aside was actually submitted. */
+  var setAside = {}, needsLook = {};
+  superseded.forEach(function (p) {
+    var key = String(p.winner.email).toLowerCase().trim();
+    setAside[key] = (setAside[key] || 0) + 1;
+    if (p.winner.source === 'RECOVERED' && p.loser.source === 'SUBMITTED') needsLook[key] = true;
+  });
+
+  var rows = keep.map(function (r) {
+    var key = String(r.email || '').toLowerCase().trim();
+    var g = score(r.answers, KEY);
+    var flag = '';
+    if (setAside[key]) {
+      flag = 'EARLIEST OF ' + (setAside[key] + 1) + ' PAPERS';
+      if (needsLook[key]) flag += ' - CHECK, KEPT PAPER WAS ONLY RECOVERED';
+    }
+    return [
+      r.when, r.submissionId, r.name, r.university, r.email, r.phone,
+      g.attempted, g.correct, g.wrong, g.blank, g.marks,
+      Math.round(g.marks / CONFIG.TOTAL_MARKS * 10000) / 100,
+      g.marks >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100 ? 'PASS' : 'FAIL',
+      r.source, flag, r.reason || '',
+      r.tabSwitches || 0, r.copyAttempts || 0, r.screenshotAttempts || 0
+    ];
+  });
 
   // Rank by marks (descending), then by earlier submission time.
   rows.sort(function (a, b) { return b[10] - a[10] || new Date(a[0]) - new Date(b[0]); });
@@ -893,13 +916,40 @@ function gradeAll(exam) {
 
   /* Look the column up by name, a hard-coded index silently breaks the count
      whenever a column is added. */
+  /* Papers set aside by the one-per-candidate rule, kept for audit. */
+  var reviewName = SH.RESULTS + 'Superseded';
+  var oldReview = ss.getSheetByName(reviewName);
+  if (oldReview) ss.deleteSheet(oldReview);
+  if (superseded.length) {
+    var rv = ss.insertSheet(reviewName);
+    var rvHeaders = ['SetAsideAt', 'SetAsideSubmissionID', 'Name', 'Email', 'SetAsideMarks',
+      'SetAsideSource', 'KeptAt', 'KeptSubmissionID', 'KeptMarks', 'KeptSource', 'WhyLookAgain'];
+    rv.appendRow(rvHeaders);
+    rv.getRange(1, 1, 1, rvHeaders.length).setFontWeight('bold').setBackground('#7a3b00').setFontColor('#ffffff');
+    rv.setFrozenRows(1);
+    rv.getRange(2, 1, superseded.length, rvHeaders.length).setValues(superseded.map(function (p) {
+      var lg = score(p.loser.answers, KEY), wg = score(p.winner.answers, KEY);
+      return [p.loser.when, p.loser.submissionId, p.loser.name, p.loser.email, lg.marks, p.loser.source,
+              p.winner.when, p.winner.submissionId, wg.marks, p.winner.source,
+              (p.winner.source === 'RECOVERED' && p.loser.source === 'SUBMITTED')
+                ? 'The paper kept was only recovered from autosave while this one was actually submitted'
+                : ''];
+    }));
+    rv.autoResizeColumns(1, rvHeaders.length);
+  }
+
   var resultCol = headers.indexOf('Result');
   var passed = rows.filter(function (r) { return r[resultCol] === 'PASS'; }).length;
+  var look = Object.keys(needsLook).length;
   return notify(
     'Grading complete (' + exam + '). Papers graded: ' + rows.length +
     '. Passed (' + CONFIG.PASS_PERCENT + '%+): ' + passed +
     '. Failed: ' + (rows.length - passed) +
-    '. See the Results tab; rows flagged DUPLICATE EMAIL or RECOVERED need a manual look.'
+    (superseded.length
+      ? '. ' + superseded.length + ' later paper(s) from candidates who sat twice were set aside, see the ' +
+        reviewName + ' tab' + (look ? ', and ' + look + ' of them need a human decision' : '')
+      : '. No candidate sat twice.') +
+    '. Rows marked RECOVERED were rebuilt from autosave and are worth a look.'
   );
 }
 
