@@ -52,9 +52,18 @@ jobs:
             exit 0
           fi
           cp _vault/final-questions.js final/questions.js
+
+          # Browsers cache these files for ten minutes, and a browser that asked
+          # for questions.js while it was still withheld may be holding on to
+          # that 404. Moving the version stamp changes every URL, so the exam
+          # page is always fetched fresh once the paper is up.
+          STAMP="$(date -u +%Y%m%d%H%M)"
+          sed -i -E "s/\?v=[0-9A-Za-z._-]+/?v=$STAMP/g" final/index.html
+          grep -n '?v=' final/index.html
+
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add final/questions.js
+          git add final/questions.js final/index.html
           git commit -m "Publish Final Round question paper (scheduled, 3 hours before the exam)"
           git push
           echo "published, the paper is now live at /final/questions.js"
