@@ -28,7 +28,7 @@ var CONFIG = {
      browser shows it, so you can tell at a glance whether the deployment is
      actually serving the code you just pasted, a redeploy that silently kept
      an older version is otherwise very hard to spot.                          */
-  CODE_VERSION: 'v5-round2-selfheal',
+  CODE_VERSION: 'v6-final-round',
   // Must match exam/config.js START_ISO / DURATION_MIN
   START_ISO: '2026-07-31T21:00:00+06:00',
   DURATION_MIN: 40,
@@ -37,6 +37,14 @@ var CONFIG = {
   PASS_PERCENT: 40,
   NEGATIVE_MARK: 0,         // 0 = no negative marking
   SEND_EMAILS: false,       // no confirmation emails; results go on Facebook
+
+  /* ---- Final round (online), olympiad.biopc.org/final/ ----
+     Must match final/config.js START_ISO and DURATION_MIN.
+     FINAL_RESTRICT_TO_ROUND2 limits the exam to candidates whose email is in
+     the Round2 sheet, so only those who registered and paid can sit it.     */
+  FINAL_START_ISO: '2026-10-31T21:00:00+06:00',
+  FINAL_DURATION_MIN: 40,
+  FINAL_RESTRICT_TO_ROUND2: true,
 
   /* ---- Result lookup (olympiad.biopc.org/result/) ----
      Set RESULTS_PUBLISHED to false to take the result checker offline without
@@ -90,23 +98,53 @@ var SHEETS = {
   LOG: 'ErrorLog'
 };
 
+/* The final round keeps its own sheets so nothing can mix with Round 1. */
+var FINAL_SHEETS = {
+  REG: 'FinalRegistrations',
+  AUTOSAVE: 'FinalAutosave',
+  SUB: 'FinalSubmissions',
+  RESULTS: 'FinalResults'
+};
+
+var REG_HEADERS = ['Timestamp', 'Token', 'CandidateID', 'Name', 'University', 'Email', 'Phone', 'UserAgent'];
+var AUTOSAVE_HEADERS = ['Timestamp', 'Token', 'AnswersJSON', 'Answered', 'TabSwitches', 'CopyAttempts',
+  'ScreenshotAttempts', 'ViaBeacon'];
+var SUB_HEADERS = ['Timestamp', 'SubmissionID', 'Token', 'Name', 'University', 'Email', 'Phone',
+  'AnswersJSON', 'Attempted', 'Reason', 'TabSwitches', 'CopyAttempts',
+  'ScreenshotAttempts', 'EmailStatus'];
+
+var ANSWER_KEY_FINAL = {
+  1:'A', 2:'A', 3:'C', 4:'C', 5:'C', 6:'A', 7:'B', 8:'D', 9:'C', 10:'B',
+  11:'C', 12:'B', 13:'A', 14:'C', 15:'B', 16:'D', 17:'D', 18:'A', 19:'B', 20:'B',
+  21:'A', 22:'D', 23:'A', 24:'D', 25:'C', 26:'D', 27:'C', 28:'C', 29:'C', 30:'C',
+  31:'D', 32:'D', 33:'A', 34:'B', 35:'B', 36:'B', 37:'D', 38:'A', 39:'A', 40:'C',
+  41:'D', 42:'B', 43:'B', 44:'D', 45:'B', 46:'A', 47:'B', 48:'A', 49:'A', 50:'D'
+};
+
+/* Which exam a request belongs to. Anything other than 'final' is Round 1,
+   so older clients that send no exam field keep working unchanged. */
+function examOf(d) { return clean(d && d.exam, 20) === 'final' ? 'final' : 'round1'; }
+function sheetsFor(exam) { return exam === 'final' ? FINAL_SHEETS : SHEETS; }
+function keyFor(exam) { return exam === 'final' ? ANSWER_KEY_FINAL : ANSWER_KEY; }
+function windowFor(exam) {
+  return exam === 'final'
+    ? { start: CONFIG.FINAL_START_ISO, dur: CONFIG.FINAL_DURATION_MIN }
+    : { start: CONFIG.START_ISO, dur: CONFIG.DURATION_MIN };
+}
+/* Sheets create themselves on first use, so a failed setup() can never stop an
+   exam from recording papers. */
+function examSheet(name, headers) {
+  return sheet(name) || ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), name, headers);
+}
+
 /* ======================= ONE-TIME SETUP ========================= */
 
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  ensureSheet(ss, SHEETS.REG, [
-    'Timestamp', 'Token', 'CandidateID', 'Name', 'University', 'Email', 'Phone', 'UserAgent'
-  ]);
-  ensureSheet(ss, SHEETS.AUTOSAVE, [
-    'Timestamp', 'Token', 'AnswersJSON', 'Answered', 'TabSwitches', 'CopyAttempts',
-    'ScreenshotAttempts', 'ViaBeacon'
-  ]);
-  ensureSheet(ss, SHEETS.SUB, [
-    'Timestamp', 'SubmissionID', 'Token', 'Name', 'University', 'Email', 'Phone',
-    'AnswersJSON', 'Attempted', 'Reason', 'TabSwitches', 'CopyAttempts',
-    'ScreenshotAttempts', 'EmailStatus'
-  ]);
+  ensureSheet(ss, SHEETS.REG, REG_HEADERS);
+  ensureSheet(ss, SHEETS.AUTOSAVE, AUTOSAVE_HEADERS);
+  ensureSheet(ss, SHEETS.SUB, SUB_HEADERS);
   ensureSheet(ss, SHEETS.ROUND2, ROUND2_HEADERS);
   ensureSheet(ss, SHEETS.LOG, ['Timestamp', 'Where', 'Message', 'Payload']);
 
@@ -216,6 +254,8 @@ function json(obj) {
 /* ========================== HANDLERS =========================== */
 
 function handleRegister(d) {
+  var exam = examOf(d);
+  var SH = sheetsFor(exam);
   var name = clean(d.name, 80);
   var uni  = clean(d.university, 120);
   var mail = clean(d.email, 120).toLowerCase();
@@ -224,27 +264,39 @@ function handleRegister(d) {
   if (!name || !uni || !mail || !ph) return json({ ok: false, error: 'All fields are required' });
   if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(mail)) return json({ ok: false, error: 'Invalid email address' });
 
+  /* The final round is only for candidates who registered for Round 2. */
+  if (exam === 'final' && CONFIG.FINAL_RESTRICT_TO_ROUND2) {
+    var enrolled = readRows(SHEETS.ROUND2).some(function (r) {
+      return String(r.Email).trim().toLowerCase() === mail;
+    });
+    if (!enrolled) {
+      return json({ ok: false, notEnrolled: true,
+        error: 'This email is not on the Round 2 registration list. Please use the email you registered for Round 2 with, or contact us.' });
+    }
+  }
+
   var token = clean(d.token, 60) || Utilities.getUuid();
   var candidateId = 'BBO3-' + String(Math.abs(hashCode(mail))).slice(0, 6) +
                     '-' + String(Math.abs(hashCode(token))).slice(0, 4);
 
   // Append-only: no lock needed, and duplicates are reconciled at grading time.
-  sheet(SHEETS.REG).appendRow([
+  examSheet(SH.REG, REG_HEADERS).appendRow([
     new Date(), token, candidateId, name, uni, mail, ph, clean(d.userAgent, 300)
   ]);
 
   return json({
     ok: true, token: token, candidateId: candidateId,
-    serverNow: Date.now(), startIso: CONFIG.START_ISO
+    serverNow: Date.now(), startIso: windowFor(exam).start
   });
 }
 
 function handleSync(d) {
+  var SH = sheetsFor(examOf(d));
   var token = clean(d.token, 60);
   if (!token) return json({ ok: false, error: 'Missing token' });
 
   var answers = normaliseAnswers(d.answers);
-  sheet(SHEETS.AUTOSAVE).appendRow([
+  examSheet(SH.AUTOSAVE, AUTOSAVE_HEADERS).appendRow([
     new Date(), token, JSON.stringify(answers), Object.keys(answers).length,
     Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0,
     Number(d.screenshotAttempts) || 0, d.viaBeacon ? 'yes' : ''
@@ -254,11 +306,14 @@ function handleSync(d) {
 }
 
 function handleSubmit(d) {
+  var exam = examOf(d);
+  var SH = sheetsFor(exam);
   var token = clean(d.token, 60);
   if (!token) return json({ ok: false, error: 'Missing token' });
 
   // Window check, generous, so a slow connection never loses a paper.
-  var endMs = new Date(CONFIG.START_ISO).getTime() + CONFIG.DURATION_MIN * 60000;
+  var win = windowFor(exam);
+  var endMs = new Date(win.start).getTime() + win.dur * 60000;
   if (Date.now() > endMs + CONFIG.GRACE_MIN * 60000) {
     // Still record it, but flag it for the organisers to review.
     d.reason = (d.reason || '') + '-AFTER-GRACE';
@@ -274,14 +329,14 @@ function handleSubmit(d) {
     name: clean(d.name, 80), university: clean(d.university, 120),
     email: clean(d.email, 120).toLowerCase(), phone: clean(d.phone, 20)
   };
-  if (!reg.email) reg = findRegistration(token);
+  if (!reg.email) reg = findRegistration(token, SH.REG);
 
   /* Idempotency via the script cache, a constant-time lookup instead of
      scanning the Submissions sheet. If the cache has been evicted we may write
      a duplicate row; gradeAll() keeps the first paper per token, so a duplicate
      never affects the result. */
   var cache = CacheService.getScriptCache();
-  var cacheKey = 'sub_' + token;
+  var cacheKey = 'sub_' + exam + '_' + token;
   var cached = cache.get(cacheKey);
   if (cached) {
     return json({
@@ -293,7 +348,7 @@ function handleSubmit(d) {
   var submissionId = 'BBO3-' + Utilities.formatDate(new Date(), 'Asia/Dhaka', 'ddHHmm') +
                      '-' + String(Math.abs(hashCode(token))).slice(0, 5);
 
-  sheet(SHEETS.SUB).appendRow([
+  examSheet(SH.SUB, SUB_HEADERS).appendRow([
     new Date(), submissionId, token,
     reg.name, reg.university, reg.email, reg.phone,
     JSON.stringify(answers), Object.keys(answers).length,
@@ -747,11 +802,14 @@ function confirmationHtml(name, subId, attempted) {
    • Keeps the FIRST submission per email address if someone submitted twice.
    ================================================================ */
 
-function gradeAll() {
+function gradeAll(exam) {
+  exam = exam === 'final' ? 'final' : 'round1';
+  var SH = sheetsFor(exam);
+  var KEY = keyFor(exam);
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var subs = readRows(SHEETS.SUB);
-  var regs = readRows(SHEETS.REG);
-  var autos = readRows(SHEETS.AUTOSAVE);
+  var subs = readRows(SH.SUB);
+  var regs = readRows(SH.REG);
+  var autos = readRows(SH.AUTOSAVE);
 
   var byToken = {};
   regs.forEach(function (r) {
@@ -803,7 +861,7 @@ function gradeAll() {
       var dup = key && byEmail[key];
       if (key) byEmail[key] = true;
 
-      var g = score(r.answers);
+      var g = score(r.answers, KEY);
       rows.push([
         r.when, r.submissionId, r.name, r.university, r.email, r.phone,
         g.attempted, g.correct, g.wrong, g.blank, g.marks,
@@ -818,9 +876,9 @@ function gradeAll() {
   rows.sort(function (a, b) { return b[10] - a[10] || new Date(a[0]) - new Date(b[0]); });
   rows.forEach(function (r, i) { r.unshift(i + 1); });
 
-  var old = ss.getSheetByName(SHEETS.RESULTS);
+  var old = ss.getSheetByName(SH.RESULTS);
   if (old) ss.deleteSheet(old);
-  var sh = ss.insertSheet(SHEETS.RESULTS);
+  var sh = ss.insertSheet(SH.RESULTS);
   var headers = ['Rank', 'SubmittedAt', 'SubmissionID', 'Name', 'University', 'Email', 'Phone',
     'Attempted', 'CorrectAnswers', 'WrongAnswers', 'NotAnswered', 'Marks', 'Percent',
     'Result', 'Source', 'Flag', 'Reason', 'TabSwitches', 'CopyAttempts', 'ScreenshotAttempts'];
@@ -835,7 +893,7 @@ function gradeAll() {
   var resultCol = headers.indexOf('Result');
   var passed = rows.filter(function (r) { return r[resultCol] === 'PASS'; }).length;
   return notify(
-    'Grading complete. Papers graded: ' + rows.length +
+    'Grading complete (' + exam + '). Papers graded: ' + rows.length +
     '. Passed (' + CONFIG.PASS_PERCENT + '%+): ' + passed +
     '. Failed: ' + (rows.length - passed) +
     '. See the Results tab; rows flagged DUPLICATE EMAIL or RECOVERED need a manual look.'
@@ -851,14 +909,15 @@ function gradeAll() {
  * matter which position it appeared in, and this straight comparison against
  * ANSWER_KEY is exactly right.
  */
-function score(answers) {
+function score(answers, key) {
+  key = key || ANSWER_KEY;
   var correct = 0, wrong = 0, attempted = 0;
-  var total = Object.keys(ANSWER_KEY).length;
-  Object.keys(ANSWER_KEY).forEach(function (n) {
+  var total = Object.keys(key).length;
+  Object.keys(key).forEach(function (n) {
     var given = answers[n] || answers[String(n)];
     if (!given) return;
     attempted++;
-    if (String(given).toUpperCase() === ANSWER_KEY[n]) correct++; else wrong++;
+    if (String(given).toUpperCase() === key[n]) correct++; else wrong++;
   });
   var marks = (correct * 1) - (wrong * CONFIG.NEGATIVE_MARK);
   return {
@@ -881,8 +940,8 @@ function readRows(name) {
   });
 }
 
-function findRegistration(token) {
-  var rows = readRows(SHEETS.REG);
+function findRegistration(token, sheetName) {
+  var rows = readRows(sheetName || SHEETS.REG);
   for (var i = rows.length - 1; i >= 0; i--) {
     if (rows[i].Token === token) {
       return { name: rows[i].Name, university: rows[i].University, email: rows[i].Email, phone: rows[i].Phone };
@@ -932,21 +991,30 @@ function logError(where, err, payload) {
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('BBO 3.0 Exam')
     .addItem('Run setup', 'setup')
-    .addItem('Grade all papers', 'gradeAll')
+    .addItem('Grade Round 1 papers', 'gradeRound1')
+    .addItem('Grade Final Round papers', 'gradeFinal')
     .addItem('Send pending emails now', 'processEmailQueue')
     .addItem('Show live stats', 'showStats')
     .addToUi();
 }
+
+/* Menu entries cannot pass arguments, so each round gets a thin wrapper. */
+function gradeRound1() { return gradeAll('round1'); }
+function gradeFinal()  { return gradeAll('final'); }
 
 function showStats() {
   var regs = sheet(SHEETS.REG).getLastRow() - 1;
   var subs = sheet(SHEETS.SUB).getLastRow() - 1;
   var autos = sheet(SHEETS.AUTOSAVE).getLastRow() - 1;
   var results = sheet(SHEETS.RESULTS) ? sheet(SHEETS.RESULTS).getLastRow() - 1 : 0;
+  var fReg = sheet(FINAL_SHEETS.REG) ? sheet(FINAL_SHEETS.REG).getLastRow() - 1 : 0;
+  var fSub = sheet(FINAL_SHEETS.SUB) ? sheet(FINAL_SHEETS.SUB).getLastRow() - 1 : 0;
   return notify(
     'Registered: ' + Math.max(0, regs) +
     ' | Submitted: ' + Math.max(0, subs) +
     ' | Autosave snapshots: ' + Math.max(0, autos) +
-    ' | Graded results: ' + Math.max(0, results)
+    ' | Graded results: ' + Math.max(0, results) +
+    ' || FINAL registered: ' + Math.max(0, fReg) +
+    ' | FINAL submitted: ' + Math.max(0, fSub)
   );
 }
