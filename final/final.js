@@ -734,23 +734,40 @@ function enableAntiCheat() {
     }
   });
 
-  on(document, 'visibilitychange', function () {
-    if (document.hidden && !S.submitted) {
-      S.tabSwitches++;
-      S.dirty = true;
-      saveLocal();
-      syncNow(true);
-    } else if (!document.hidden && S.tabSwitches > 0 && !S.submitted) {
-      var banner = $('warnBanner');
-      banner.textContent = 'Warning: you left the exam window (' + S.tabSwitches + ' time' +
-        (S.tabSwitches > 1 ? 's' : '') + '). This is recorded and reviewed.';
-      banner.classList.remove('hidden');
-      setTimeout(function () { banner.classList.add('hidden'); }, 6000);
-      if (S.tabSwitches >= (CFG.MAX_TAB_SWITCHES || 5)) {
-        toast('You have left the exam window ' + S.tabSwitches + ' times. Further switching may disqualify you.', true);
-      }
+  /* Leaving the exam.
+     visibilitychange fires when the tab is hidden or the phone is locked, but
+     on a desktop it does NOT fire when the candidate simply switches to another
+     application sitting beside the browser, which is exactly how an AI
+     assistant would be used. Window blur catches that case. Both feed one
+     counter, de-duplicated on a short window, so a single switch that trips
+     both listeners is still only counted once. */
+  var lastAway = 0;
+  function leftExam() {
+    if (S.submitted) return;
+    var t = Date.now();
+    if (t - lastAway < 1500) return;
+    lastAway = t;
+    S.tabSwitches++;
+    S.dirty = true;
+    saveLocal();
+    syncNow(true);
+  }
+  function cameBack() {
+    if (S.submitted || S.tabSwitches < 1) return;
+    var banner = $('warnBanner');
+    banner.textContent = 'Warning: you left the exam window (' + S.tabSwitches + ' time' +
+      (S.tabSwitches > 1 ? 's' : '') + '). This is recorded and reviewed.';
+    banner.classList.remove('hidden');
+    setTimeout(function () { banner.classList.add('hidden'); }, 6000);
+    if (S.tabSwitches >= (CFG.MAX_TAB_SWITCHES || 5)) {
+      toast('You have left the exam window ' + S.tabSwitches + ' times. Further switching may disqualify you.', true);
     }
+  }
+  on(document, 'visibilitychange', function () {
+    if (document.hidden) leftExam(); else cameBack();
   });
+  on(window, 'blur', leftExam);
+  on(window, 'focus', cameBack);
 
   /* last-ditch save if the tab is closed or the phone rings */
   on(window, 'pagehide', flushBeacon);

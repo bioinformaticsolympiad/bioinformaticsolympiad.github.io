@@ -17,9 +17,9 @@ window.BBO_QUESTIONS = [
   "t": "Which anatomical feature identifies Kranz anatomy in a leaf cross-section? (পাতার প্রস্থচ্ছেদে কোন গাঠনিক বৈশিষ্ট্যটি Kranz anatomy শনাক্ত করে?)",
   "o": [
    "A wreath of chloroplast-rich bundle sheath cells around the vascular bundle (ভাস্কুলার বান্ডলের চারপাশে ক্লোরোপ্লাস্ট-সমৃদ্ধ বান্ডল শিথ কোষের বলয়)",
-   "Complete absence of mesophyll tissue (মেসোফিল টিস্যুর সম্পূর্ণ অনুপস্থিতি)",
-   "Stomata present only on the upper epidermis (কেবল ঊর্ধ্ব অধিচর্মে পত্ররন্ধ্র)",
-   "Vascular bundles scattered without any sheath (শিথবিহীন বিক্ষিপ্ত ভাস্কুলার বান্ডল)"
+   "A complete absence of mesophyll tissue between the epidermis and the veins (অধিচর্ম ও শিরার মধ্যে মেসোফিল টিস্যুর সম্পূর্ণ অনুপস্থিতি)",
+   "Stomata restricted to the upper epidermis, with no chloroplasts below (পত্ররন্ধ্র কেবল ঊর্ধ্ব অধিচর্মে সীমাবদ্ধ, নিচে কোনো ক্লোরোপ্লাস্ট নেই)",
+   "Vascular bundles scattered at random with no surrounding sheath layer (ভাস্কুলার বান্ডল এলোমেলোভাবে বিক্ষিপ্ত, চারপাশে কোনো শিথ স্তর নেই)"
   ]
  },
  {
@@ -104,10 +104,10 @@ window.BBO_QUESTIONS = [
   "s": "Zoology (প্রাণীবিদ্যা)",
   "t": "Why is conduction deliberately delayed at the atrioventricular node? (অ্যাট্রিওভেন্ট্রিকুলার নোডে পরিবহন ইচ্ছাকৃতভাবে বিলম্বিত হয় কেন?)",
   "o": [
-   "To slow down the heart rate permanently (হৃদস্পন্দন স্থায়ীভাবে কমাতে)",
+   "To slow the resting heart rate down on a permanent basis (বিশ্রামকালীন হৃদস্পন্দন স্থায়ীভাবে কমাতে)",
    "To allow the ventricles to fill before they contract (ভেন্ট্রিকল সংকোচনের আগে পূর্ণ হওয়ার সুযোগ দিতে)",
-   "To prevent the atria from repolarising (অ্যাট্রিয়ার পুনঃপোলারায়ন রোধ করতে)",
-   "To generate the pacemaker rhythm itself (পেসমেকার ছন্দ নিজে তৈরি করতে)"
+   "To prevent the atria from repolarising too early (অ্যাট্রিয়ার খুব দ্রুত পুনঃপোলারায়ন রোধ করতে)",
+   "To generate the pacemaker rhythm for the whole heart (সমগ্র হৃৎপিণ্ডের জন্য পেসমেকার ছন্দ তৈরি করতে)"
   ]
  },
  {
@@ -346,9 +346,9 @@ window.BBO_QUESTIONS = [
   "s": "Microbiology & Immunology (অণুজীব ও অনাক্রম্যবিজ্ঞান)",
   "t": "In the lysogenic cycle, the phage genome typically: (লাইসোজেনিক চক্রে ফাজ জিনোম সাধারণত কী করে?)",
   "o": [
-   "Immediately lyses the host cell (তৎক্ষণাৎ পোষক কোষকে বিদীর্ণ করে)",
-   "Is exported to neighbouring cells unchanged (অপরিবর্তিত অবস্থায় পাশের কোষে রপ্তানি হয়)",
-   "Is degraded by host nucleases (পোষক নিউক্লিয়েজ দ্বারা বিনষ্ট হয়)",
+   "Immediately lyses the host cell and releases new phages (তৎক্ষণাৎ পোষক কোষকে বিদীর্ণ করে নতুন ফাজ মুক্ত করে)",
+   "Is exported to neighbouring cells without any change (কোনো পরিবর্তন ছাড়াই পাশের কোষে রপ্তানি হয়)",
+   "Is degraded by host nucleases within minutes (কয়েক মিনিটের মধ্যে পোষক নিউক্লিয়েজ দ্বারা বিনষ্ট হয়)",
    "Integrates into the host genome and replicates with it (পোষক জিনোমে সংযুক্ত হয়ে তার সাথে প্রতিলিপিত হয়)"
   ]
  },
@@ -358,9 +358,9 @@ window.BBO_QUESTIONS = [
   "t": "Antigen binding by an antibody occurs at which region? (অ্যান্টিবডি দ্বারা অ্যান্টিজেন বন্ধন কোন অঞ্চলে ঘটে?)",
   "o": [
    "The variable regions of the heavy and light chains (ভারী ও হালকা শৃঙ্খলের পরিবর্তনশীল অঞ্চল)",
-   "The constant region of the heavy chain (ভারী শৃঙ্খলের ধ্রুবক অঞ্চল)",
-   "The hinge region only (কেবল কব্জা অঞ্চল)",
-   "The Fc region (Fc অঞ্চল)"
+   "The constant regions of the heavy and light chains (ভারী ও হালকা শৃঙ্খলের ধ্রুবক অঞ্চল)",
+   "The hinge region between the two heavy chains (দুটি ভারী শৃঙ্খলের মধ্যবর্তী কব্জা অঞ্চল)",
+   "The Fc region at the stem of the antibody (অ্যান্টিবডির কাণ্ডে অবস্থিত Fc অঞ্চল)"
   ]
  },
  {
@@ -368,10 +368,10 @@ window.BBO_QUESTIONS = [
   "s": "Microbiology & Immunology (অণুজীব ও অনাক্রম্যবিজ্ঞান)",
   "t": "Compared with an inactivated vaccine, a live attenuated vaccine generally: (নিষ্ক্রিয় টিকার তুলনায় জীবন্ত দুর্বলীকৃত টিকা সাধারণত)",
   "o": [
-   "Cannot induce any T cell response (কোনো T কোষ সাড়া তৈরি করতে পারে না)",
+   "Cannot induce any cytotoxic T cell response, only antibodies (কোনো সাইটোটক্সিক T কোষ সাড়া তৈরি করতে পারে না, কেবল অ্যান্টিবডি)",
    "Produces a stronger and longer-lasting cell-mediated response (শক্তিশালী ও দীর্ঘস্থায়ী কোষ-মাধ্যমিত সাড়া তৈরি করে)",
-   "Is always safer for immunocompromised patients (রোগ প্রতিরোধ ক্ষমতাহীন রোগীদের জন্য সর্বদা নিরাপদ)",
-   "Requires no cold chain at all (কোনো শীতল শৃঙ্খলের প্রয়োজন হয় না)"
+   "Is always safer for immunocompromised and pregnant patients (রোগ প্রতিরোধ ক্ষমতাহীন ও গর্ভবতী রোগীদের জন্য সর্বদা নিরাপদ)",
+   "Requires no cold chain, so it can be stored at room temperature (কোনো শীতল শৃঙ্খলের প্রয়োজন নেই, তাই ঘরের তাপমাত্রায় সংরক্ষণযোগ্য)"
   ]
  },
  {
@@ -379,10 +379,10 @@ window.BBO_QUESTIONS = [
   "s": "Microbiology & Immunology (অণুজীব ও অনাক্রম্যবিজ্ঞান)",
   "t": "In its natural bacterial context, the CRISPR-Cas system functions as: (প্রাকৃতিক ব্যাকটেরিয়ায় CRISPR-Cas সিস্টেম কী হিসেবে কাজ করে?)",
   "o": [
-   "A mechanism of binary fission (দ্বিবিভাজনের কৌশল)",
+   "A mechanism that drives binary fission (দ্বিবিভাজন পরিচালনাকারী একটি কৌশল)",
    "An adaptive defence against bacteriophages (ব্যাকটেরিওফাজের বিরুদ্ধে অভিযোজিত প্রতিরক্ষা)",
-   "A system for nitrogen fixation (নাইট্রোজেন সংবন্ধনের ব্যবস্থা)",
-   "A pathway for spore formation (স্পোর গঠনের পথ)"
+   "A system for fixing atmospheric nitrogen (বায়ুমণ্ডলীয় নাইট্রোজেন সংবন্ধনের ব্যবস্থা)",
+   "A pathway that triggers endospore formation (এন্ডোস্পোর গঠনের সূচনাকারী পথ)"
   ]
  },
  {
@@ -390,10 +390,10 @@ window.BBO_QUESTIONS = [
   "s": "Bioinformatics (জীবতথ্যবিজ্ঞান)",
   "t": "In a BLAST search, what does a very low E-value indicate? (BLAST অনুসন্ধানে অত্যন্ত কম E-value কী নির্দেশ করে?)",
   "o": [
-   "The database searched was very small (অনুসন্ধানকৃত ডেটাবেসটি খুব ছোট ছিল)",
+   "The database that was searched was unusually small (অনুসন্ধানকৃত ডেটাবেসটি অস্বাভাবিকভাবে ছোট ছিল)",
    "The alignment is unlikely to have arisen by chance (সারিবদ্ধকরণটি দৈবক্রমে ঘটার সম্ভাবনা কম)",
-   "The query sequence is too short to align (কোয়েরি সিকোয়েন্সটি সারিবদ্ধ করার জন্য খুব ছোট)",
-   "The two sequences are certainly identical (সিকোয়েন্স দুটি নিশ্চিতভাবে অভিন্ন)"
+   "The query sequence was too short to align properly (কোয়েরি সিকোয়েন্সটি সঠিকভাবে সারিবদ্ধ করার জন্য খুব ছোট ছিল)",
+   "The two sequences are certainly identical in full (সিকোয়েন্স দুটি সম্পূর্ণরূপে নিশ্চিতভাবে অভিন্ন)"
   ]
  },
  {
@@ -489,10 +489,10 @@ window.BBO_QUESTIONS = [
   "s": "Pharmacology (ফার্মাকোলজি)",
   "t": "A drug with a high therapeutic index is best described as: (উচ্চ থেরাপিউটিক ইনডেক্স বিশিষ্ট একটি ওষুধকে কীভাবে বর্ণনা করা যায়?)",
   "o": [
-   "Highly toxic even at therapeutic doses (চিকিৎসামূলক ডোজেও অত্যন্ত বিষাক্ত)",
+   "Highly toxic, because the effective and toxic doses overlap closely (অত্যন্ত বিষাক্ত, কারণ কার্যকর ও বিষাক্ত ডোজ প্রায় একই)",
    "Relatively safe, with a wide margin between effective and toxic doses (তুলনামূলক নিরাপদ, কার্যকর ও বিষাক্ত ডোজের মধ্যে বড় ব্যবধান)",
-   "Effective only at very high doses (কেবল অত্যন্ত উচ্চ ডোজে কার্যকর)",
-   "Rapidly excreted without any effect (কোনো প্রভাব ছাড়াই দ্রুত নির্গত)"
+   "Effective only at doses very close to the toxic threshold (কেবল বিষাক্ত সীমার খুব কাছাকাছি ডোজে কার্যকর)",
+   "Rapidly excreted, so blood levels need constant monitoring (দ্রুত নির্গত হয়, তাই রক্তের মাত্রা সার্বক্ষণিক পর্যবেক্ষণ প্রয়োজন)"
   ]
  },
  {
@@ -523,9 +523,9 @@ window.BBO_QUESTIONS = [
   "t": "In hypothesis testing, a p-value of 0.03 means: (হাইপোথিসিস টেস্টিং-এ ০.০৩ p-মান বলতে কী বোঝায়?)",
   "o": [
    "There is a 3% chance of data this extreme if the null hypothesis were true (নাল হাইপোথিসিস সত্য হলে এত চরম ফল পাওয়ার সম্ভাবনা ৩%)",
-   "The effect size is 3% (প্রভাবের আকার ৩%)",
-   "The result is 97% certain to be correct (ফলাফলটি ৯৭% নিশ্চিতভাবে সঠিক)",
-   "There is a 3% chance the null hypothesis is true (নাল হাইপোথিসিস সত্য হওয়ার সম্ভাবনা ৩%)"
+   "The measured effect size is 3%, the size of the real difference (পরিমাপকৃত প্রভাবের আকার ৩%, অর্থাৎ প্রকৃত পার্থক্যের পরিমাণ)",
+   "The result is 97% certain to be correct and would replicate (ফলাফলটি ৯৭% নিশ্চিতভাবে সঠিক এবং পুনরাবৃত্ত গবেষণায়ও একই হবে)",
+   "There is a 3% chance that the null hypothesis is true given the data (প্রাপ্ত উপাত্তের ভিত্তিতে নাল হাইপোথিসিস সত্য হওয়ার সম্ভাবনা ৩%)"
   ]
  },
  {
