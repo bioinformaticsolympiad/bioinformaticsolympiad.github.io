@@ -989,6 +989,85 @@ function logError(where, err, payload) {
   } catch (e) { /* logging must never throw */ }
 }
 
+/* ======================= TEST ROW CLEANUP =======================
+   Removes only the rows created while verifying the system. A row counts as a
+   test row when its Token starts with ZZTEST_ or its Name contains one of the
+   ZZ ... DELETE ME labels. Nothing else is touched.
+
+   Run listTestRows() first to see what would go, then deleteTestRows().
+   Both run from the editor; neither needs a redeploy.
+   ================================================================ */
+
+var TEST_SHEETS = [
+  SHEETS.REG, SHEETS.AUTOSAVE, SHEETS.SUB, SHEETS.ROUND2,
+  FINAL_SHEETS.REG, FINAL_SHEETS.AUTOSAVE, FINAL_SHEETS.SUB
+];
+
+function isTestRow(headers, row) {
+  for (var i = 0; i < headers.length; i++) {
+    var h = String(headers[i]);
+    var v = String(row[i] == null ? '' : row[i]);
+    if (h === 'Token' && v.indexOf('ZZTEST_') === 0) return true;
+    if (h === 'LookupID' && v.indexOf('ZZTEST_') === 0) return true;
+    if ((h === 'Name' || h === 'University' || h === 'Reason') &&
+        v.toUpperCase().indexOf('DELETE ME') > -1) return true;
+    if ((h === 'Name' || h === 'Reason') && v.toUpperCase().indexOf('ZZ PERF TEST') > -1) return true;
+  }
+  return false;
+}
+
+function scanTestRows() {
+  var found = [];
+  TEST_SHEETS.forEach(function (name) {
+    var sh = sheet(name);
+    if (!sh || sh.getLastRow() < 2) return;
+    var values = sh.getDataRange().getValues();
+    var headers = values[0];
+    for (var r = 1; r < values.length; r++) {
+      if (isTestRow(headers, values[r])) {
+        var nameCol = headers.indexOf('Name');
+        found.push({ sheet: name, rowNumber: r + 1,
+          label: nameCol > -1 ? String(values[r][nameCol]) : '(no name column)' });
+      }
+    }
+  });
+  return found;
+}
+
+/* Preview only. Changes nothing. */
+function listTestRows() {
+  var found = scanTestRows();
+  if (!found.length) return notify('No test rows found. Nothing to delete.');
+  var per = {};
+  found.forEach(function (f) { per[f.sheet] = (per[f.sheet] || 0) + 1; });
+  var summary = Object.keys(per).map(function (k) { return k + ': ' + per[k]; }).join(', ');
+  Logger.log(JSON.stringify(found, null, 1));
+  return notify('Would delete ' + found.length + ' test row(s). ' + summary +
+    '. Nothing has been deleted yet; run deleteTestRows() to remove them.');
+}
+
+/* Deletes the rows listTestRows() reports. Rows are removed bottom-up so the
+   row numbers above them do not shift as we go. */
+function deleteTestRows() {
+  var found = scanTestRows();
+  if (!found.length) return notify('No test rows found. Nothing deleted.');
+
+  var bySheet = {};
+  found.forEach(function (f) {
+    (bySheet[f.sheet] = bySheet[f.sheet] || []).push(f.rowNumber);
+  });
+
+  var removed = 0, parts = [];
+  Object.keys(bySheet).forEach(function (name) {
+    var sh = sheet(name);
+    var rows = bySheet[name].sort(function (a, b) { return b - a; });   // bottom-up
+    rows.forEach(function (rowNumber) { sh.deleteRow(rowNumber); removed++; });
+    parts.push(name + ': ' + rows.length);
+  });
+
+  return notify('Deleted ' + removed + ' test row(s). ' + parts.join(', ') + '.');
+}
+
 /* ===================== ADMIN CONVENIENCE ======================= */
 
 function onOpen() {
@@ -998,6 +1077,8 @@ function onOpen() {
     .addItem('Grade Final Round papers', 'gradeFinal')
     .addItem('Send pending emails now', 'processEmailQueue')
     .addItem('Show live stats', 'showStats')
+    .addItem('List test rows (preview)', 'listTestRows')
+    .addItem('Delete test rows', 'deleteTestRows')
     .addToUi();
 }
 
