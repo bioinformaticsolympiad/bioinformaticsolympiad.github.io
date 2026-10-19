@@ -43,8 +43,8 @@ var CONFIG = {
      FINAL_REQUIRE_ROUND1_PASS limits the exam to candidates who passed Round 1,
      checked against the Results sheet. Registering for the (now cancelled)
      offline Round 2 is not required. Set it to false to drop the check.     */
-  FINAL_START_ISO: '2026-10-24T21:30:00+06:00',
-  FINAL_DURATION_MIN: 40,
+  FINAL_START_ISO: '2026-10-24T21:00:00+06:00',
+  FINAL_DURATION_MIN: 30,
   FINAL_REQUIRE_ROUND1_PASS: true,
 
   /* ---- Result lookup (olympiad.biopc.org/result/) ----

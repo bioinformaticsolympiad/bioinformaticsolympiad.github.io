@@ -16,8 +16,8 @@ window.BBO_CONFIG = {
      SET THIS BEFORE ANNOUNCING THE EXAM.
      Must be an ISO 8601 timestamp WITH the Bangladesh offset +06:00.
      The exam ends automatically DURATION_MIN minutes after START.          */
-  START_ISO: "2026-10-24T21:30:00+06:00",
-  DURATION_MIN: 40,
+  START_ISO: "2026-10-24T21:00:00+06:00",
+  DURATION_MIN: 30,
 
   /* Registration opens this many minutes before START. 60 = the link goes
      live one hour before, and the page shows a countdown until then.       */

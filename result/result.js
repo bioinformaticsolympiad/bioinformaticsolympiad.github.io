@@ -257,9 +257,9 @@ function renderResult(r) {
   $('nrVenue').textContent = CFG.NEXT_ROUND_DATE || '24 October';
   $('nrLead').textContent = passed
     ? 'As a qualifier you are invited to sit the final round online on ' +
-      (CFG.NEXT_ROUND_WHEN || 'Saturday 24 October 2026 at 9:30 PM') +
+      (CFG.NEXT_ROUND_WHEN || 'Saturday 24 October 2026 at 9:00 PM') +
       '. You sit it from your own device, exactly as you did in Round 1, and there is no fee.'
-    : 'The final round is held online on ' + (CFG.NEXT_ROUND_WHEN || 'Saturday 24 October 2026 at 9:30 PM') +
+    : 'The final round is held online on ' + (CFG.NEXT_ROUND_WHEN || 'Saturday 24 October 2026 at 9:00 PM') +
       ' for qualifying participants.';
   /* Hide the paragraph entirely when there is no detail text, rather than
      leaving an empty element that shows as a gap. */

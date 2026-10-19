@@ -230,7 +230,7 @@ function closedScreen(state, message) {
   $('closedMsg').textContent = message ||
     (state && state.expired ? 'Registration closed on ' + (CFG.DEADLINE_TEXT || 'the deadline') + '.'
      : state && state.full ? 'All ' + (state.capacity || CFG.CAPACITY) + ' seats have been taken.'
-     : 'The final round has moved online and all fees have been refunded, so registration for the offline day is closed. Your exam is on 24 October at 9:30 PM.');
+     : 'The final round has moved online and all fees have been refunded, so registration for the offline day is closed. Your exam is on 24 October at 9:00 PM.');
   if (state && state.full) $('closedTitle').textContent = 'The hall is full';
   show('closedBox');
 }
