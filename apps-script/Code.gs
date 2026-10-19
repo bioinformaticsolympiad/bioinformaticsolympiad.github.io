@@ -40,11 +40,12 @@ var CONFIG = {
 
   /* ---- Final round (online), olympiad.biopc.org/final/ ----
      Must match final/config.js START_ISO and DURATION_MIN.
-     FINAL_RESTRICT_TO_ROUND2 limits the exam to candidates whose email is in
-     the Round2 sheet, so only those who registered and paid can sit it.     */
+     FINAL_REQUIRE_ROUND1_PASS limits the exam to candidates who passed Round 1,
+     checked against the Results sheet. Registering for the (now cancelled)
+     offline Round 2 is not required. Set it to false to drop the check.     */
   FINAL_START_ISO: '2026-10-24T21:30:00+06:00',
   FINAL_DURATION_MIN: 40,
-  FINAL_RESTRICT_TO_ROUND2: true,
+  FINAL_REQUIRE_ROUND1_PASS: true,
 
   /* ---- Result lookup (olympiad.biopc.org/result/) ----
      Set RESULTS_PUBLISHED to false to take the result checker offline without
@@ -264,14 +265,16 @@ function handleRegister(d) {
   if (!name || !uni || !mail || !ph) return json({ ok: false, error: 'All fields are required' });
   if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(mail)) return json({ ok: false, error: 'Invalid email address' });
 
-  /* The final round is only for candidates who registered for Round 2. */
-  if (exam === 'final' && CONFIG.FINAL_RESTRICT_TO_ROUND2) {
-    var enrolled = readRows(SHEETS.ROUND2).some(function (r) {
-      return String(r.Email).trim().toLowerCase() === mail;
+  /* The final round is open to everyone who passed Round 1, whether or not
+     they registered for the cancelled offline day. */
+  if (exam === 'final' && CONFIG.FINAL_REQUIRE_ROUND1_PASS) {
+    var qualified = readRows(SHEETS.RESULTS).some(function (r) {
+      return String(r.Email).trim().toLowerCase() === mail &&
+             String(r.Result).toUpperCase() === 'PASS';
     });
-    if (!enrolled) {
+    if (!qualified) {
       return json({ ok: false, notEnrolled: true,
-        error: 'This email is not on the Round 2 registration list. Please use the email you registered for Round 2 with, or contact us.' });
+        error: 'We could not find a qualifying Round 1 result for this email. Please use the address you sat Round 1 with, or check your result first.' });
     }
   }
 
