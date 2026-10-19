@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Final Round paper preview (organisers)</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<meta name="theme-color" content="#0c1f4a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../final.css">
+<style>
+  .pv-bar{position:sticky;top:0;z-index:50;background:#b26a00;color:#fff;padding:.6rem 1rem;
+    text-align:center;font-size:.9rem;font-weight:700}
+  .pv-wrap{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
+  .pv-tools{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.25rem}
+  .pv-gate{max-width:520px;margin:12vh auto;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="pvGate" class="pv-gate card hidden">
+  <h1>Organisers only</h1>
+  <p class="lead">This preview needs the organiser link. Ask for the full address, including the key.</p>
+</div>
+
+<div id="pvMain" class="hidden">
+  <div class="pv-bar">PREVIEW ONLY &middot; nothing here is recorded &middot; this is not the live exam</div>
+  <div class="pv-wrap">
+    <h1>Final Round paper</h1>
+    <p class="lead" id="pvLead"></p>
+    <div class="pv-tools">
+      <button type="button" class="btn btn-ghost btn-sm" id="pvShuffle">Shuffle like a candidate sees it</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="pvOrder">Show in numbered order</button>
+    </div>
+    <div id="pvList" class="question-list"></div>
+  </div>
+</div>
+
+<script src="../questions.js"></script>
+<script>
+(function () {
+  'use strict';
+  /* A light key so the paper is not stumbled upon from the menu. The question
+     bank is already public at /final/questions.js, so this is a speed bump,
+     not a secret. Answers are never sent to the browser. */
+  var KEY = 'biopc2026';
+  var L = ['A', 'B', 'C', 'D'];
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  if ((location.search.match(/[?&]key=([^&]+)/) || [])[1] !== KEY) {
+    $('pvGate').classList.remove('hidden');
+    return;
+  }
+  $('pvMain').classList.remove('hidden');
+
+  var QS = window.BBO_QUESTIONS || [];
+  $('pvLead').textContent = QS.length + ' questions, exactly as they are served to candidates. ' +
+    'Answers are not included here: they stay on the server. Use the review sheet for the key.';
+
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function render(mix) {
+    var order = QS.map(function (q) { return q.n; });
+    if (mix) shuffle(order);
+    var byNum = {}; QS.forEach(function (q) { byNum[q.n] = q; });
+    var html = '';
+    order.forEach(function (num, idx) {
+      var q = byNum[num];
+      var opts = q.o.map(function (_, i) { return i; });
+      if (mix) shuffle(opts);
+      html += '<article class="q-card"><div class="q-head">' +
+        '<span class="q-num">' + (idx + 1) + '</span>' +
+        '<span class="q-tag">' + esc(q.s) + '</span>' +
+        '<span class="q-mark" style="cursor:default">source Q' + q.n + '</span></div>' +
+        '<p class="q-text">' + esc(q.t) + '</p><div class="opts">' +
+        opts.map(function (oi, pos) {
+          return '<label class="opt"><span class="letter">' + L[pos] + '</span>' +
+                 '<span class="opt-text">' + esc(q.o[oi]) + '</span></label>';
+        }).join('') + '</div></article>';
+    });
+    $('pvList').innerHTML = html;
+    window.scrollTo(0, 0);
+  }
+
+  $('pvShuffle').addEventListener('click', function () { render(true); });
+  $('pvOrder').addEventListener('click', function () { render(false); });
+  render(false);
+})();
+</script>
+</body>
+</html>
