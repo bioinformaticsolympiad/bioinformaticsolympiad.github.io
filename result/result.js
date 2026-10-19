@@ -254,11 +254,12 @@ function renderResult(r) {
   }
 
   /* next round */
-  $('nrVenue').textContent = CFG.NEXT_ROUND_VENUE || 'University of Chittagong';
+  $('nrVenue').textContent = CFG.NEXT_ROUND_DATE || '24 October';
   $('nrLead').textContent = passed
-    ? 'As a qualifier, you are invited to sit Round 2 in person at the ' +
-      (CFG.NEXT_ROUND_VENUE || 'University of Chittagong') + '. Please plan to attend on campus, this round is not held online.'
-    : 'Round 2 will be held offline at the ' + (CFG.NEXT_ROUND_VENUE || 'University of Chittagong') +
+    ? 'As a qualifier you are invited to sit the final round online on ' +
+      (CFG.NEXT_ROUND_WHEN || 'Saturday 24 October 2026 at 9:30 PM') +
+      '. You sit it from your own device, exactly as you did in Round 1, and there is no fee.'
+    : 'The final round is held online on ' + (CFG.NEXT_ROUND_WHEN || 'Saturday 24 October 2026 at 9:30 PM') +
       ' for qualifying participants.';
   /* Hide the paragraph entirely when there is no detail text, rather than
      leaving an empty element that shows as a gap. */
@@ -271,7 +272,7 @@ function renderResult(r) {
      re-checks that id against the Results sheet before letting anyone in. */
   var cta = $('r2Cta');
   if (passed && r.lookupId) {
-    $('r2Btn').setAttribute('href', '../round2/?t=' + encodeURIComponent(r.lookupId));
+    $('r2Btn').setAttribute('href', '../final/');
     cta.classList.remove('hidden');
   } else {
     cta.classList.add('hidden');

@@ -210,6 +210,7 @@ function renderSeats(s) {
 /* Live seat count for the public info view. Purely additive: if the backend is
    unreachable the meter simply stays hidden and the page reads normally. */
 function loadPublicSeats() {
+  if (!$('infoSeatMeter')) return;   // the seat meter was removed with the offline day
   api({ action: 'round2Info' }).then(function (s) {
     if (!s || !s.ok || !s.capacity) return;
     var pct = Math.min(100, Math.round((s.taken || 0) / s.capacity * 100));
@@ -229,7 +230,7 @@ function closedScreen(state, message) {
   $('closedMsg').textContent = message ||
     (state && state.expired ? 'Registration closed on ' + (CFG.DEADLINE_TEXT || 'the deadline') + '.'
      : state && state.full ? 'All ' + (state.capacity || CFG.CAPACITY) + ' seats have been taken.'
-     : 'Registration is currently closed.');
+     : 'The final round has moved online and all fees have been refunded, so registration for the offline day is closed. Your exam is on 24 October at 9:30 PM.');
   if (state && state.full) $('closedTitle').textContent = 'The hall is full';
   show('closedBox');
 }
@@ -472,6 +473,10 @@ function boot() {
     /* Certificate runs regardless of which screen the registration flow
        lands on, already registered, closed, or the form itself. */
     if (CERT_MODE) runCertificate(CANDIDATE);
+
+    /* Registration for the offline day is over. The certificate above still
+       runs; the form does not open again. */
+    if (CFG.ROUND2_CLOSED) { closedScreen(null); return; }
 
     if (res.alreadyRegistered) {
       var prev = res.alreadyRegistered;

@@ -6,6 +6,11 @@ window.BBO_R2_CONFIG = {
   /* Same Apps Script Web App URL as the exam and result pages. */
   API_URL: "https://script.google.com/macros/s/AKfycbxu9VWVo25LjQ3mS4BHr2MKJ_7fcoNRK4sr6F-NuJxvp-mJGIs6ZKjdOuFgsuvMy7pGHg/exec",
 
+  /* The offline day was cancelled, the final round moved online and fees were
+     refunded. This closes the form in the browser immediately, without waiting
+     for the Apps Script redeploy that closes it on the server. */
+  ROUND2_CLOSED: true,
+
   VENUE: "University of Chittagong",
   EXAM_WINDOW: "2nd week of October 2026",
   DEADLINE_TEXT: "25 September 2026",

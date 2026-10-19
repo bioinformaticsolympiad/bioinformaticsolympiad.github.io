@@ -42,7 +42,7 @@ var CONFIG = {
      Must match final/config.js START_ISO and DURATION_MIN.
      FINAL_RESTRICT_TO_ROUND2 limits the exam to candidates whose email is in
      the Round2 sheet, so only those who registered and paid can sit it.     */
-  FINAL_START_ISO: '2026-10-31T21:00:00+06:00',
+  FINAL_START_ISO: '2026-10-24T21:30:00+06:00',
   FINAL_DURATION_MIN: 40,
   FINAL_RESTRICT_TO_ROUND2: true,
 
@@ -58,7 +58,7 @@ var CONFIG = {
      Only candidates whose Round 1 result is PASS can register, and only while
      seats remain and the deadline has not passed. Set ROUND2_OPEN to false to
      close registration by hand at any time.                                   */
-  ROUND2_OPEN: true,
+  ROUND2_OPEN: false,   // closed: the final round moved online and fees were refunded
   ROUND2_CAPACITY: 350,
   ROUND2_DEADLINE_ISO: '2026-09-25T23:59:59+06:00',
   ROUND2_FEE_EXAM: 500,

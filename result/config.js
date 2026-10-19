@@ -15,7 +15,8 @@ window.BBO_RESULT_CONFIG = {
   /* ---- Next round -------------------------------------------------------
      Shown to everyone, highlighted for those who passed. Put the date and
      venue in NEXT_ROUND_DETAIL once they are fixed.                        */
-  NEXT_ROUND_VENUE: "University of Chittagong",
+  NEXT_ROUND_DATE: "24 October",
+  NEXT_ROUND_WHEN: "Saturday 24 October 2026 at 9:30 PM",
   NEXT_ROUND_DETAIL: "",
 
   SUPPORT_EMAIL: "bioinformatics.olympiad@gmail.com",
