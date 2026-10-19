@@ -948,7 +948,7 @@ function gradeAll(exam) {
     (superseded.length
       ? '. ' + superseded.length + ' later paper(s) from candidates who sat twice were set aside, see the ' +
         reviewName + ' tab' + (look ? ', and ' + look + ' of them need a human decision' : '')
-      : '. No candidate sat twice.') +
+      : '. No candidate sat twice') +
     '. Rows marked RECOVERED were rebuilt from autosave and are worth a look.'
   );
 }
