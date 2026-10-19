@@ -1017,21 +1017,44 @@ function isTestRow(headers, row) {
 }
 
 function scanTestRows() {
-  var found = [];
+  /* Two passes.
+
+     The autosave sheets carry only a token, no name, so a rehearsal paper
+     cannot be recognised by the usual markers. Leaving those rows behind is
+     not harmless: gradeAll() recovers anyone who has autosaved answers but no
+     submission, so an orphaned autosave row would be marked as a real paper
+     and would appear in the results under a blank identity.
+
+     So: find the obvious test rows first, collect their tokens, and then treat
+     every row carrying one of those tokens as a test row as well. */
+  var all = [];
   TEST_SHEETS.forEach(function (name) {
     var sh = sheet(name);
     if (!sh || sh.getLastRow() < 2) return;
     var values = sh.getDataRange().getValues();
     var headers = values[0];
+    var tokenCol = headers.indexOf('Token');
+    var nameCol = headers.indexOf('Name');
     for (var r = 1; r < values.length; r++) {
-      if (isTestRow(headers, values[r])) {
-        var nameCol = headers.indexOf('Name');
-        found.push({ sheet: name, rowNumber: r + 1,
-          label: nameCol > -1 ? String(values[r][nameCol]) : '(no name column)' });
-      }
+      all.push({
+        sheet: name, rowNumber: r + 1, headers: headers, row: values[r],
+        token: tokenCol > -1 ? String(values[r][tokenCol] || '') : '',
+        label: nameCol > -1 ? String(values[r][nameCol]) : '(no name column)'
+      });
     }
   });
-  return found;
+
+  var testTokens = {};
+  all.forEach(function (x) {
+    if (x.token && isTestRow(x.headers, x.row)) testTokens[x.token] = true;
+  });
+
+  return all.filter(function (x) {
+    return isTestRow(x.headers, x.row) || (x.token && testTokens[x.token]);
+  }).map(function (x) {
+    return { sheet: x.sheet, rowNumber: x.rowNumber,
+             label: x.label + (isTestRow(x.headers, x.row) ? '' : ' (matched by token)') };
+  });
 }
 
 /* Preview only. Changes nothing. */
