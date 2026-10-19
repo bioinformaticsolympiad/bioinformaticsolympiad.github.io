@@ -46,7 +46,10 @@
 var CFG = window.BBO_CONFIG || {};
 var QUESTIONS = window.BBO_QUESTIONS || [];
 var LETTERS = ['A', 'B', 'C', 'D'];
-var LS_KEY = 'bbo3_exam_state_v1';
+/* Scoped to this exam. The Round 1 page lives on the same domain and so shares
+   one localStorage area: with a shared key, anyone who sat Round 1 in this
+   browser would be restored here as "already submitted" and locked out. */
+var LS_KEY = 'bbo3_' + (CFG.EXAM_ID || 'round1') + '_state_v1';
 var API_READY = CFG.API_URL && CFG.API_URL.indexOf('http') === 0;
 
 /* ---------------- tiny helpers ---------------- */
@@ -132,6 +135,7 @@ var S = {
   order: null,          // shuffled question numbers
   optOrder: null,       // { questionNumber: [originalIndex, ...] } display order
   submitted: false, submissionId: null, submittedAt: null,
+  registeredAt: null, examStart: null,
   tabSwitches: 0, copyAttempts: 0, screenshotAttempts: 0,
   startedAt: null, dirty: false, lastSync: 0
 };
@@ -145,6 +149,15 @@ function loadLocal() {
     if (!raw) return false;
     var o = JSON.parse(raw);
     if (!o || !o.token) return false;
+    /* Left over from a trial run or an earlier sitting. Without this, anyone
+       who opened this page to test it before exam day would be met with
+       "your answers have been submitted" on the night and shut out. Anything
+       stamped before this exam's window is discarded. */
+    var stamp = o.submittedAt || o.startedAt || o.registeredAt || 0;
+    var stale = (o.examStart && o.examStart !== CFG.START_ISO) ||
+                (stamp && stamp < OPEN_MS) ||
+                (o.submitted && !stamp);   // a real submission always carries a time
+    if (stale) { localStorage.removeItem(LS_KEY); return false; }
     Object.keys(o).forEach(function (k) { S[k] = o[k]; });
     return true;
   } catch (e) { return false; }
@@ -305,6 +318,9 @@ function initRegistration() {
       S.candidateId = (serverData && serverData.candidateId) || localToken;
       S.name = data.name; S.university = data.university;
       S.email = data.email; S.phone = data.phone;
+      /* Stamps that let a later visit tell this sitting apart from an old one. */
+      S.registeredAt = now();
+      S.examStart = CFG.START_ISO;
       if (!S.order) S.order = buildOrder();
       if (!S.optOrder) S.optOrder = buildOptOrder();
       saveLocal();
