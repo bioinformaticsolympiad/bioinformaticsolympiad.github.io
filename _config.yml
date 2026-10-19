@@ -1,0 +1,10 @@
+# Plain HTML site. This file exists only to state, explicitly, that the exam
+# vault is never copied into the published site. GitHub Pages already skips
+# any directory whose name starts with an underscore; this makes it deliberate
+# rather than incidental.
+exclude:
+  - _vault
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

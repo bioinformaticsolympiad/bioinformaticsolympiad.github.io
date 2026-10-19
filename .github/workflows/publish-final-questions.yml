@@ -1,0 +1,60 @@
+name: Publish Final Round questions
+
+# The question paper is kept in _vault/, which GitHub Pages does not publish,
+# so it is not reachable on the site. This workflow copies it into final/ three
+# hours before the exam, which is the moment it becomes public.
+#
+#   Exam starts   24 October 2026, 21:00 Bangladesh time (+06:00)
+#   Paper goes up 24 October 2026, 18:00 Bangladesh time  = 12:00 UTC
+#
+# GitHub cron is always UTC, so 12:00 UTC is the three-hour mark.
+#
+# GitHub may start a scheduled run late when it is busy, occasionally by 30
+# minutes or more, and under heavy load it can skip a run altogether. The
+# three-hour margin absorbs that, but CHECK THE ACTIONS TAB on exam day. If the
+# run has not happened by about 19:00, start it by hand: Actions ->
+# "Publish Final Round questions" -> "Run workflow".
+
+on:
+  schedule:
+    - cron: '0 12 24 10 *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the paper in the vault is intact
+        run: |
+          test -f _vault/final-questions.js || { echo "::error::_vault/final-questions.js is missing"; exit 1; }
+          node -e "
+            global.window = {};
+            require('./_vault/final-questions.js');
+            const q = window.BBO_QUESTIONS;
+            if (!Array.isArray(q)) throw new Error('bank did not load as an array');
+            if (q.length !== 50) throw new Error('expected 50 questions, found ' + q.length);
+            q.forEach(function (x) {
+              if (!x.n || !x.t || !Array.isArray(x.o) || x.o.length !== 4)
+                throw new Error('question ' + x.n + ' is malformed');
+            });
+            console.log('vault paper OK: ' + q.length + ' questions, 4 options each');
+          "
+
+      - name: Publish it to the site
+        run: |
+          if cmp -s _vault/final-questions.js final/questions.js; then
+            echo "final/questions.js is already published and identical, nothing to do"
+            exit 0
+          fi
+          cp _vault/final-questions.js final/questions.js
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add final/questions.js
+          git commit -m "Publish Final Round question paper (scheduled, 3 hours before the exam)"
+          git push
+          echo "published, the paper is now live at /final/questions.js"

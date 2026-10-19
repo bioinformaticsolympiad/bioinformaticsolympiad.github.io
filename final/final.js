@@ -438,6 +438,15 @@ var examTimer = null;
 var examStarted = false;
 function startExam() {
   if (S.submitted) return goDone();
+  /* The paper is published to the site a few hours before the exam, so until
+     then questions.js is simply not there. Every screen before the exam works
+     without it; only starting the exam genuinely needs it. */
+  if (!QUESTIONS.length) {
+    blocked('Questions unavailable',
+      'The question paper could not be loaded. Please refresh the page. If it still will not load, email ' +
+      CFG.SUPPORT_EMAIL + ' straight away.');
+    return;
+  }
   if (examStarted) {
     /* Already running. Re-assert the exam screen rather than returning
        silently: whatever called us may just have shown a different one. */
@@ -808,11 +817,6 @@ function boot() {
     blocked('Exam not configured', 'The exam start time has not been set correctly. Please contact ' + CFG.SUPPORT_EMAIL + '.');
     return;
   }
-  if (!QUESTIONS.length) {
-    blocked('Questions unavailable', 'The question paper could not be loaded. Please refresh the page.');
-    return;
-  }
-
   var had = loadLocal();
   initRegistration();
 
