@@ -137,8 +137,24 @@ var S = {
   submitted: false, submissionId: null, submittedAt: null,
   registeredAt: null, examStart: null,
   tabSwitches: 0, copyAttempts: 0, screenshotAttempts: 0,
+  /* Proctoring detail. Counts alone cannot tell an innocent refresh from a
+     minute spent in another window, so the timing of what happened is kept
+     too: ev is a compact event log, [kind, secondsIntoExam, a, b]. */
+  ev: [], awayMs: 0, answerChanges: 0, panelEvents: 0, extensionHits: 0,
   startedAt: null, dirty: false, lastSync: 0
 };
+
+/* Compact proctoring event.
+     a = answered, c = answer changed, w = away from the exam (seconds),
+     p = page narrowed, which is what an AI side panel opening looks like,
+     x = a browser extension injected something into the page.
+   Capped so a long exam cannot grow the payload without bound. */
+function logEv(kind, a, b) {
+  if (!S.ev) S.ev = [];
+  if (S.ev.length >= 400) return;
+  var t = S.startedAt ? Math.round((now() - S.startedAt) / 1000) : 0;
+  S.ev.push([kind, t, a == null ? 0 : a, b == null ? 0 : b]);
+}
 
 function saveLocal() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* private mode */ }
@@ -219,7 +235,9 @@ function syncNow(force) {
   return apiRetry({
     action: 'sync', exam: CFG.EXAM_ID, token: S.token, answers: S.answers, review: S.review,
     tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts,
-    screenshotAttempts: S.screenshotAttempts
+    screenshotAttempts: S.screenshotAttempts,
+    awaySeconds: Math.round((S.awayMs || 0) / 1000), answerChanges: S.answerChanges || 0,
+    panelEvents: S.panelEvents || 0, extensionHits: S.extensionHits || 0, ev: S.ev || []
   }, 3).then(function () {
     if (JSON.stringify(S.answers) === snapshot) S.dirty = false;
     S.lastSync = now();
@@ -581,6 +599,15 @@ function renderQuestions() {
 }
 
 function selectAnswer(num, letter) {
+  var had = S.answers[num];
+  /* Clicking the label also fires a synthetic click from the radio inside it,
+     so this runs twice per choice. Re-selecting what is already chosen is a
+     no-op anyway, and swallowing it keeps the event log honest: duplicate
+     entries one millisecond apart would look like impossibly fast answering
+     in the proctoring review. */
+  if (had === letter) return;
+  if (had) S.answerChanges++;
+  logEv(had ? 'c' : 'a', num);
   S.answers[num] = letter;
   S.dirty = true;
   saveLocal();
@@ -641,6 +668,8 @@ function submitExam(reason) {
     action: 'submit', exam: CFG.EXAM_ID, token: S.token, answers: S.answers, review: S.review,
     reason: reason, tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts,
     screenshotAttempts: S.screenshotAttempts,
+    awaySeconds: Math.round((S.awayMs || 0) / 1000), answerChanges: S.answerChanges || 0,
+    panelEvents: S.panelEvents || 0, extensionHits: S.extensionHits || 0, ev: S.ev || [],
     startedAt: S.startedAt, clientSubmittedAt: now(),
     /* Sending the identity here lets the server skip scanning the
        Registrations sheet, which is what makes submission slow once there are
@@ -766,18 +795,26 @@ function enableAntiCheat() {
      assistant would be used. Window blur catches that case. Both feed one
      counter, de-duplicated on a short window, so a single switch that trips
      both listeners is still only counted once. */
-  var lastAway = 0;
+  var lastAway = 0, awaySince = 0;
   function leftExam() {
     if (S.submitted) return;
     var t = Date.now();
     if (t - lastAway < 1500) return;
     lastAway = t;
+    awaySince = t;
     S.tabSwitches++;
     S.dirty = true;
     saveLocal();
     syncNow(true);
   }
   function cameBack() {
+    /* How long they were gone matters far more than how often. Glancing at a
+       notification is not the same as a minute in another window. */
+    if (awaySince) {
+      var gone = Math.round((Date.now() - awaySince) / 1000);
+      awaySince = 0;
+      if (gone > 0) { S.awayMs += gone * 1000; logEv('w', gone); }
+    }
     if (S.submitted || S.tabSwitches < 1) return;
     var banner = $('warnBanner');
     banner.textContent = 'Warning: you left the exam window (' + S.tabSwitches + ' time' +
@@ -793,6 +830,52 @@ function enableAntiCheat() {
   });
   on(window, 'blur', leftExam);
   on(window, 'focus', cameBack);
+
+  /* An AI side panel (Gemini, Copilot and the rest) opens beside the page and
+     narrows it by a few hundred pixels while the window itself stays put. The
+     page cannot block an extension, nothing running in a page can, but it can
+     notice the shape of one opening and record it for review. Rotating a
+     phone or resizing a window changes the height too, so a width-only
+     shrink is what gets logged. */
+  var lastW = window.innerWidth, lastH = window.innerHeight;
+  on(window, 'resize', function () {
+    var w = window.innerWidth, h = window.innerHeight;
+    var narrowed = lastW - w;
+    if (narrowed >= 180 && Math.abs(h - lastH) <= 40 && !S.submitted) {
+      S.panelEvents++;
+      logEv('p', narrowed, w);
+      S.dirty = true;
+      saveLocal();
+      var b = $('warnBanner');
+      b.textContent = 'A side panel opened beside the exam. This has been recorded.';
+      b.classList.remove('hidden');
+      setTimeout(function () { b.classList.add('hidden'); }, 6000);
+    }
+    lastW = w; lastH = h;
+  });
+
+  /* Many assistant extensions inject a button or panel into the page itself.
+     This cannot stop them, it only records that something did it. */
+  if (window.MutationObserver) {
+    var seen = 0;
+    var mo = new MutationObserver(function (muts) {
+      if (S.submitted || seen >= 25) return;
+      muts.forEach(function (m) {
+        Array.prototype.forEach.call(m.addedNodes || [], function (node) {
+          if (!node || node.nodeType !== 1 || node.__bbo) return;
+          var id = (node.id || '') + ' ' + (typeof node.className === 'string' ? node.className : '');
+          if (/gemini|copilot|chatgpt|openai|perplexity|claude|assistant|ai-|-ai\b|sider|monica/i.test(id)) {
+            seen++; S.extensionHits++;
+            logEv('x', seen);
+            S.dirty = true;
+            saveLocal();
+          }
+        });
+      });
+    });
+    try { mo.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) { /* ignore */ }
+    acHandlers.push([{ removeEventListener: function () { mo.disconnect(); } }, 'x', function () {}, null]);
+  }
 
   /* last-ditch save if the tab is closed or the phone rings */
   on(window, 'pagehide', flushBeacon);
@@ -813,7 +896,9 @@ function flushBeacon() {
     var body = JSON.stringify({
       action: 'sync', exam: CFG.EXAM_ID, token: S.token, answers: S.answers, review: S.review,
       tabSwitches: S.tabSwitches, copyAttempts: S.copyAttempts,
-      screenshotAttempts: S.screenshotAttempts, viaBeacon: true
+      screenshotAttempts: S.screenshotAttempts, viaBeacon: true,
+      awaySeconds: Math.round((S.awayMs || 0) / 1000), answerChanges: S.answerChanges || 0,
+    panelEvents: S.panelEvents || 0, extensionHits: S.extensionHits || 0, ev: S.ev || []
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon(CFG.API_URL, new Blob([body], { type: 'text/plain;charset=utf-8' }));

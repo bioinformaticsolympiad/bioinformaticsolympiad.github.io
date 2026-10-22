@@ -109,10 +109,10 @@ var FINAL_SHEETS = {
 
 var REG_HEADERS = ['Timestamp', 'Token', 'CandidateID', 'Name', 'University', 'Email', 'Phone', 'UserAgent'];
 var AUTOSAVE_HEADERS = ['Timestamp', 'Token', 'AnswersJSON', 'Answered', 'TabSwitches', 'CopyAttempts',
-  'ScreenshotAttempts', 'ViaBeacon'];
+  'ScreenshotAttempts', 'ViaBeacon', 'Telemetry'];
 var SUB_HEADERS = ['Timestamp', 'SubmissionID', 'Token', 'Name', 'University', 'Email', 'Phone',
   'AnswersJSON', 'Attempted', 'Reason', 'TabSwitches', 'CopyAttempts',
-  'ScreenshotAttempts', 'EmailStatus'];
+  'ScreenshotAttempts', 'EmailStatus', 'Telemetry'];
 
 var ANSWER_KEY_FINAL = {
   1:'A', 2:'A', 3:'C', 4:'C', 5:'C', 6:'A', 7:'B', 8:'D', 9:'C', 10:'B',
@@ -302,7 +302,7 @@ function handleSync(d) {
   examSheet(SH.AUTOSAVE, AUTOSAVE_HEADERS).appendRow([
     new Date(), token, JSON.stringify(answers), Object.keys(answers).length,
     Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0,
-    Number(d.screenshotAttempts) || 0, d.viaBeacon ? 'yes' : ''
+    Number(d.screenshotAttempts) || 0, d.viaBeacon ? 'yes' : '', packTelemetry(d)
   ]);
 
   return json({ ok: true, serverNow: Date.now() });
@@ -357,7 +357,8 @@ function handleSubmit(d) {
     JSON.stringify(answers), Object.keys(answers).length,
     clean(d.reason, 40), Number(d.tabSwitches) || 0, Number(d.copyAttempts) || 0,
     Number(d.screenshotAttempts) || 0,
-    CONFIG.SEND_EMAILS && reg.email ? 'PENDING' : 'SKIPPED'
+    CONFIG.SEND_EMAILS && reg.email ? 'PENDING' : 'SKIPPED',
+    packTelemetry(d)
   ]);
 
   // Also keep the final answers in the autosave log as a belt-and-braces copy.
@@ -1003,6 +1004,22 @@ function findRegistration(token, sheetName) {
   return { name: '', university: '', email: '', phone: '' };
 }
 
+/* Proctoring detail, kept as one JSON column so the sheet layout does not
+   have to change again every time another signal is added. The event log is
+   capped because it arrives from the candidate's browser. */
+function packTelemetry(d) {
+  try {
+    var ev = Array.isArray(d.ev) ? d.ev.slice(0, 400) : [];
+    return JSON.stringify({
+      awaySeconds: Number(d.awaySeconds) || 0,
+      answerChanges: Number(d.answerChanges) || 0,
+      panelEvents: Number(d.panelEvents) || 0,
+      extensionHits: Number(d.extensionHits) || 0,
+      ev: ev
+    });
+  } catch (e) { return ''; }
+}
+
 function normaliseAnswers(raw) {
   var out = {};
   if (!raw || typeof raw !== 'object') return out;
@@ -1158,6 +1175,121 @@ function onOpen() {
 /* Menu entries cannot pass arguments, so each round gets a thin wrapper. */
 function gradeRound1() { return gradeAll('round1'); }
 function gradeFinal()  { return gradeAll('final'); }
+
+/* ===================== PROCTORING REVIEW =========================
+
+   Run this AFTER gradeFinal(). It does not accuse anyone and it changes no
+   result. It ranks papers by how much the recorded behaviour needs
+   explaining, so the short list for a live check is based on evidence rather
+   than on who scored well.
+
+   Nothing here is proof on its own. A candidate on a phone that rang, or one
+   who refreshed a few times on a bad connection, will pick up points. Treat
+   the output as the order in which to talk to people, never as a verdict. */
+function reviewFinalPapers() { return reviewPapers('final'); }
+
+function reviewPapers(exam) {
+  exam = exam === 'final' ? 'final' : 'round1';
+  var SH = sheetsFor(exam);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var results = readRows(SH.RESULTS);
+  if (!results.length) return notify('No results to review. Run grading first.');
+
+  var tele = {};
+  readRows(SH.SUB).forEach(function (s) {
+    if (s.Token) tele[s.Token] = safeParse(s.Telemetry);
+  });
+  var byId = {};
+  readRows(SH.SUB).forEach(function (s) { if (s.SubmissionID) byId[s.SubmissionID] = s; });
+
+  var rows = results.map(function (r) {
+    var sub = byId[r.SubmissionID] || {};
+    var t = (sub.Token && tele[sub.Token]) || {};
+    var ev = Array.isArray(t.ev) ? t.ev : [];
+    var marks = Number(r.Marks) || 0;
+    var away = Number(t.awaySeconds) || 0;
+    var points = 0, why = [];
+
+    /* Answers landing in a burst right after coming back from somewhere else
+       is the pattern that matters most: it is what consulting something
+       outside the exam actually looks like. */
+    var bursts = 0;
+    ev.forEach(function (e, i) {
+      if (e[0] !== 'w' || e[2] < 15) return;            // a gap worth noticing
+      var backAt = e[1], quick = 0;
+      for (var j = i + 1; j < ev.length; j++) {
+        if (ev[j][1] - backAt > 20) break;
+        if (ev[j][0] === 'a' || ev[j][0] === 'c') quick++;
+      }
+      if (quick >= 3) bursts++;
+    });
+    if (bursts) { points += bursts * 3; why.push(bursts + ' answer burst(s) straight after being away'); }
+
+    if (away >= 120) { points += 3; why.push('away ' + away + 's in total'); }
+    else if (away >= 45) { points += 1; why.push('away ' + away + 's in total'); }
+
+    if (Number(t.panelEvents)) {
+      points += 4;
+      why.push(t.panelEvents + ' side panel opening(s), which is what an AI assistant panel looks like');
+    }
+    if (Number(t.extensionHits)) {
+      points += 4;
+      why.push('an extension injected something into the exam page');
+    }
+    if (Number(r.ScreenshotAttempts)) {
+      points += 2;
+      why.push(r.ScreenshotAttempts + ' screenshot attempt(s)');
+    }
+    if (Number(r.CopyAttempts) >= 3) {
+      points += 1;
+      why.push(r.CopyAttempts + ' copy attempt(s)');
+    }
+
+    /* Pace. Humans speed up and slow down; a steady rhythm across a whole
+       paper, with a high score, is worth a question. */
+    var answers = ev.filter(function (e) { return e[0] === 'a'; });
+    var gaps = [];
+    for (var k = 1; k < answers.length; k++) gaps.push(answers[k][1] - answers[k - 1][1]);
+    var pace = '';
+    if (gaps.length >= 20) {
+      var mean = gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length;
+      var sd = Math.sqrt(gaps.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0) / gaps.length);
+      pace = Math.round(mean) + 's avg, ' + Math.round(sd) + 's spread';
+      if (sd < 2.5 && marks >= CONFIG.TOTAL_MARKS * 0.8) {
+        points += 3;
+        why.push('unusually even pacing (' + pace + ') for a high score');
+      }
+    }
+
+    return [points, r.Rank, r.Name, r.Email, marks, r.Result,
+            away, t.panelEvents || 0, t.extensionHits || 0,
+            r.TabSwitches || 0, r.CopyAttempts || 0, r.ScreenshotAttempts || 0,
+            t.answerChanges || 0, pace, why.join('; ') || 'nothing notable'];
+  });
+
+  rows.sort(function (a, b) { return b[0] - a[0] || b[4] - a[4]; });
+
+  var name = SH.RESULTS + 'Review';
+  var old = ss.getSheetByName(name);
+  if (old) ss.deleteSheet(old);
+  var sh = ss.insertSheet(name);
+  var headers = ['Concern', 'Rank', 'Name', 'Email', 'Marks', 'Result', 'AwaySeconds',
+    'SidePanels', 'ExtensionHits', 'WindowSwitches', 'CopyAttempts', 'ScreenshotAttempts',
+    'AnswerChanges', 'Pace', 'WhatWasRecorded'];
+  sh.appendRow(headers);
+  sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#7a1f1f').setFontColor('#ffffff');
+  sh.setFrozenRows(1);
+  if (rows.length) sh.getRange(2, 1, rows.length, headers.length).setValues(rows);
+  sh.autoResizeColumns(1, headers.length);
+
+  var flagged = rows.filter(function (r) { return r[0] >= 4; }).length;
+  return notify(
+    'Proctoring review complete. Papers examined: ' + rows.length +
+    '. Worth a conversation (concern 4 or more): ' + flagged +
+    '. See the ' + name + ' tab, highest concern first. This accuses nobody and changes no result, ' +
+    'it only says who to speak to first.'
+  );
+}
 
 function showStats() {
   var regs = sheet(SHEETS.REG).getLastRow() - 1;
