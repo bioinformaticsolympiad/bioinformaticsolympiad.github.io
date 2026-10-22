@@ -438,7 +438,14 @@ function packResult(r) {
     correct: n(r.CorrectAnswers !== undefined ? r.CorrectAnswers : r.Correct),
     wrong: n(r.WrongAnswers !== undefined ? r.WrongAnswers : r.Wrong),
     notAnswered: n(r.NotAnswered),
-    marks: n(r.Marks),
+    /* What the candidate is told is the adjusted score, so it agrees with the
+       percentage and the verdict beside it. Round 1 has no such column, so it
+       falls back to the raw mark and nothing changes there. The raw mark and
+       the deduction travel too, because a card that shows 45 correct next to
+       42 marks has to be able to explain the gap. */
+    marks: (r.FinalScore !== undefined && r.FinalScore !== '') ? n(r.FinalScore) : n(r.Marks),
+    rawMarks: n(r.Marks),
+    deduction: n(r.IntegrityDeduction),
     percent: n(r.Percent),
     result: String(r.Result || ''),
     /* Handed to the result page so a qualified candidate can be sent straight
@@ -829,7 +836,7 @@ function gradeAll(exam) {
       name: s.Name, university: s.University, email: s.Email, phone: s.Phone,
       answers: safeParse(s.AnswersJSON), source: 'SUBMITTED',
       reason: s.Reason, tabSwitches: s.TabSwitches, copyAttempts: s.CopyAttempts,
-      screenshotAttempts: s.ScreenshotAttempts
+      screenshotAttempts: s.ScreenshotAttempts, telemetry: safeParse(s.Telemetry)
     };
   });
 
@@ -851,7 +858,7 @@ function gradeAll(exam) {
       when: a.Timestamp, name: reg.name, university: reg.university,
       email: reg.email, phone: reg.phone, answers: ans, source: 'RECOVERED',
       reason: 'no submit received', tabSwitches: a.TabSwitches, copyAttempts: a.CopyAttempts,
-      screenshotAttempts: a.ScreenshotAttempts
+      screenshotAttempts: a.ScreenshotAttempts, telemetry: safeParse(a.Telemetry)
     };
   });
 
@@ -881,34 +888,51 @@ function gradeAll(exam) {
     if (p.winner.source === 'RECOVERED' && p.loser.source === 'SUBMITTED') needsLook[key] = true;
   });
 
-  var rows = keep.map(function (r) {
+  /* Grade, then take off any integrity deduction. The adjusted score is what
+     decides pass, fail and placing; the raw mark stays beside it so every
+     adjustment is visible. */
+  var computed = keep.map(function (r) {
     var key = String(r.email || '').toLowerCase().trim();
     var g = score(r.answers, KEY);
+    var d = integrityDeduction(r);
     var flag = '';
     if (setAside[key]) {
       flag = 'EARLIEST OF ' + (setAside[key] + 1) + ' PAPERS';
       if (needsLook[key]) flag += ' - CHECK, KEPT PAPER WAS ONLY RECOVERED';
     }
+    return { r: r, g: g, cut: d.cut, notes: d.notes, flag: flag,
+             finalScore: Math.max(0, g.marks - d.cut) };
+  });
+
+  /* Placing is on the adjusted score, ties broken by who finished first.
+     Sorting the records rather than the finished rows keeps this readable and
+     stops a column ever being added in the wrong place and silently ranking
+     by something else. */
+  computed.sort(function (a, b) {
+    return b.finalScore - a.finalScore || new Date(a.r.when) - new Date(b.r.when);
+  });
+
+  var rows = computed.map(function (c, i) {
+    var r = c.r, g = c.g;
     return [
-      r.when, r.submissionId, r.name, r.university, r.email, r.phone,
-      g.attempted, g.correct, g.wrong, g.blank, g.marks,
-      Math.round(g.marks / CONFIG.TOTAL_MARKS * 10000) / 100,
-      g.marks >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100 ? 'PASS' : 'FAIL',
-      r.source, flag, r.reason || '',
+      i + 1, r.when, r.submissionId, r.name, r.university, r.email, r.phone,
+      g.attempted, g.correct, g.wrong, g.blank,
+      g.marks, c.cut, c.finalScore,
+      Math.round(c.finalScore / CONFIG.TOTAL_MARKS * 10000) / 100,
+      c.finalScore >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100 ? 'PASS' : 'FAIL',
+      r.source, c.flag, c.notes || '', r.reason || '',
       r.tabSwitches || 0, r.copyAttempts || 0, r.screenshotAttempts || 0
     ];
   });
-
-  // Rank by marks (descending), then by earlier submission time.
-  rows.sort(function (a, b) { return b[10] - a[10] || new Date(a[0]) - new Date(b[0]); });
-  rows.forEach(function (r, i) { r.unshift(i + 1); });
 
   var old = ss.getSheetByName(SH.RESULTS);
   if (old) ss.deleteSheet(old);
   var sh = ss.insertSheet(SH.RESULTS);
   var headers = ['Rank', 'SubmittedAt', 'SubmissionID', 'Name', 'University', 'Email', 'Phone',
-    'Attempted', 'CorrectAnswers', 'WrongAnswers', 'NotAnswered', 'Marks', 'Percent',
-    'Result', 'Source', 'Flag', 'Reason', 'TabSwitches', 'CopyAttempts', 'ScreenshotAttempts'];
+    'Attempted', 'CorrectAnswers', 'WrongAnswers', 'NotAnswered',
+    'Marks', 'IntegrityDeduction', 'FinalScore', 'Percent',
+    'Result', 'Source', 'Flag', 'IntegrityNotes', 'Reason',
+    'TabSwitches', 'CopyAttempts', 'ScreenshotAttempts'];
   sh.appendRow(headers);
   sh.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#0c1f4a').setFontColor('#ffffff');
   sh.setFrozenRows(1);
@@ -940,11 +964,19 @@ function gradeAll(exam) {
   }
 
   var resultCol = headers.indexOf('Result');
+  var cutCol = headers.indexOf('IntegrityDeduction');
   var passed = rows.filter(function (r) { return r[resultCol] === 'PASS'; }).length;
+  var docked = rows.filter(function (r) { return r[cutCol] > 0; });
+  var flipped = computed.filter(function (c) {
+    var bar = CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100;
+    return c.cut > 0 && c.g.marks >= bar && c.finalScore < bar;
+  }).length;
   var look = Object.keys(needsLook).length;
   return notify(
     'Grading complete (' + exam + '). Papers graded: ' + rows.length +
     '. Passed (' + CONFIG.PASS_PERCENT + '%+): ' + passed +
+    '. Integrity deductions applied: ' + docked.length +
+    (flipped ? '. ' + flipped + ' paper(s) were turned from a pass into a fail by the deduction, read those rows before publishing' : '') +
     '. Failed: ' + (rows.length - passed) +
     (superseded.length
       ? '. ' + superseded.length + ' later paper(s) from candidates who sat twice were set aside, see the ' +
@@ -1173,6 +1205,74 @@ function onOpen() {
 }
 
 /* Menu entries cannot pass arguments, so each round gets a thin wrapper. */
+/* ================== INTEGRITY DEDUCTION =========================
+
+   Marks taken off a paper for what was recorded while it was sat. Every
+   threshold here is deliberately slack, because the same signals are produced
+   by things that are nobody's fault: a refresh on a weak connection counts as
+   leaving the exam, so does a phone call, and so does clicking the address
+   bar. Those must cost nothing. Only patterns that are hard to explain
+   innocently cost marks.
+
+   The total is capped, so thin evidence can never by itself turn a genuine
+   pass into a fail. Raw marks stay in the sheet next to the adjusted score,
+   so every deduction is visible and can be reversed by hand. */
+var INTEGRITY_CAP = 5;
+
+function integrityDeduction(rec) {
+  var t = rec.telemetry || {};
+  var ev = Array.isArray(t.ev) ? t.ev : [];
+  var cut = 0, notes = [];
+
+  /* Answers arriving in a burst straight after an absence. This is the one
+     signal that is genuinely hard to explain any other way. */
+  var bursts = 0;
+  ev.forEach(function (e, i) {
+    if (e[0] !== 'w' || e[2] < 15) return;
+    var backAt = e[1], quick = 0;
+    for (var j = i + 1; j < ev.length; j++) {
+      if (ev[j][1] - backAt > 20) break;
+      if (ev[j][0] === 'a' || ev[j][0] === 'c') quick++;
+    }
+    if (quick >= 3) bursts++;
+  });
+  if (bursts) {
+    var b = Math.min(bursts * 2, 4);
+    cut += b; notes.push(bursts + ' answer burst(s) right after being away (-' + b + ')');
+  }
+
+  /* An assistant side panel opening beside the exam. */
+  var panels = Number(t.panelEvents) || 0;
+  if (panels) {
+    var p = Math.min(2 + (panels - 1), 3);
+    cut += p; notes.push(panels + ' side panel opening(s) (-' + p + ')');
+  }
+
+  /* An extension injecting itself into the exam page. */
+  var ext = Number(t.extensionHits) || 0;
+  if (ext) {
+    var x = Math.min(2 + Math.floor(ext / 3), 3);
+    cut += x; notes.push('extension injected into the page (-' + x + ')');
+  }
+
+  /* Time away. A refresh, a notification or a short call must cost nothing,
+     so this only bites after three minutes in total. */
+  var away = Number(t.awaySeconds) || 0;
+  if (away >= 300) { cut += 2; notes.push('away ' + away + 's in total (-2)'); }
+  else if (away >= 180) { cut += 1; notes.push('away ' + away + 's in total (-1)'); }
+
+  if (Number(rec.screenshotAttempts) >= 1) {
+    cut += 1; notes.push(rec.screenshotAttempts + ' screenshot attempt(s) (-1)');
+  }
+  if (Number(rec.copyAttempts) >= 5) {
+    cut += 1; notes.push(rec.copyAttempts + ' copy attempt(s) (-1)');
+  }
+
+  var capped = Math.min(cut, INTEGRITY_CAP);
+  if (cut > capped) notes.push('capped at ' + INTEGRITY_CAP);
+  return { cut: capped, notes: notes.join('; ') };
+}
+
 function gradeRound1() { return gradeAll('round1'); }
 function gradeFinal()  { return gradeAll('final'); }
 
