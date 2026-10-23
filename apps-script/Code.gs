@@ -1217,7 +1217,7 @@ function onOpen() {
    The total is capped, so thin evidence can never by itself turn a genuine
    pass into a fail. Raw marks stay in the sheet next to the adjusted score,
    so every deduction is visible and can be reversed by hand. */
-var INTEGRITY_CAP = 5;
+var INTEGRITY_CAP = 10;
 
 function integrityDeduction(rec) {
   var t = rec.telemetry || {};
@@ -1237,21 +1237,21 @@ function integrityDeduction(rec) {
     if (quick >= 3) bursts++;
   });
   if (bursts) {
-    var b = Math.min(bursts * 2, 4);
+    var b = Math.min(bursts * 2, 6);
     cut += b; notes.push(bursts + ' answer burst(s) right after being away (-' + b + ')');
   }
 
   /* An assistant side panel opening beside the exam. */
   var panels = Number(t.panelEvents) || 0;
   if (panels) {
-    var p = Math.min(2 + (panels - 1), 3);
+    var p = Math.min(2 + (panels - 1), 4);
     cut += p; notes.push(panels + ' side panel opening(s) (-' + p + ')');
   }
 
   /* An extension injecting itself into the exam page. */
   var ext = Number(t.extensionHits) || 0;
   if (ext) {
-    var x = Math.min(2 + Math.floor(ext / 3), 3);
+    var x = Math.min(2 + Math.floor(ext / 3), 4);
     cut += x; notes.push('extension injected into the page (-' + x + ')');
   }
 
@@ -1271,6 +1271,53 @@ function integrityDeduction(rec) {
   var capped = Math.min(cut, INTEGRITY_CAP);
   if (cut > capped) notes.push('capped at ' + INTEGRITY_CAP);
   return { cut: capped, notes: notes.join('; ') };
+}
+
+/* ================== GET READY FOR EXAM NIGHT ====================
+
+   Run this ONCE before the exam. It clears the rehearsal out of the way and
+   drops the two final-round working tabs so they are rebuilt with the current
+   columns, Telemetry included. Rows written into a sheet that has no
+   Telemetry header land in an unlabelled column and the deduction cannot read
+   them, which would silently disable the whole integrity rule.
+
+   It refuses to run if a single genuine paper is present, so it cannot be set
+   off by accident after the exam and destroy the night's work. */
+function prepareFinalRound() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  var realPapers = 0;
+  [FINAL_SHEETS.SUB, FINAL_SHEETS.REG].forEach(function (name) {
+    var sh = sheet(name);
+    if (!sh || sh.getLastRow() < 2) return;
+    var values = sh.getDataRange().getValues();
+    var headers = values[0];
+    for (var r = 1; r < values.length; r++) {
+      if (!isTestRow(headers, values[r])) realPapers++;
+    }
+  });
+  if (realPapers) {
+    return notify('REFUSED. ' + realPapers + ' genuine row(s) are already in the final round sheets. ' +
+      'This function only prepares empty sheets before the exam and will not touch real papers. ' +
+      'If those rows are left over from testing, mark them DELETE ME and run deleteTestRows() first.');
+  }
+
+  var removedRows = scanTestRows().filter(function (f) {
+    return f.sheet.indexOf('Final') === 0;
+  }).length;
+  if (removedRows) deleteTestRows();
+
+  var dropped = [];
+  [FINAL_SHEETS.AUTOSAVE, FINAL_SHEETS.SUB].forEach(function (name) {
+    var sh = ss.getSheetByName(name);
+    if (sh) { ss.deleteSheet(sh); dropped.push(name); }
+  });
+
+  return notify('Ready. Test rows cleared: ' + removedRows +
+    '. Tabs dropped so they rebuild with the Telemetry column: ' +
+    (dropped.length ? dropped.join(', ') : 'none were present') +
+    '. They reappear by themselves on the first registration or answer sync. ' +
+    'Nothing else was touched, and Round 1 was not touched at all.');
 }
 
 function gradeRound1() { return gradeAll('round1'); }
