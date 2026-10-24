@@ -1197,10 +1197,14 @@ function onOpen() {
     .addItem('Run setup', 'setup')
     .addItem('Grade Round 1 papers', 'gradeRound1')
     .addItem('Grade Final Round papers', 'gradeFinal')
+    .addItem('Review Final Round papers (after grading)', 'reviewFinalPapers')
+    .addSeparator()
     .addItem('Send pending emails now', 'processEmailQueue')
     .addItem('Show live stats', 'showStats')
+    .addSeparator()
     .addItem('List test rows (preview)', 'listTestRows')
     .addItem('Delete test rows', 'deleteTestRows')
+    .addItem('Prepare final round (before the exam only)', 'prepareFinalRound')
     .addToUi();
 }
 
