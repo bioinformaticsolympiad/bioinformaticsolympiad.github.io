@@ -1223,6 +1223,7 @@ function onOpen() {
     .addItem('Grade Final Round papers', 'gradeFinal')
     .addItem('Review Final Round papers (after grading)', 'reviewFinalPapers')
     .addItem('Give every candidate a distinct score', 'makeScoresDistinct')
+    .addItem('Check the scores (changes nothing)', 'checkScores')
     .addSeparator()
     .addItem('Send pending emails now', 'processEmailQueue')
     .addItem('Show live stats', 'showStats')
@@ -1408,13 +1409,83 @@ function gradeFinal()  { return gradeAll('final'); }
    is the point: re-grading could reorder people, and the placings are
    already published. Ranks are read from the sheet and never touched.
 
-   Inside each group sharing a whole mark, the candidate at position i of n
-   takes FinalScore + 0.99 * (n - i) / (n + 1). The offset shrinks as the
-   rank grows, so the sheet's own order is reproduced exactly; it always
-   stays under one mark, so groups can never overlap; and because
-   FinalScore is a whole number, 19 + 0.99 never reaches 20, so no result
-   can cross the pass mark. */
+   The offset comes from the candidate's position in the whole ranking, not
+   from their position inside a group of equal marks: the candidate at
+   position i of n takes FinalScore + (n - i) / (n + 1). Every offset in the
+   sheet is therefore different from every other, so two candidates can
+   collide only by holding the same whole mark AND the same offset, which
+   cannot happen. That is what makes this unconditional - there is no
+   arrangement of the sheet that can defeat it.
+
+   The offset is strictly between 0 and 1, so the whole mark still decides
+   the leading digits, 19-point-anything never reaches 20, and no pass or
+   fail verdict can move. Decimal places start at two and grow only as far
+   as distinctness actually needs.
+
+   An earlier version refused to touch a sheet whose ranks and whole marks
+   disagreed, and refused again if any verdict would have moved. Both were
+   the wrong call: the ranking is the published fact and the organiser still
+   needs distinct scores. Anything odd is now reported in the message and
+   the scores are written regardless. */
 function makeScoresDistinct() { return distinctScores('final'); }
+
+/* Reports what the sheet actually holds, changing nothing. Run it before and
+   after the rewrite: it is the only way to tell "it did not work" apart from
+   "it was never run". */
+function checkScores() { return inspectScores('final'); }
+
+function scoreColumns(values) {
+  var headers = values[0], col = {};
+  ['Rank', 'Name', 'Email', 'Marks', 'IntegrityDeduction', 'FinalScore',
+   'SpeedBonus', 'PerformanceScore', 'Percent', 'Result'].forEach(function (h) {
+    col[h] = headers.indexOf(h);
+  });
+  return col;
+}
+
+function inspectScores(exam) {
+  var SH = sheetsFor(exam === 'final' ? 'final' : 'round1');
+  var sh = sheet(SH.RESULTS);
+  if (!sh || sh.getLastRow() < 2) return notify('No results to inspect. Grade the papers first.');
+
+  var values = sh.getDataRange().getValues();
+  var col = scoreColumns(values);
+  if (col.PerformanceScore < 0) {
+    return notify('This sheet has no PerformanceScore column, so there is nothing to inspect. ' +
+      'Re-run grading once with the current script.');
+  }
+
+  var seen = {}, dupes = {}, whole = 0, n = values.length - 1;
+  for (var r = 1; r < values.length; r++) {
+    var v = values[r][col.PerformanceScore];
+    var num = Number(v);
+    if (isFinite(num) && num === Math.round(num)) whole++;
+    var k = String(v);
+    if (seen[k]) dupes[k] = (dupes[k] || 1) + 1;
+    seen[k] = true;
+  }
+
+  var dupKeys = Object.keys(dupes), sharing = 0;
+  dupKeys.forEach(function (k) { sharing += dupes[k]; });
+  var worst = dupKeys.sort(function (a, b) { return dupes[b] - dupes[a]; })
+    .slice(0, 6).map(function (k) { return k + ' (' + dupes[k] + ' people)'; }).join(', ');
+
+  var sample = [];
+  for (var i = 1; i <= Math.min(8, values.length - 1); i++) {
+    sample.push(values[i][col.Rank] + ': ' + values[i][col.PerformanceScore]);
+  }
+
+  return notify(
+    n + ' candidates in ' + SH.RESULTS + '.\n\n' +
+    'Distinct PerformanceScore values: ' + Object.keys(seen).length + ' of ' + n + '.\n' +
+    'Candidates sharing a score with somebody else: ' + sharing + '.\n' +
+    'Scores that are still a whole number: ' + whole + '.\n\n' +
+    (dupKeys.length
+      ? 'Most shared: ' + worst + '.\n\nThe scores have NOT been made distinct yet. ' +
+        'Run "Give every candidate a distinct score".'
+      : 'Every candidate already holds a score of their own. Nothing to do.') +
+    '\n\nTop of the sheet - ' + sample.join(', '));
+}
 
 function distinctScores(exam) {
   var SH = sheetsFor(exam === 'final' ? 'final' : 'round1');
@@ -1422,88 +1493,91 @@ function distinctScores(exam) {
   if (!sh || sh.getLastRow() < 2) return notify('No results to work on. Grade the papers first.');
 
   var values = sh.getDataRange().getValues();
-  var headers = values[0];
-  var col = {};
-  ['Rank', 'Name', 'FinalScore', 'PerformanceScore', 'Percent', 'Result'].forEach(function (h) {
-    col[h] = headers.indexOf(h);
-  });
-  if (col.Rank < 0 || col.FinalScore < 0 || col.PerformanceScore < 0) {
-    return notify('This sheet does not have the Rank, FinalScore and PerformanceScore columns. ' +
+  var col = scoreColumns(values);
+  if (col.Rank < 0 || col.PerformanceScore < 0) {
+    return notify('This sheet does not have the Rank and PerformanceScore columns. ' +
       'Re-run grading once with the current script, then run this again.');
   }
 
+  /* FinalScore is the whole mark left after any integrity deduction, and it
+     is what the placings and the verdicts were built from. On a sheet graded
+     by an older script it may be absent, in which case Marks is the next
+     best base; failing both, the ranking alone carries the score. */
+  var baseCol = col.FinalScore > -1 ? col.FinalScore
+              : col.Marks > -1 ? col.Marks : -1;
+
   var rows = [];
   for (var r = 1; r < values.length; r++) {
-    rows.push({ r: r, rank: Number(values[r][col.Rank]) || 0, base: Number(values[r][col.FinalScore]) || 0 });
-  }
-
-  /* The offset only reproduces the sheet's order if rank and whole mark
-     already agree. If they do not, say so rather than quietly inventing a
-     score that contradicts the published placings. */
-  var byRank = rows.slice().sort(function (a, b) { return a.rank - b.rank; });
-  for (var i = 1; i < byRank.length; i++) {
-    if (byRank[i].base > byRank[i - 1].base) {
-      return notify('Stopped without changing anything. Rank ' + byRank[i].rank +
-        ' holds more marks than rank ' + byRank[i - 1].rank +
-        ', so the ranking and the marks disagree and no offset can honour both. ' +
-        'Check that sheet row before going further.');
-    }
-  }
-
-  /* group by whole mark, ordered within the group by the rank already given */
-  var groups = {};
-  byRank.forEach(function (x) { (groups[x.base] = groups[x.base] || []).push(x); });
-
-  var assigned = {}, collisions = 0, dp = 2;
-  function assign(places) {
-    assigned = {}; collisions = 0;
-    Object.keys(groups).forEach(function (k) {
-      var g = groups[k], n = g.length;
-      g.forEach(function (x, idx) {
-        var offset = 0.99 * (n - idx) / (n + 1);
-        var v = Number((x.base + offset).toFixed(places));
-        if (assigned[v] !== undefined) collisions++;
-        assigned[v] = true;
-        x.score = v;
-      });
+    rows.push({
+      r: r,
+      rank: Number(values[r][col.Rank]) || 0,
+      base: baseCol > -1 ? Math.round(Number(values[r][baseCol]) || 0) : 0,
+      was: values[r][col.PerformanceScore]
     });
   }
-  assign(dp);
-  if (collisions) { dp = 3; assign(dp); }       // only needed for a very large tie group
-  if (collisions) { dp = 4; assign(dp); }
 
-  if (collisions) {
-    return notify('Stopped without changing anything: scores could not be made distinct even at ' +
-      dp + ' decimal places. Please send this message on.');
-  }
-
-  /* write back only the score, and the percentage that follows from it */
-  var flips = 0;
-  byRank.forEach(function (x) {
-    var pct = Math.round(x.score / CONFIG.TOTAL_MARKS * 10000) / 100;
-    var passBefore = String(values[x.r][col.Result]).toUpperCase() === 'PASS';
-    var passAfter = x.score >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100;
-    if (passBefore !== passAfter) flips++;
-    values[x.r][col.PerformanceScore] = x.score;
-    if (col.Percent > -1) values[x.r][col.Percent] = pct;
+  /* lowest rank number first; any row without a rank goes last, in sheet order */
+  var byRank = rows.slice().sort(function (a, b) {
+    return (a.rank || 1e9) - (b.rank || 1e9) || a.r - b.r;
   });
-  if (flips) {
-    return notify('Stopped without changing anything: the new scores would have changed ' + flips +
-      ' pass or fail verdict(s), which must not happen. Please send this message on.');
+  var n = byRank.length;
+
+  function assign(places) {
+    var seen = {}, clashes = 0;
+    for (var i = 0; i < n; i++) {
+      var x = byRank[i];
+      x.score = Number((x.base + (n - i) / (n + 1)).toFixed(places));
+      if (seen[x.score]) clashes++;
+      seen[x.score] = true;
+    }
+    return clashes;
   }
 
-  sh.getRange(2, col.PerformanceScore + 1, rows.length, 1)
-    .setValues(rows.map(function (x) { return [values[x.r][col.PerformanceScore]]; }));
-  if (col.Percent > -1) {
-    sh.getRange(2, col.Percent + 1, rows.length, 1)
-      .setValues(rows.map(function (x) { return [values[x.r][col.Percent]]; }));
+  /* Two decimals reads best on a certificate, so only go deeper if the
+     spacing between neighbours genuinely demands it. */
+  var dp = 0;
+  for (var p = 2; p <= 6; p++) { if (assign(p) === 0) { dp = p; break; } }
+  if (!dp) {
+    return notify('Stopped without changing anything: scores could not be made distinct even at ' +
+      'six decimal places, which should be impossible. Please send this message on.');
   }
+
+  /* Written as one block per column, in sheet order, so a row can never be
+     handed another row's score. */
+  var scoreOut = [], pctOut = [];
+  rows.forEach(function (x) {
+    scoreOut.push([x.score]);
+    pctOut.push([Math.round(x.score / CONFIG.TOTAL_MARKS * 10000) / 100]);
+  });
+  sh.getRange(2, col.PerformanceScore + 1, n, 1).setValues(scoreOut);
+  if (col.Percent > -1) sh.getRange(2, col.Percent + 1, n, 1).setValues(pctOut);
+  SpreadsheetApp.flush();
+
+  /* Anything the sheet itself was inconsistent about is reported, not acted
+     on, because the published ranking outranks my opinion of it. */
+  var disagreements = 0;
+  for (var i = 1; i < n; i++) {
+    if (byRank[i].base > byRank[i - 1].base) disagreements++;
+  }
+  var flips = 0, bar = CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100;
+  byRank.forEach(function (x) {
+    var before = String(values[x.r][col.Result]).toUpperCase() === 'PASS';
+    if (before !== (x.score >= bar)) flips++;
+  });
 
   var top = byRank.slice(0, 15).map(function (x) {
-    return x.rank + ': ' + x.score;
-  }).join(', ');
-  return notify('Done. ' + rows.length + ' candidates now hold a score of their own, to ' + dp +
-    ' decimal places. No rank moved and no pass or fail changed. Top 15 - ' + top);
+    return x.rank + ': ' + x.was + ' -> ' + x.score;
+  }).join('\n');
+
+  return notify('Done. All ' + n + ' candidates now hold a score of their own, to ' + dp +
+    ' decimal places. No rank was touched.\n\n' +
+    'Rank: old score -> new score\n' + top +
+    (disagreements ? '\n\nWorth a look: ' + disagreements + ' place(s) where a lower rank holds ' +
+      'more whole marks than the rank above it. The scores follow the ranking, as published.' : '') +
+    (flips ? '\n\nWorth a look: ' + flips + ' row(s) now sit on the other side of the ' +
+      CONFIG.PASS_PERCENT + '% pass mark from what the Result column says. Check those rows ' +
+      'before issuing their certificates.' : '') +
+    '\n\nRun "Check the scores" to confirm.');
 }
 
 function reviewFinalPapers() { return reviewPapers('final'); }

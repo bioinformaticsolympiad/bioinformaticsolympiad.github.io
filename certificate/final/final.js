@@ -19,7 +19,7 @@ function $(id) { return document.getElementById(id); }
 
 /* match the certificate: never round a distinct score back into a tie */
 function fmtScore(v) {
-  var t = String(Math.round(Number(v) * 1000) / 1000);
+  var t = String(Math.round(Number(v) * 1e6) / 1e6);
   var dot = t.indexOf(".");
   if (dot < 0) return t + ".00";
   return (t.length - dot - 1) === 1 ? t + "0" : t;

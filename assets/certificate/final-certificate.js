@@ -79,7 +79,7 @@ function tidyName(name) {
    printed value must not round them back together. Two decimals is the
    floor, not a ceiling. */
 function formatScore(n) {
-  var t = String(Math.round(n * 1000) / 1000);
+  var t = String(Math.round(n * 1e6) / 1e6);
   var dot = t.indexOf('.');
   if (dot < 0) return t + '.00';
   var decimals = t.length - dot - 1;
