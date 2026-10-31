@@ -52,6 +52,8 @@ var CONFIG = {
      touching the website. LOOKUP_SALT keeps the suggestion ids opaque; change
      it to invalidate every previously issued id.                             */
   RESULTS_PUBLISHED: true,
+  /* The final round publishes on its own switch, so Round 1 is unaffected. */
+  FINAL_RESULTS_PUBLISHED: true,
   LOOKUP_SALT: 'bbo3-round1-2026',
   MAX_SUGGESTIONS: 5,
 
@@ -386,9 +388,14 @@ function handleSubmit(d) {
    disclosed to someone who did not already know it.
    ================================================================ */
 
-function resultRows() {
-  var rows = readRows(SHEETS.RESULTS);
+function resultRows(exam) {
+  var rows = readRows(exam === 'final' ? FINAL_SHEETS.RESULTS : SHEETS.RESULTS);
   return rows.filter(function (r) { return r.Email; });
+}
+/* Each round publishes separately, so the final round can open its
+   certificates without touching the Round 1 checker. */
+function resultsPublished(exam) {
+  return exam === 'final' ? !!CONFIG.FINAL_RESULTS_PUBLISHED : !!CONFIG.RESULTS_PUBLISHED;
 }
 
 /* Stable, non-reversible handle for one row. */
@@ -446,6 +453,13 @@ function packResult(r) {
     marks: (r.FinalScore !== undefined && r.FinalScore !== '') ? n(r.FinalScore) : n(r.Marks),
     rawMarks: n(r.Marks),
     deduction: n(r.IntegrityDeduction),
+    /* The performance score separates candidates who tie on marks, so it is
+       what the final round certificate prints. Round 1 has no such column and
+       falls back to the plain mark. */
+    performanceScore: (r.PerformanceScore !== undefined && r.PerformanceScore !== '')
+      ? n(r.PerformanceScore)
+      : ((r.FinalScore !== undefined && r.FinalScore !== '') ? n(r.FinalScore) : n(r.Marks)),
+    finishedAtSeconds: n(r.FinishedAtSeconds),
     percent: n(r.Percent),
     result: String(r.Result || ''),
     /* Handed to the result page so a qualified candidate can be sent straight
@@ -461,7 +475,8 @@ function packResult(r) {
 }
 
 function handleResultLookup(d) {
-  if (!CONFIG.RESULTS_PUBLISHED) {
+  var exam = examOf(d);
+  if (!resultsPublished(exam)) {
     return json({ ok: false, error: 'Results are not published yet.', notPublished: true });
   }
   var typed = clean(d.email, 120).toLowerCase().replace(/\s+/g, '');
@@ -469,7 +484,7 @@ function handleResultLookup(d) {
     return json({ ok: false, error: 'Please enter the email address you registered with.' });
   }
 
-  var rows = resultRows();
+  var rows = resultRows(exam);
   var i, email;
 
   // 1. exact match
@@ -518,12 +533,13 @@ function maskName(name) {
 }
 
 function handleResultById(d) {
-  if (!CONFIG.RESULTS_PUBLISHED) {
+  var exam = examOf(d);
+  if (!resultsPublished(exam)) {
     return json({ ok: false, error: 'Results are not published yet.', notPublished: true });
   }
   var id = clean(d.id, 40);
   if (!id) return json({ ok: false, error: 'Missing selection' });
-  var rows = resultRows();
+  var rows = resultRows(exam);
   for (var i = 0; i < rows.length; i++) {
     if (lookupId(String(rows[i].Email).trim().toLowerCase()) === id) {
       return json({ ok: true, found: true, result: packResult(rows[i]), total: rows.length });
@@ -900,8 +916,14 @@ function gradeAll(exam) {
       flag = 'EARLIEST OF ' + (setAside[key] + 1) + ' PAPERS';
       if (needsLook[key]) flag += ' - CHECK, KEPT PAPER WAS ONLY RECOVERED';
     }
+    var finalScore = Math.max(0, g.marks - d.cut);
+    var finishedSec = finishedAtSeconds(r);
+    var bonus = speedBonus(finishedSec, windowFor(exam).dur * 60);
     return { r: r, g: g, cut: d.cut, notes: d.notes, flag: flag,
-             finalScore: Math.max(0, g.marks - d.cut) };
+             finalScore: finalScore,
+             finishedSec: finishedSec,
+             bonus: bonus,
+             performance: Math.round((finalScore + bonus) * 100) / 100 };
   });
 
   /* Placing is on the adjusted score, ties broken by who finished first.
@@ -909,7 +931,7 @@ function gradeAll(exam) {
      stops a column ever being added in the wrong place and silently ranking
      by something else. */
   computed.sort(function (a, b) {
-    return b.finalScore - a.finalScore || new Date(a.r.when) - new Date(b.r.when);
+    return b.performance - a.performance || new Date(a.r.when) - new Date(b.r.when);
   });
 
   var rows = computed.map(function (c, i) {
@@ -918,6 +940,7 @@ function gradeAll(exam) {
       i + 1, r.when, r.submissionId, r.name, r.university, r.email, r.phone,
       g.attempted, g.correct, g.wrong, g.blank,
       g.marks, c.cut, c.finalScore,
+      c.finishedSec == null ? '' : c.finishedSec, c.bonus, c.performance,
       Math.round(c.finalScore / CONFIG.TOTAL_MARKS * 10000) / 100,
       c.finalScore >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100 ? 'PASS' : 'FAIL',
       r.source, c.flag, c.notes || '', r.reason || '',
@@ -930,7 +953,8 @@ function gradeAll(exam) {
   var sh = ss.insertSheet(SH.RESULTS);
   var headers = ['Rank', 'SubmittedAt', 'SubmissionID', 'Name', 'University', 'Email', 'Phone',
     'Attempted', 'CorrectAnswers', 'WrongAnswers', 'NotAnswered',
-    'Marks', 'IntegrityDeduction', 'FinalScore', 'Percent',
+    'Marks', 'IntegrityDeduction', 'FinalScore',
+    'FinishedAtSeconds', 'SpeedBonus', 'PerformanceScore', 'Percent',
     'Result', 'Source', 'Flag', 'IntegrityNotes', 'Reason',
     'TabSwitches', 'CopyAttempts', 'ScreenshotAttempts'];
   sh.appendRow(headers);
@@ -1222,6 +1246,42 @@ function onOpen() {
    pass into a fail. Raw marks stay in the sheet next to the adjusted score,
    so every deduction is visible and can be reversed by hand. */
 var INTEGRITY_CAP = 10;
+
+/* ================== SPEED AND THE PERFORMANCE SCORE ==============
+
+   Two candidates on the same marks should not share a placing, so speed
+   separates them.
+
+   Submission time cannot be used for this. Auto-submitted papers are held
+   back by Math.random() * SUBMIT_SPREAD_SECONDS so that thousands do not
+   arrive at once, and candidates were told pressing Submit is not required,
+   so for most of the field the submission timestamp is partly a random
+   number. What the telemetry does record honestly is when each answer was
+   given, so the last answer is when that candidate actually finished.
+
+   The bonus is deliberately kept below one mark. It can separate candidates
+   who tie, but it can never lift anyone above a candidate who scored more,
+   so the placing order announced to candidates, marks first, is untouched.
+   Candidates whose paper predates telemetry simply get no bonus. */
+var SPEED_BONUS_MAX = 0.99;
+
+function finishedAtSeconds(rec) {
+  var t = rec.telemetry || {};
+  var ev = Array.isArray(t.ev) ? t.ev : [];
+  var last = 0;
+  ev.forEach(function (e) {
+    if ((e[0] === 'a' || e[0] === 'c') && e[1] > last) last = e[1];
+  });
+  return last > 0 ? last : null;
+}
+
+function speedBonus(finishedSec, durationSec) {
+  if (!finishedSec || !durationSec) return 0;
+  var left = 1 - (finishedSec / durationSec);
+  if (left < 0) left = 0;
+  if (left > 1) left = 1;
+  return Math.round(left * SPEED_BONUS_MAX * 100) / 100;
+}
 
 function integrityDeduction(rec) {
   var t = rec.telemetry || {};
