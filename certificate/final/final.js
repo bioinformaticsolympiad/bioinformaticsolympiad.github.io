@@ -16,6 +16,14 @@ var API = CFG.API_URL;
 var SUPPORT = CFG.SUPPORT_EMAIL || 'bioinformatics.olympiad@gmail.com';
 
 function $(id) { return document.getElementById(id); }
+
+/* match the certificate: never round a distinct score back into a tie */
+function fmtScore(v) {
+  var t = String(Math.round(Number(v) * 1000) / 1000);
+  var dot = t.indexOf(".");
+  if (dot < 0) return t + ".00";
+  return (t.length - dot - 1) === 1 ? t + "0" : t;
+}
 function show(id) {
   ['suggestBox', 'notFound', 'notEligible', 'certBox'].forEach(function (s) {
     $(s).classList.add('hidden');
@@ -68,7 +76,7 @@ function render(result) {
 
   var score = (result.performanceScore !== undefined && result.performanceScore !== null)
     ? result.performanceScore : result.marks;
-  $('cScore').textContent = Number(score).toFixed(2) + ' / ' + (L.TOTAL_MARKS || 50);
+  $('cScore').textContent = fmtScore(score) + ' / ' + (L.TOTAL_MARKS || 50);
   $('cResult').textContent = String(result.result || '').toUpperCase();
   $('cId').textContent = window.BBOFinalCertificate.certificateId(result);
 
@@ -86,7 +94,7 @@ function refuse(result) {
     ? result.performanceScore : result.marks;
   $('neMsg').textContent =
     window.BBOFinalCertificate.tidyName(result.name) + ', your Final Round score was ' +
-    Number(score).toFixed(2) + ' out of ' + (L.TOTAL_MARKS || 50) +
+    fmtScore(score) + ' out of ' + (L.TOTAL_MARKS || 50) +
     ' (' + result.percent + '%), which is below the 40% pass mark.';
   show('notEligible');
   $('notEligible').scrollIntoView({ behavior: 'smooth', block: 'start' });

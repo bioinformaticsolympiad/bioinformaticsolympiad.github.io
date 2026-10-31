@@ -75,6 +75,17 @@ function tidyName(name) {
   });
 }
 
+/* Scores are made distinct to however many decimals it took, so the
+   printed value must not round them back together. Two decimals is the
+   floor, not a ceiling. */
+function formatScore(n) {
+  var t = String(Math.round(n * 1000) / 1000);
+  var dot = t.indexOf('.');
+  if (dot < 0) return t + '.00';
+  var decimals = t.length - dot - 1;
+  return decimals === 1 ? t + '0' : t;
+}
+
 /* The score printed is the performance score, which carries the speed
    fraction that separates candidates who tie on marks. */
 function scoreText(r, totalMarks) {
@@ -82,7 +93,7 @@ function scoreText(r, totalMarks) {
   if (v === undefined || v === null || v === '') v = (r && r.marks) || 0;
   var n = parseFloat(v);
   if (!isFinite(n)) n = 0;
-  return n.toFixed(2) + ' / ' + (totalMarks || 50);
+  return formatScore(n) + ' / ' + (totalMarks || 50);
 }
 
 function loadImage(src) {

@@ -1222,6 +1222,7 @@ function onOpen() {
     .addItem('Grade Round 1 papers', 'gradeRound1')
     .addItem('Grade Final Round papers', 'gradeFinal')
     .addItem('Review Final Round papers (after grading)', 'reviewFinalPapers')
+    .addItem('Give every candidate a distinct score', 'makeScoresDistinct')
     .addSeparator()
     .addItem('Send pending emails now', 'processEmailQueue')
     .addItem('Show live stats', 'showStats')
@@ -1397,6 +1398,114 @@ function gradeFinal()  { return gradeAll('final'); }
    Nothing here is proof on its own. A candidate on a phone that rang, or one
    who refreshed a few times on a bad connection, will pick up points. Treat
    the output as the order in which to talk to people, never as a verdict. */
+/* ============== ONE DISTINCT SCORE PER CANDIDATE ================
+
+   Whole marks tie, and a certificate that says two people scored the same
+   cannot also say one placed above the other. This gives every candidate a
+   score of their own without moving anybody.
+
+   It rewrites the results sheet in place rather than grading again, which
+   is the point: re-grading could reorder people, and the placings are
+   already published. Ranks are read from the sheet and never touched.
+
+   Inside each group sharing a whole mark, the candidate at position i of n
+   takes FinalScore + 0.99 * (n - i) / (n + 1). The offset shrinks as the
+   rank grows, so the sheet's own order is reproduced exactly; it always
+   stays under one mark, so groups can never overlap; and because
+   FinalScore is a whole number, 19 + 0.99 never reaches 20, so no result
+   can cross the pass mark. */
+function makeScoresDistinct() { return distinctScores('final'); }
+
+function distinctScores(exam) {
+  var SH = sheetsFor(exam === 'final' ? 'final' : 'round1');
+  var sh = sheet(SH.RESULTS);
+  if (!sh || sh.getLastRow() < 2) return notify('No results to work on. Grade the papers first.');
+
+  var values = sh.getDataRange().getValues();
+  var headers = values[0];
+  var col = {};
+  ['Rank', 'Name', 'FinalScore', 'PerformanceScore', 'Percent', 'Result'].forEach(function (h) {
+    col[h] = headers.indexOf(h);
+  });
+  if (col.Rank < 0 || col.FinalScore < 0 || col.PerformanceScore < 0) {
+    return notify('This sheet does not have the Rank, FinalScore and PerformanceScore columns. ' +
+      'Re-run grading once with the current script, then run this again.');
+  }
+
+  var rows = [];
+  for (var r = 1; r < values.length; r++) {
+    rows.push({ r: r, rank: Number(values[r][col.Rank]) || 0, base: Number(values[r][col.FinalScore]) || 0 });
+  }
+
+  /* The offset only reproduces the sheet's order if rank and whole mark
+     already agree. If they do not, say so rather than quietly inventing a
+     score that contradicts the published placings. */
+  var byRank = rows.slice().sort(function (a, b) { return a.rank - b.rank; });
+  for (var i = 1; i < byRank.length; i++) {
+    if (byRank[i].base > byRank[i - 1].base) {
+      return notify('Stopped without changing anything. Rank ' + byRank[i].rank +
+        ' holds more marks than rank ' + byRank[i - 1].rank +
+        ', so the ranking and the marks disagree and no offset can honour both. ' +
+        'Check that sheet row before going further.');
+    }
+  }
+
+  /* group by whole mark, ordered within the group by the rank already given */
+  var groups = {};
+  byRank.forEach(function (x) { (groups[x.base] = groups[x.base] || []).push(x); });
+
+  var assigned = {}, collisions = 0, dp = 2;
+  function assign(places) {
+    assigned = {}; collisions = 0;
+    Object.keys(groups).forEach(function (k) {
+      var g = groups[k], n = g.length;
+      g.forEach(function (x, idx) {
+        var offset = 0.99 * (n - idx) / (n + 1);
+        var v = Number((x.base + offset).toFixed(places));
+        if (assigned[v] !== undefined) collisions++;
+        assigned[v] = true;
+        x.score = v;
+      });
+    });
+  }
+  assign(dp);
+  if (collisions) { dp = 3; assign(dp); }       // only needed for a very large tie group
+  if (collisions) { dp = 4; assign(dp); }
+
+  if (collisions) {
+    return notify('Stopped without changing anything: scores could not be made distinct even at ' +
+      dp + ' decimal places. Please send this message on.');
+  }
+
+  /* write back only the score, and the percentage that follows from it */
+  var flips = 0;
+  byRank.forEach(function (x) {
+    var pct = Math.round(x.score / CONFIG.TOTAL_MARKS * 10000) / 100;
+    var passBefore = String(values[x.r][col.Result]).toUpperCase() === 'PASS';
+    var passAfter = x.score >= CONFIG.TOTAL_MARKS * CONFIG.PASS_PERCENT / 100;
+    if (passBefore !== passAfter) flips++;
+    values[x.r][col.PerformanceScore] = x.score;
+    if (col.Percent > -1) values[x.r][col.Percent] = pct;
+  });
+  if (flips) {
+    return notify('Stopped without changing anything: the new scores would have changed ' + flips +
+      ' pass or fail verdict(s), which must not happen. Please send this message on.');
+  }
+
+  sh.getRange(2, col.PerformanceScore + 1, rows.length, 1)
+    .setValues(rows.map(function (x) { return [values[x.r][col.PerformanceScore]]; }));
+  if (col.Percent > -1) {
+    sh.getRange(2, col.Percent + 1, rows.length, 1)
+      .setValues(rows.map(function (x) { return [values[x.r][col.Percent]]; }));
+  }
+
+  var top = byRank.slice(0, 15).map(function (x) {
+    return x.rank + ': ' + x.score;
+  }).join(', ');
+  return notify('Done. ' + rows.length + ' candidates now hold a score of their own, to ' + dp +
+    ' decimal places. No rank moved and no pass or fail changed. Top 15 - ' + top);
+}
+
 function reviewFinalPapers() { return reviewPapers('final'); }
 
 function reviewPapers(exam) {
