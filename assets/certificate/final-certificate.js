@@ -98,7 +98,7 @@ function waitForFonts() {
   var l = L();
   if (!document.fonts || !document.fonts.load) return Promise.resolve();
   return Promise.all([
-    document.fonts.load('60px "' + l.NAME.font + '"', 'Sample Name'),
+    document.fonts.load((l.NAME.weight ? l.NAME.weight + ' ' : '') + '60px "' + l.NAME.font + '"', 'Sample Name'),
     document.fonts.load('20px "' + l.META.font + '"', 'Rank 123')
   ]).then(function () { return document.fonts.ready; })
     .catch(function () { /* draw anyway rather than fail outright */ });
@@ -149,8 +149,13 @@ function generate(record) {
     var N = l.NAME;
     var name = tidyName(record.name) || 'Participant';
 
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(N.clear.x * s, N.clear.y * s, N.clear.w * s, N.clear.h * s);
+    /* Round 1 printed the word "Name" and had to be covered. This design
+       prints nothing there, so a clear box of zero size means do nothing;
+       painting white would leave a pale patch on the warm ground. */
+    if (N.clear && N.clear.w > 0 && N.clear.h > 0) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(N.clear.x * s, N.clear.y * s, N.clear.w * s, N.clear.h * s);
+    }
 
     ctx.fillStyle = N.color;
     var sizePx = N.sizePt * PT_TO_PX * s;
@@ -158,7 +163,7 @@ function generate(record) {
     var tracking = (N.letterSpacingPt || 0) * PT_TO_PX * s;
     var maxW = N.maxWidth * s;
     for (;;) {
-      ctx.font = sizePx + 'px "' + N.font + '", cursive';
+      ctx.font = (N.weight ? N.weight + ' ' : '') + sizePx + 'px "' + N.font + '", Georgia, serif';
       if (trackedWidth(ctx, name, tracking) <= maxW || sizePx <= minPx) break;
       sizePx -= 1.5;
     }
