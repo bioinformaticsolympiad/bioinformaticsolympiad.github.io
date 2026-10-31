@@ -211,6 +211,19 @@ function notify(message) {
   return message;
 }
 
+
+/* Long reports go in a dialog rather than a toast, which truncates at 240
+   characters. Falls back to the toast and the execution log when there is no
+   spreadsheet open, so running a function straight from the editor still
+   tells you what happened. */
+function report(title, message) {
+  Logger.log(message);
+  try {
+    SpreadsheetApp.getUi().alert(title, message, SpreadsheetApp.getUi().ButtonSet.OK);
+    return message;
+  } catch (e) { return notify(message); }
+}
+
 /* ========================= WEB ENDPOINTS ======================== */
 
 function doGet(e) {
@@ -1475,7 +1488,7 @@ function inspectScores(exam) {
     sample.push(values[i][col.Rank] + ': ' + values[i][col.PerformanceScore]);
   }
 
-  return notify(
+  return report('Score check',
     n + ' candidates in ' + SH.RESULTS + '.\n\n' +
     'Distinct PerformanceScore values: ' + Object.keys(seen).length + ' of ' + n + '.\n' +
     'Candidates sharing a score with somebody else: ' + sharing + '.\n' +
@@ -1569,7 +1582,8 @@ function distinctScores(exam) {
     return x.rank + ': ' + x.was + ' -> ' + x.score;
   }).join('\n');
 
-  return notify('Done. All ' + n + ' candidates now hold a score of their own, to ' + dp +
+  return report('Distinct scores',
+    'Done. All ' + n + ' candidates now hold a score of their own, to ' + dp +
     ' decimal places. No rank was touched.\n\n' +
     'Rank: old score -> new score\n' + top +
     (disagreements ? '\n\nWorth a look: ' + disagreements + ' place(s) where a lower rank holds ' +
