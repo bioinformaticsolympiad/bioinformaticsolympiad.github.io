@@ -87,13 +87,15 @@ function formatScore(n) {
 }
 
 /* The score printed is the performance score, which carries the speed
-   fraction that separates candidates who tie on marks. */
-function scoreText(r, totalMarks) {
+   fraction that separates candidates who tie on marks. It is printed bare,
+   without a total: two candidates on the same whole mark differ only in the
+   decimals, and "41.908 / 50" invites the reader to round that away. */
+function scoreText(r) {
   var v = r && r.performanceScore;
   if (v === undefined || v === null || v === '') v = (r && r.marks) || 0;
   var n = parseFloat(v);
   if (!isFinite(n)) n = 0;
-  return formatScore(n) + ' / ' + (totalMarks || 50);
+  return formatScore(n);
 }
 
 function loadImage(src) {
@@ -212,7 +214,7 @@ function generate(record) {
       ctx.fillText(String(record.rank || '-'), afterLabel, M.lines.rank * s);
     }
 
-    ctx.fillText('Score: ' + scoreText(record, l.TOTAL_MARKS), x, M.lines.score * s);
+    ctx.fillText('Score: ' + scoreText(record), x, M.lines.score * s);
     ctx.fillText('Unique ID: ' + id, x, M.lines.uniqueId * s);
     ctx.fillText('Issue Date: ' + (record.issueDate || l.ISSUE_DATE), x, M.lines.issueDate * s);
 

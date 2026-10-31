@@ -27,6 +27,7 @@ window.BBO_FINAL_CERT_LAYOUT = {
   DESIGN_W: 1123,
   DESIGN_H: 793,
   TOTAL_MARKS: 50,
+  PASS_PERCENT: 40,
   ISSUE_DATE: '31/10/26',
 
   /* The recipient sits on the ruled band at y=378. Nothing is printed

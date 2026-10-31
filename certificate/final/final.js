@@ -76,7 +76,7 @@ function render(result) {
 
   var score = (result.performanceScore !== undefined && result.performanceScore !== null)
     ? result.performanceScore : result.marks;
-  $('cScore').textContent = fmtScore(score) + ' / ' + (L.TOTAL_MARKS || 50);
+  $('cScore').textContent = fmtScore(score);
   $('cResult').textContent = String(result.result || '').toUpperCase();
   $('cId').textContent = window.BBOFinalCertificate.certificateId(result);
 
@@ -94,8 +94,8 @@ function refuse(result) {
     ? result.performanceScore : result.marks;
   $('neMsg').textContent =
     window.BBOFinalCertificate.tidyName(result.name) + ', your Final Round score was ' +
-    fmtScore(score) + ' out of ' + (L.TOTAL_MARKS || 50) +
-    ' (' + result.percent + '%), which is below the 40% pass mark.';
+    fmtScore(score) + ', which is ' + result.percent +
+    '%, below the ' + (L.PASS_PERCENT || 40) + '% pass mark.';
   show('notEligible');
   $('notEligible').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
