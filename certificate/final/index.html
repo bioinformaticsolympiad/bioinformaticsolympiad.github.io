@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Final Round Certificate - Biology &amp; Bioinformatics Olympiad 3.0</title>
+<meta name="description" content="Download your Final Round certificate for the Biology &amp; Bioinformatics Olympiad 3.0.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0c1f4a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&family=Great+Vibes&family=Ibarra+Real+Nova:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../result/result.css">
+<style>
+  .tier-badge { display:inline-block; padding:.35rem 1rem; border-radius:999px;
+                font-weight:700; font-size:.82rem; letter-spacing:.06em; text-transform:uppercase; }
+  .tier-winner { background:#0d6e3a; color:#fff; }
+  .tier-merit  { background:#0c1f4a; color:#fff; }
+  .tier-part   { background:#e8eef5; color:#0c1f4a; }
+  .cert-preview { width:100%; border:1px solid #d9e3ea; border-radius:10px; margin-top:1rem; display:block; }
+  .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.6rem; margin:1rem 0; }
+  .facts div { background:#f7fafc; border:1px solid #d9e3ea; border-radius:8px; padding:.8rem .7rem; }
+  .facts span { display:block; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color:#5a6b7b; margin-bottom:.3rem; }
+  .facts strong { display:block; font-size:1.1rem; color:#0c1f4a; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="../../index.html">
+    <img src="../../assets/branding/logo.png" alt="BBO" class="brand-logo">
+    <div>
+      <strong>Biology &amp; Bioinformatics Olympiad 3.0</strong>
+      <span>Final Round Certificate</span>
+    </div>
+  </a>
+  <a href="../../index.html" class="back-link">← Main site</a>
+</header>
+
+<main>
+
+  <section class="hero">
+    <span class="pill">Final Round · 24 October 2026</span>
+    <h1>Download your certificate</h1>
+    <p class="lead">
+      Enter the email address you sat the Final Round with. Your certificate is built
+      from your verified result, so it carries your own name, placing and score.
+    </p>
+
+    <form id="lookupForm" class="lookup" novalidate>
+      <div class="lookup-row">
+        <input type="email" id="emailInput" placeholder="you@example.com"
+               autocomplete="email" inputmode="email" maxlength="120"
+               aria-label="The email address you sat the Final Round with">
+        <button type="submit" class="btn btn-primary" id="lookupBtn">Find my certificate</button>
+      </div>
+      <small class="err" id="lookupErr"></small>
+      <small class="hint">Spelling slightly off? We will suggest the closest matches.</small>
+    </form>
+  </section>
+
+  <!-- who gets what -->
+  <section class="card">
+    <h2>Who receives a certificate</h2>
+    <ul class="reasons">
+      <li><strong>Certificate of Excellence.</strong> The top five places, awarded as winners.</li>
+      <li><strong>Certificate of Merit.</strong> Places 6 to 15, awarded Special Recognition.</li>
+      <li><strong>Certificate of Participation.</strong> Everyone else who passed, carrying their placing and score.</li>
+    </ul>
+    <p class="muted small">
+      Certificates are issued only to candidates who passed the Final Round, which is
+      <strong>40%</strong> or more. Every certificate shows a placing, a score and a unique ID.
+    </p>
+  </section>
+
+  <!-- suggestions -->
+  <section id="suggestBox" class="card hidden">
+    <h2>Did you mean one of these?</h2>
+    <p class="muted">We could not find that exact address, but these look close.</p>
+    <ul id="suggestList" class="suggest-list"></ul>
+    <button type="button" class="btn btn-ghost btn-sm" id="tryAgain">Search a different address</button>
+  </section>
+
+  <!-- not found -->
+  <section id="notFound" class="card hidden">
+    <div class="nf-icon" aria-hidden="true">🔍</div>
+    <h2>No Final Round paper found for that address</h2>
+    <p class="muted">We could not find a paper recorded against that email, and nothing similar either.</p>
+    <ul class="reasons">
+      <li>Use the address you sat the Final Round with, which is the one you used in Round 1.</li>
+      <li>If you registered but never submitted any answers, there is no paper to certify.</li>
+      <li>Round 1 certificates are issued separately, on the Round 1 certificate page.</li>
+    </ul>
+    <p class="muted">Still stuck? Email <a id="nfSupport" href="#"></a> from the address you registered with.</p>
+    <button type="button" class="btn btn-ghost btn-sm" id="tryAgain2">Try another address</button>
+  </section>
+
+  <!-- did not pass -->
+  <section id="notEligible" class="card hidden">
+    <h2>No certificate for this result</h2>
+    <p id="neMsg" class="muted"></p>
+    <p class="muted small">
+      Certificates for the Final Round are issued only to candidates who reached the
+      40% pass mark. Your Round 1 Certificate of Participation is still available
+      on the <a href="../index.html">Round 1 certificate page</a>.
+    </p>
+    <button type="button" class="btn btn-ghost btn-sm" id="tryAgain3">Check another address</button>
+  </section>
+
+  <!-- the certificate -->
+  <section id="certBox" class="hidden">
+    <div class="card">
+      <span class="tier-badge" id="tierBadge">Participation</span>
+      <h2 id="cName" style="margin:.7rem 0 .2rem"></h2>
+      <p class="muted" id="cUniversity"></p>
+
+      <div class="facts">
+        <div><span>Placing</span><strong id="cRank"></strong></div>
+        <div><span>Score</span><strong id="cScore"></strong></div>
+        <div><span>Result</span><strong id="cResult"></strong></div>
+        <div><span>Unique ID</span><strong id="cId"></strong></div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-lg" id="dlBtn">Download my certificate →</button>
+      <p class="muted small" id="dlNote">It downloads as a PNG image. Keep this page open while it is prepared.</p>
+
+      <img id="preview" class="cert-preview hidden" alt="Your certificate">
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-ghost" id="checkAnother">Check another address</button>
+      <a href="../../index.html" class="btn btn-ghost">Back to main site</a>
+    </div>
+  </section>
+
+  <p class="footer-note">
+    If any detail on your certificate is wrong, email
+    <a id="footSupport" href="#"></a> quoting your unique ID.
+  </p>
+
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="../../final/config.js"></script>
+<script src="../../assets/certificate/final-layout.js"></script>
+<script src="../../assets/certificate/final-certificate.js"></script>
+<script src="final.js"></script>
+</body>
+</html>
